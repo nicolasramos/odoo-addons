@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'AI Agent System',
-    'version': '18.0.1.7.0',
+    'version': '18.0.1.8.0',
     'category': 'Productivity',
     'summary': 'AI Agent management: runtimes, agents, executions, logs, chat, MCP, and stage mapping',
     'description': """
@@ -14,13 +14,20 @@ Provides a native multi-agent execution architecture inside Odoo.
 - Agent Chat: direct messaging between users and AI agents
 - Stage Mapping: configurable agent status to project stage mapping
 - REST API: bidirectional communication with external runtimes
-    """,
+- Live updates: form and list views subscribe to odoo_agent bus.bus channels
+""",
     'author': 'Nicolas Ramos',
     'website': 'https://github.com/nicolasramos',
     'depends': ['project', 'mail', 'base', 'bus'],
     'assets': {
         'web.assets_backend': [
             'odoo_agent/static/src/scss/agent_task_communications.scss',
+            'odoo_agent/static/src/js/agent_live_update_service.js',
+            'odoo_agent/static/src/js/agent_live_update_form_patch.js',
+            'odoo_agent/static/src/js/agent_live_update_list_patch.js',
+        ],
+        'web.assets_unit_tests': [
+            'odoo_agent/static/tests/agent_live_update_service_tests.js',
         ],
     },
     'data': [
