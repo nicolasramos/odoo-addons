@@ -46,8 +46,8 @@ function summarise(notifications) {
 }
 
 export const agentLiveUpdateService = {
-    dependencies: ["bus_service", "orm"],
-    start(env, { bus_service, orm }) {
+    dependencies: ["bus_service"],
+    start(env, { bus_service }) {
         const subscribed = new Set();
         const pending = new Deferred();
 
