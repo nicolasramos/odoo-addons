@@ -89,6 +89,19 @@ class OdooClawController(http.Controller):
             # Perform action as the bot user to circumvent public access rights
             record = request.env[model_name].sudo().browse(res_id)
             if record.exists():
+                # Add @mention to notify the sender — chatter and group channels only
+                sender_partner = (
+                    token_valid.message_id.author_id
+                    if token_valid.message_id and token_valid.message_id.author_id
+                    else None
+                )
+                if model_name != "discuss.channel" and sender_partner and sender_partner != bot_user.partner_id:
+                    mention_html = Markup(
+                        '<a href="/odoo/res.partner/{}" '                        'class="o_mail_redirect" '                        'data-oe-id="{}" '                        'data-oe-model="res.partner" '                        'target="_blank">@{}</a> '
+                    ).format(sender_partner.id, sender_partner.id, sender_partner.name)
+                    post_values["body"] = mention_html + post_values["body"]
+                    post_values["partner_ids"] = [sender_partner.id]
+
                 record.with_user(bot_user).sudo().message_post(**post_values)
 
                 # Clear typing indicator after replying
