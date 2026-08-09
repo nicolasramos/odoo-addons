@@ -15,5 +15,11 @@
             <field name="key">odooclaw.webhook_url</field>
             <field name="value">http://odooclaw:18790/webhook/odoo</field>
         </record>
+
+        <!-- Denied models list (empty = rely on OdooClaw defaults) -->
+        <record id="odooclaw_denied_models_param" model="ir.config_parameter">
+            <field name="key">odooclaw.denied_models</field>
+            <field name="value"></field>
+        </record>
     </data>
 </odoo>
