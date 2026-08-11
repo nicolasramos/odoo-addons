@@ -7,13 +7,19 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+# --- API Defaults for imported invoices (n8n/webhooks) ---
 class AccountMove(models.Model):
     _inherit = "account.move"
 
     @api.model_create_multi
     def create(self, vals_list):
+        """Auto-fill payment terms, bank account, and payment mode from Partner.
+
+        This logic is scoped to import/API flows (n8n, webhooks) where callers
+        send minimal invoice payloads. It does not affect UI-created invoices
+        because the wizard already fills these fields.
+        """
         for vals in vals_list:
-            # API Defaults Logic (n8n/Imports)
             if 'partner_id' in vals and vals['partner_id']:
                 partner = self.env['res.partner'].browse(vals['partner_id'])
 
@@ -57,7 +63,16 @@ class AccountMoveLine(models.Model):
         return lines
 
     def _apply_dynamic_rules(self):
-        """ Check if any rule matches and apply changes """
+        """Apply dynamic rules on invoice line creation.
+
+        Design decision: rules only run in `create`, not in `write`.
+        Adding a `write` hook would risk infinite recursion — changing
+        `account_id` or `product_id` triggers line recomputation, which
+        calls `write` again. For the vast majority of workflows (imported
+        vendor bills, API invoices), rules fire once at creation time,
+        which is sufficient. Manual edits to an already-created line are
+        rare and can be handled by re-creating the line if needed.
+        """
         self.ensure_one()
         # Only for purchase invoices (Vendor Bills and Refunds)
         if self.move_id.move_type not in ('in_invoice', 'in_refund'):
@@ -72,14 +87,16 @@ class AccountMoveLine(models.Model):
         if self.tax_line_id:
             return
 
-        # Check account type to avoid touching Payables/Receivables (e.g. auto-generated lines)
-        if self.account_id.account_type in ('liability_payable', 'asset_receivable', 'liability_credit_card', 'asset_cash', 'liability_current'):
-             # Note: liability_current might be valid target, but usually we target expenses.
-             # Strict safety: Only touch expenses/income/assets/liabilities that are NOT the main AP/AR
-             return
-
-        # Simplified: Just ensure we don't mess with AP/AR if that's the risk
-        if self.account_id.account_type in ('liability_payable', 'asset_receivable'):
+        # Skip balance-sheet accounts — dynamic rules only target P&L lines
+        # (expenses/income). This prevents accidental rewrites of auto-generated
+        # AP/AR, cash, and credit-card lines that Odoo creates during invoice validation.
+        if self.account_id.account_type in (
+            'liability_payable',
+            'asset_receivable',
+            'liability_credit_card',
+            'asset_cash',
+            'liability_current',
+        ):
             return
 
         # Helper to get partner (it might be on the move if not on the line)
