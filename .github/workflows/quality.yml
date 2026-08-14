@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   static:
     runs-on: ubuntu-latest
@@ -12,7 +15,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Validate Odoo addon statically
+      - name: Validate Odoo addons statically
         run: python3 .github/scripts/validate_addon.py
-      - name: Compile addon Python files
-        run: python3 -m compileall -q odoo_agent

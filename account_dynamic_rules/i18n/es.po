@@ -1,1 +1,12 @@
 # Translation metadata database for the "account_dynamic_rules" module
+# This file is a placeholder for translations.
+# To add translations, use a PO editor like Poedit or translate-via-terminal.
+msgid ""
+msgstr ""
+"Project-Id-Version: account_dynamic_rules 18.0\n"
+"Last-Translator: Nicolás Ramos <contacto@nicolasramos.es>\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
