@@ -126,6 +126,27 @@ class TestAgentRuntimeApi(HttpCase):
         if payload.get('executions'):
             self.assertEqual(payload['executions'][0]['id'], self.execution.id)
 
+    def test_poll_excludes_tasks_by_default(self):
+        status, payload = self._json_request(
+            '/api/agent/runtime/poll',
+            api_key=self.runtime.api_key,
+            payload={'limit': 5},
+        )
+        self.assertEqual(status, 200)
+        self.assertIn('executions', payload)
+        self.assertNotIn('tasks', payload)
+
+    def test_poll_includes_tasks_with_legacy_flag(self):
+        status, payload = self._json_request(
+            '/api/agent/runtime/poll?legacy_tasks=true',
+            api_key=self.runtime.api_key,
+            payload={'limit': 5},
+        )
+        self.assertEqual(status, 200)
+        self.assertIn('executions', payload)
+        self.assertIn('tasks', payload)
+        self.assertEqual(payload['tasks'], payload['executions'])
+
     def test_cross_runtime_start_is_denied(self):
         status, payload = self._json_request(
             f'/api/agent/execution/{self.execution.id}/start',

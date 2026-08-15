@@ -199,11 +199,15 @@ class AgentApiController(http.Controller):
         runtime.write({'last_seen': fields.Datetime.now()})
         limit = int(payload.get('limit') or 10)
         executions = request.env['odoo.agent.execution'].sudo().get_queued_for_runtime(runtime, limit=limit)
-        return self._json_response({
+        response = {
             'status': 'ok',
             'executions': [execution.to_runtime_payload() for execution in executions],
-            'tasks': [execution.to_runtime_payload() for execution in executions],
-        })
+        }
+        # Compatibility: older runtimes still read the legacy ``tasks`` key.
+        # Include it only when the client explicitly opts in (legacy_tasks=true).
+        if payload.get('legacy_tasks') in (True, 'true', '1', 1):
+            response['tasks'] = response['executions']
+        return self._json_response(response)
 
     @http.route('/api/agent/execution/<int:execution_id>/start', type='http', methods=['POST'], auth='public', csrf=False)
     def start_execution(self, execution_id, **kwargs):
