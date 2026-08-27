@@ -60,6 +60,7 @@ class OdooClawController(http.Controller):
                     {"status": "error", "reason": "Invalid or expired reply_token"},
                     status=403
                 )
+            token_company = token_valid.company_id
 
             bot_user = (
                 request.env["res.users"]
@@ -89,6 +90,8 @@ class OdooClawController(http.Controller):
             # Perform action as the bot user to circumvent public access rights
             record = request.env[model_name].sudo().browse(res_id)
             if record.exists():
+                if "company_id" in record._fields and record.company_id and record.company_id != token_company:
+                    return security.error_response("Record company does not match reply token", status=403)
                 # Add @mention to notify the sender — chatter and group channels only
                 sender_partner = (
                     token_valid.message_id.author_id
@@ -102,7 +105,7 @@ class OdooClawController(http.Controller):
                     post_values["body"] = mention_html + post_values["body"]
                     post_values["partner_ids"] = [sender_partner.id]
 
-                record.with_user(bot_user).sudo().message_post(**post_values)
+                record.with_company(token_company).with_user(bot_user).sudo().message_post(**post_values)
 
                 # Clear typing indicator after replying
                 if model_name == "discuss.channel":
@@ -183,14 +186,26 @@ class OdooClawController(http.Controller):
             if user_id == SUPERUSER_ID or not target_user.exists() or not target_user.active:
                 return security.error_response("Invalid delegated user")
 
+            allowed_companies = caller.company_ids & target_user.company_ids
+            if not allowed_companies:
+                return security.error_response("No shared company for delegated user", status=403)
+
             # Merge explicit context from caller if provided
             if not isinstance(kwargs_dict, dict):
                 kwargs_dict = {}
             if not isinstance(context_dict, dict):
                 context_dict = {}
 
-            merged_context = dict(request.env.context)
+            requested_company_ids = context_dict.get("allowed_company_ids", allowed_companies.ids)
+            if (
+                not isinstance(requested_company_ids, (list, tuple))
+                or not set(requested_company_ids).issubset(set(allowed_companies.ids))
+            ):
+                return security.error_response("Unauthorized company context", status=403)
+
+            merged_context = {key: value for key, value in request.env.context.items() if key != "allowed_company_ids"}
             merged_context.update(context_dict)
+            merged_context["allowed_company_ids"] = list(requested_company_ids)
 
             # Switch environment to the requested user with provided context
             safe_env = request.env(user=user_id, context=merged_context)

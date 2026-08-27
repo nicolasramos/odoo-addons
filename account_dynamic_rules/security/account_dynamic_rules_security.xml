@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_account_dynamic_rule_multi_company" model="ir.rule">
+        <field name="name">Account Dynamic Rule: multi-company isolation</field>
+        <field name="model_id" ref="model_account_dynamic_rule"/>
+        <field name="domain_force">[("company_id", "in", company_ids)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_user')), (4, ref('account.group_account_manager'))]"/>
+    </record>
+</odoo>

@@ -11,6 +11,7 @@ class MailOdooClawReplyToken(models.Model):
     token = fields.Char(required=True, index=True, readonly=True)
     model = fields.Char(required=True, readonly=True)
     res_id = fields.Integer(required=True, readonly=True)
+    company_id = fields.Many2one("res.company", string="Company", required=True, readonly=True, default=lambda self: self.env.company, index=True)
     message_id = fields.Many2one("mail.message", ondelete="cascade", readonly=True)
     expiry = fields.Datetime(required=True, readonly=True)
     used = fields.Boolean(default=False)
@@ -27,6 +28,7 @@ class MailOdooClawReplyToken(models.Model):
             "token": str(uuid.uuid4()),
             "model": model,
             "res_id": res_id,
+            "company_id": self.env.company.id,
             "message_id": message_id,
             "expiry": fields.Datetime.now() + timedelta(seconds=ttl),
         })

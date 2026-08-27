@@ -1,7 +1,5 @@
 import logging
 import requests
-import json
-import threading
 from odoo import models, api, tools, _
 
 _logger = logging.getLogger(__name__)
@@ -9,6 +7,44 @@ _logger = logging.getLogger(__name__)
 
 class MailThread(models.AbstractModel):
     _inherit = "mail.thread"
+
+    @api.model
+    def _send_odooclaw_webhook(self, payload, webhook_url, webhook_token):
+        """Deliver a committed Discuss event without exposing sensitive data in logs."""
+        headers = {"Content-Type": "application/json"}
+        if webhook_token:
+            headers["X-OdooClaw-Token"] = webhook_token
+
+        log_values = {
+            "message_id": payload["message_id"],
+            "model": payload["model"],
+            "res_id": payload["res_id"],
+        }
+        try:
+            response = requests.post(
+                webhook_url, json=payload, headers=headers, timeout=5
+            )
+        except Exception as error:
+            _logger.error(
+                "OdooClaw webhook transport failure "
+                "message_id=%(message_id)s model=%(model)s res_id=%(res_id)s error=%(error)s",
+                {**log_values, "error": type(error).__name__},
+            )
+            return
+
+        if 200 <= response.status_code < 300:
+            _logger.info(
+                "OdooClaw webhook delivered "
+                "message_id=%(message_id)s model=%(model)s res_id=%(res_id)s status=%(status)s",
+                {**log_values, "status": response.status_code},
+            )
+            return
+
+        _logger.warning(
+            "OdooClaw webhook rejected "
+            "message_id=%(message_id)s model=%(model)s res_id=%(res_id)s status=%(status)s",
+            {**log_values, "status": response.status_code},
+        )
 
     def _resolve_private_reply_channel(self, author_partner, bot_partner):
         Channel = self.env["discuss.channel"].sudo()
@@ -34,8 +70,8 @@ class MailThread(models.AbstractModel):
             }
         )
 
-    @api.returns("mail.message", lambda value: value.id)
     def message_post(self, **kwargs):
+        """Forward Odoo 19's keyword-only ``message_post`` API unchanged."""
         message = super(MailThread, self).message_post(**kwargs)
 
         # Determine if OdooClaw is mentioned or it's a direct message to OdooClaw
@@ -131,8 +167,6 @@ class MailThread(models.AbstractModel):
                     payload["reply_res_id"] = private_channel.id
                 # else: group channel → reply in the same channel (reply_model/res_id unchanged)
 
-            # We use threading to not block the current transaction
-
             # Generate reply token — allows OdooClaw to identify solicited replies
             reply_token_rec = self.env["mail.odooclaw.reply.token"].sudo()._generate(
                 model=payload["reply_model"],
@@ -153,22 +187,13 @@ class MailThread(models.AbstractModel):
                 .get_param("odooclaw.webhook_token", "")
             )
 
-            def send_webhook(url, data, token):
-                try:
-                    headers = {"Content-Type": "application/json"}
-                    if token:
-                        headers["X-OdooClaw-Token"] = token
-                    response = requests.post(url, json=data, headers=headers, timeout=5)
-                    if response.status_code == 401:
-                        _logger.error("OdooClaw rejected webhook: invalid token for %s", url)
-
-                except Exception as e:
-                    _logger.error("Failed to send webhook to OdooClaw: %s", str(e))
-
-            threaded_call = threading.Thread(
-                target=send_webhook, args=(webhook_url, payload, webhook_token)
+            # The token and message must be visible to the reply endpoint first.
+            # Post-commit callbacks are discarded automatically on rollback.
+            self.env.cr.postcommit.add(
+                lambda: self._send_odooclaw_webhook(
+                    payload, webhook_url, webhook_token
+                )
             )
-            threaded_call.start()
 
             # Trigger "typing..." indicator if it's a discuss channel
             if message.model == "discuss.channel":

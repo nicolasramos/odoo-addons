@@ -92,6 +92,7 @@ class AccountMoveLine(models.Model):
         # 2. Product must match OR be empty (Global)
         # 3. Description (handled in loop below)
         domain = [
+            ("company_id", "=", self.move_id.company_id.id),
             ('partner_id', 'in', [partner.id, False]),
             ('product_id', 'in', [product.id, False]),
         ]
