@@ -8,8 +8,8 @@ This repository contains installable Odoo addons intended to be consumed through
 
 | Addon | Odoo versions | Summary | Documentation |
 | --- | --- | --- | --- |
-| `odoo_agent` | 18 | AI agent execution system for Odoo Project: runtimes, agents, executions, logs, skills, MCP, and `@mentions`. | [`odoo_agent/README.md`](odoo_agent/README.md) |
-| `mail_bot_odooclaw` | 16, 17, 18 | OdooClaw AI bot integration with Odoo Discuss via webhooks. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md) |
+| `odoo_agent` | 18.0 | AI agent execution system for Odoo Project: runtimes, agents, executions, logs, skills, MCP, and `@mentions`. | [`odoo_agent/README.md`](odoo_agent/README.md) |
+| `mail_bot_odooclaw` | 16.0, 17.0, 18.0 | OdooClaw AI bot integration with Odoo Discuss via webhooks. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md) |
 
 ## Repository strategy
 
@@ -32,11 +32,11 @@ Each Odoo major version has its own branch:
 
 | Branch | Contains |
 | --- | --- |
-| `16` | `mail_bot_odooclaw` |
-| `17` | `mail_bot_odooclaw` |
-| `18` | `odoo_agent`, `mail_bot_odooclaw` |
+| `16.0` | `mail_bot_odooclaw` |
+| `17.0` | `mail_bot_odooclaw` |
+| `18.0` | `odoo_agent`, `mail_bot_odooclaw` |
 
-The default branch (`main`) tracks the latest Odoo version (18).
+The default branch (`main`) tracks the latest Odoo version (18.0).
 
 ## Installation pattern
 
