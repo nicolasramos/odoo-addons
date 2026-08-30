@@ -2,7 +2,10 @@ name: Quality
 
 on:
   push:
+    branches: [main, "19"]
   pull_request:
+    branches: [main, "18", "19"]
+  workflow_dispatch:
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
