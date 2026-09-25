@@ -11,7 +11,7 @@
             <field name="name">Agent Admin</field>
             <field name="category_id" ref="base.module_category_hidden"/>
             <field name="implied_ids" eval="[(4, ref('odoo_agent.group_agent_user'))]"/>
-            <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
         </record>
 
         <record id="rule_agent_runtime_company" model="ir.rule">
