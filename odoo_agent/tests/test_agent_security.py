@@ -18,7 +18,7 @@ class TestAgentSecurity(AgentTestMixin):
             'name': 'Agent User',
             'login': 'agent-user@example.com',
             'email': 'agent-user@example.com',
-            'groups_id': [(6, 0, [cls.agent_user_group.id])],
+            'group_ids': [(6, 0, [cls.agent_user_group.id])],
             'company_id': cls.company.id,
             'company_ids': [(6, 0, [cls.company.id])],
         })
@@ -26,7 +26,7 @@ class TestAgentSecurity(AgentTestMixin):
             'name': 'Regular User',
             'login': 'regular-user@example.com',
             'email': 'regular-user@example.com',
-            'groups_id': [(6, 0, [cls.env.ref('base.group_user').id])],
+            'group_ids': [(6, 0, [cls.env.ref('base.group_user').id])],
             'company_id': cls.company.id,
             'company_ids': [(6, 0, [cls.company.id])],
         })
