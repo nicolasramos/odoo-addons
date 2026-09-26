@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+        <!--
+          The DU audience. Nico's rule: any INTERNAL user, no group restriction —
+          "cualquier usuario interno de DU, no usuario de portal ni otro tipo".
+
+          Created here so a fresh install already offers help to the right people
+          without anyone having to configure it, while still being editable later.
+        -->
+        <record id="audience_du_internal" model="mail.odooclaw.audience">
+            <field name="name">Usuarios internos de DU</field>
+            <field name="internal_only" eval="True" />
+            <field name="include_inactive" eval="False" />
+            <field name="note">Cualquier usuario interno (empleado). Los usuarios de portal y el
+usuario público quedan fuera: los contadores que se citan en la oferta son cifras
+de negocio y no deben mostrarse fuera de la empresa.</field>
+        </record>
+    </data>
+</odoo>

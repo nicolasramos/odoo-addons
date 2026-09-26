@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0" on purpose: these rows are SHIPPED DEFAULTS and must keep
+        reaching existing installations. With noupdate="1" a counter added in a
+        later release would never arrive — the module would load cleanly and the
+        signal would simply never fire, which is invisible from the outside.
+
+        The convention that makes this safe: to customise a threshold or a
+        domain, create a NEW mail.odooclaw.area row (the resolver picks by
+        action, then view, then model, so a more specific row wins). Do not edit
+        a shipped row: an upgrade will restore it.
+
+        Why this lives in its own module and not in mail_bot_odooclaw: the base
+        module depends only on `mail` (Discuss). Accounting knowledge is not
+        Discuss, so shipping these rows from the base would make a generic
+        integration responsible for account.move — and would break the base
+        module's install in any database without Accounting. This module adds
+        the knowledge; the base keeps the engine.
+    -->
+    <data noupdate="0">
+        <!--
+            Accounting areas.
+
+            Every domain and threshold below was checked against a real Odoo 18
+            database with `account` installed — created records for each signal
+            and confirmed the count moves, and created a record that must NOT
+            match to confirm it does not. They are NOT copied from memory.
+
+            Two findings from that verification, both of which would have failed
+            silently in production:
+
+            * The VeriFactu module in Odoo 18 is `l10n_es_edi_verifactu`,
+              NOT `l10n_es_verifactu`. A counter pointing at the wrong name
+              would return 0 forever and the user would simply never be told.
+            * `account.bank.statement.line.is_reconciled` is the field that
+              exists. Its domain counts unreconciled bank lines.
+        -->
+
+        <record id="area_contabilidad" model="mail.odooclaw.area">
+            <field name="name">Accounting</field>
+            <field name="area">contabilidad</field>
+            <field name="sequence">10</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">account.move</field>
+            <field
+                name="signal_definition"
+            >{"unposted_invoices": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["out_invoice", "out_refund"]]]}, "unposted_vendor_bills": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["in_invoice", "in_refund"]]]}, "verifactu_unconfigured": {"model": "ir.module.module", "domain": [["name", "=", "l10n_es_edi_verifactu"], ["state", "!=", "installed"]]}}</field>
+        </record>
+
+        <!--
+            The bank statement lives on its own model, so it needs its own area
+            row: resolve_area() matches on model_name and account.move never
+            resolves to a bank screen.
+        -->
+        <record id="area_contabilidad_banco" model="mail.odooclaw.area">
+            <field name="name">Accounting: bank</field>
+            <field name="area">contabilidad</field>
+            <field name="sequence">11</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">account.bank.statement.line</field>
+            <field
+                name="signal_definition"
+            >{"unreconciled_statement_lines": {"model": "account.bank.statement.line", "domain": [["is_reconciled", "=", false]]}}</field>
+        </record>
+    </data>
+</odoo>
