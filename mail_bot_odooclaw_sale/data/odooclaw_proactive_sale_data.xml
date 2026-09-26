@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise a threshold or a domain, create a NEW
+        mail.odooclaw.area row instead of editing this one — the resolver picks
+        by action, then view, then model, so a more specific row wins, and an
+        upgrade restores shipped rows.
+
+        Both domains below were verified against a real Odoo 18 database: a
+        record matching the domain moves the counter, and one that must not
+        match leaves it unchanged. Verified 2026-09.
+    -->
+    <data noupdate="0">
+        <record id="area_ventas" model="mail.odooclaw.area">
+            <field name="name">Sales</field>
+            <field name="area">ventas</field>
+            <field name="sequence">20</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">sale.order</field>
+            <field
+                name="signal_definition"
+            >{"draft_quotations": {"model": "sale.order", "domain": [["state", "=", "draft"]]}}</field>
+        </record>
+
+        <!--
+            Opportunities live on crm.lead, a different model from sale.order,
+            so they need their own area row: resolve_area() matches on
+            model_name and the sales order screen never resolves to the CRM one.
+
+            The domain is "no next activity scheduled", not "old write_date".
+            An opportunity goes cold when nobody planned the follow-up; the
+            absence of a deadline is the observable, checkable fact.
+        -->
+        <record id="area_ventas_crm" model="mail.odooclaw.area">
+            <field name="name">Sales: CRM</field>
+            <field name="area">ventas</field>
+            <field name="sequence">21</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">crm.lead</field>
+            <field
+                name="signal_definition"
+            >{"stale_opportunities": {"model": "crm.lead", "domain": [["type", "=", "opportunity"], ["activity_date_deadline", "=", False]]}}</field>
+        </record>
+    </data>
+</odoo>

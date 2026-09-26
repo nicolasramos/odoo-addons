@@ -63,7 +63,7 @@ class MailOdooClawArea(models.Model):
         help="When unchecked, entering this area never triggers a suggestion.",
     )
     model_name = fields.Char(
-        help="Technical model that identifies this area, e.g. account.move.",
+        help="Technical model that identifies this area, e.g. res.partner.",
     )
     view_ids = fields.Many2many(
         "ir.ui.view",
@@ -79,8 +79,8 @@ class MailOdooClawArea(models.Model):
         default="{}",
         help="JSON object mapping a signal key to the count expression used to "
         "build the counters, e.g. "
-        '{"unposted_invoices": {"model": "account.move", '
-        '"domain": [["state", "=", "draft"], ["move_type", "=", "out_invoice"]]}}',
+        '{"my_signal": {"model": "res.partner", "domain": [["active", "=", True]]}}.'
+        " See the mail_bot_odooclaw_account module for real working examples.",
     )
 
     @api.constrains("area")

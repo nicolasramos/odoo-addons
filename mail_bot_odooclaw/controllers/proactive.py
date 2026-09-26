@@ -48,7 +48,7 @@ class OdooClawProactiveController(http.Controller):
 
             {
               "user_id": 7,          # mandatory; the user whose screen opened
-              "model": "account.move",
+              "model": "res.partner",
               "view_id": 123,        # optional
               "action_id": 456       # optional
             }

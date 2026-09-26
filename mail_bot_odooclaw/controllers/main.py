@@ -133,7 +133,7 @@ class OdooClawController(http.Controller):
         Payload:
         {
             "user_id": 5,
-            "model": "sale.order",
+            "model": "res.partner",
             "method": "create",
             "args": [[{...}]],
             "kwargs": {}

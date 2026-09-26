@@ -16,7 +16,7 @@ class TestMailOdooClawReplyToken(TransactionCase):
             "odooclaw.reply_token_ttl", "300"
         )
 
-    def _make_token(self, token="test-uuid-1234", model="crm.lead", res_id=1,
+    def _make_token(self, token="test-uuid-1234", model="res.partner", res_id=1,
                     offset_seconds=300, used=False):
         return self.Token.sudo().create({
             "token": token,
@@ -32,7 +32,7 @@ class TestMailOdooClawReplyToken(TransactionCase):
         self.env["ir.config_parameter"].sudo().set_param(
             "odooclaw.reply_token_ttl", "120"
         )
-        rec = self.Token.sudo()._generate("crm.lead", 42, False)
+        rec = self.Token.sudo()._generate("res.partner", 42, False)
         delta = (rec.expiry - fields.Datetime.now()).total_seconds()
         self.assertAlmostEqual(delta, 120, delta=5)
 
@@ -40,7 +40,7 @@ class TestMailOdooClawReplyToken(TransactionCase):
         self.env["ir.config_parameter"].sudo().search(
             [("key", "=", "odooclaw.reply_token_ttl")]
         ).unlink()
-        rec = self.Token.sudo()._generate("crm.lead", 42, False)
+        rec = self.Token.sudo()._generate("res.partner", 42, False)
         delta = (rec.expiry - fields.Datetime.now()).total_seconds()
         self.assertAlmostEqual(delta, 300, delta=5)
 
@@ -48,28 +48,28 @@ class TestMailOdooClawReplyToken(TransactionCase):
 
     def test_validate_valid_token(self):
         self._make_token()
-        result = self.Token.sudo()._validate("test-uuid-1234", "crm.lead", 1)
+        result = self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1)
         self.assertTrue(result)
 
     def test_validate_single_use(self):
         self._make_token()
-        self.assertTrue(self.Token.sudo()._validate("test-uuid-1234", "crm.lead", 1))
-        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "crm.lead", 1))
+        self.assertTrue(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
+        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
 
     def test_validate_expired_token(self):
         self._make_token(offset_seconds=-1)
-        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "crm.lead", 1))
+        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
 
     def test_validate_wrong_model(self):
         self._make_token()
-        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "sale.order", 1))
+        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
 
     def test_validate_wrong_res_id(self):
         self._make_token()
-        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "crm.lead", 99))
+        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 99))
 
     def test_validate_missing_token(self):
-        self.assertFalse(self.Token.sudo()._validate("", "crm.lead", 1))
+        self.assertFalse(self.Token.sudo()._validate("", "res.partner", 1))
 
     # --- _cleanup_expired() ---
 
@@ -118,7 +118,7 @@ class TestMailOdooClawReplyToken(TransactionCase):
 
     def test_controller_no_token_rejected(self):
         from ..controllers.main import OdooClawController
-        mock_req = self._mock_request({"model": "crm.lead", "res_id": 1,
+        mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
                                        "message": "hi"})
         with patch("odoo.addons.mail_bot_odooclaw.controllers.main.request", new=mock_req), \
              patch("odoo.addons.mail_bot_odooclaw.controllers.security.request", new=mock_req):
@@ -129,7 +129,7 @@ class TestMailOdooClawReplyToken(TransactionCase):
     def test_controller_expired_token_rejected(self):
         rec = self._make_token(offset_seconds=-1)
         from ..controllers.main import OdooClawController
-        mock_req = self._mock_request({"model": "crm.lead", "res_id": 1,
+        mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
                                        "message": "hi", "reply_token": rec.token})
         with patch("odoo.addons.mail_bot_odooclaw.controllers.main.request", new=mock_req), \
              patch("odoo.addons.mail_bot_odooclaw.controllers.security.request", new=mock_req):
@@ -140,7 +140,7 @@ class TestMailOdooClawReplyToken(TransactionCase):
     def test_controller_valid_token_passes_validation(self):
         rec = self._make_token()
         from ..controllers.main import OdooClawController
-        mock_req = self._mock_request({"model": "crm.lead", "res_id": 1,
+        mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
                                        "message": "hi", "reply_token": rec.token})
         with patch("odoo.addons.mail_bot_odooclaw.controllers.main.request", new=mock_req), \
              patch("odoo.addons.mail_bot_odooclaw.controllers.security.request", new=mock_req):

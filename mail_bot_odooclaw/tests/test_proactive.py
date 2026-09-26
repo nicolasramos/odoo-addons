@@ -104,15 +104,17 @@ class TestProactive(HttpCase):
     # --- area resolution ---
 
     def test_resolve_area_by_model(self):
+        # res.partner, not a business model: this test pins the RESOLVER, and the
+        # base module must not depend on any functional module to prove it works.
         self.env["mail.odooclaw.area"].sudo().create(
             {
-                "name": "Contabilidad",
-                "area": "contabilidad",
-                "model_name": "account.move",
+                "name": "Generic",
+                "area": "generic",
+                "model_name": "res.partner",
             }
         )
-        area = self.env["mail.odooclaw.area"].sudo().resolve_area("account.move")
-        self.assertEqual(area.area, "contabilidad")
+        area = self.env["mail.odooclaw.area"].sudo().resolve_area("res.partner")
+        self.assertEqual(area.area, "generic")
 
     def test_resolve_area_is_silent_for_unknown_screen(self):
         area = self.env["mail.odooclaw.area"].sudo().resolve_area("ir.ui.view")
@@ -121,13 +123,13 @@ class TestProactive(HttpCase):
     def test_disabled_area_never_resolves(self):
         rec = self.env["mail.odooclaw.area"].sudo().create(
             {
-                "name": "Desactivada",
-                "area": "contabilidad",
-                "model_name": "account.move",
+                "name": "Disabled",
+                "area": "generic",
+                "model_name": "res.partner",
                 "enabled": False,
             }
         )
-        area = self.env["mail.odooclaw.area"].sudo().resolve_area("account.move")
+        area = self.env["mail.odooclaw.area"].sudo().resolve_area("res.partner")
         self.assertNotEqual(area, rec)
 
     def test_counters_are_built_from_the_definition(self):

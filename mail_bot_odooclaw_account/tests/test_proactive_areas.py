@@ -26,7 +26,9 @@ class TestProactiveAreas(TransactionCase):
         self.has_account = "account.move" in self.env
 
     def _area(self, xmlid):
-        return self.env.ref("mail_bot_odooclaw.%s" % xmlid, raise_if_not_found=False)
+        return self.env.ref(
+            "mail_bot_odooclaw_account.%s" % xmlid, raise_if_not_found=False
+        )
 
     # --- the areas exist and are enabled ---
 
