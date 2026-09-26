@@ -10,6 +10,7 @@
         "security/odooclaw_security.xml",
         "security/ir.model.access.csv",
         "data/odooclaw_bot_data.xml",
+        "data/odooclaw_proactive_data.xml",
         "data/odooclaw_cron.xml",
     ],
     "installable": True,

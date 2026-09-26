@@ -102,6 +102,14 @@ class MailOdooClawArea(models.Model):
         model_name = definition.get("model") or self.model_name
         if not model_name:
             return 0
+
+        # The module only depends on `mail`, so an area can legitimately point at
+        # a model from a module that is not installed (Contabilidad needs
+        # `account`). That is not an error: it is an area that cannot apply yet,
+        # and it must stay silent without logging a traceback on every view open.
+        if model_name not in self.env:
+            return 0
+
         try:
             # A malformed domain is a configuration mistake, not a crash.
             if not isinstance(domain, (list, tuple)):
