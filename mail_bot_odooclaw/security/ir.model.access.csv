@@ -2,3 +2,5 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mail_odooclaw_reply_token_system,mail.odooclaw.reply.token system,model_mail_odooclaw_reply_token,base.group_system,1,1,1,1
 access_mail_odooclaw_area_system,mail.odooclaw.area system,model_mail_odooclaw_area,base.group_system,1,1,1,1
 access_mail_odooclaw_area_user,mail.odooclaw.area user,model_mail_odooclaw_area,base.group_user,1,0,0,0
+access_mail_odooclaw_audience_system,mail.odooclaw.audience system,model_mail_odooclaw_audience,base.group_system,1,1,1,1
+access_mail_odooclaw_audience_user,mail.odooclaw.audience user,model_mail_odooclaw_audience,base.group_user,1,0,0,0

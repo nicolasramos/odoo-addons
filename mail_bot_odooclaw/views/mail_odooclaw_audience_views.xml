@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_mail_odooclaw_audience_list" model="ir.ui.view">
+        <field name="name">mail.odooclaw.audience.list</field>
+        <field name="model">mail.odooclaw.audience</field>
+        <field name="arch" type="xml">
+            <list string="Audiencias">
+                <field name="name" />
+                <field name="internal_only" />
+                <field name="include_inactive" />
+                <field name="group_ids" widget="many2many_tags" />
+                <field name="excluded_group_ids" widget="many2many_tags" />
+                <field name="active" invisible="1" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mail_odooclaw_audience_form" model="ir.ui.view">
+        <field name="name">mail.odooclaw.audience.form</field>
+        <field name="model">mail.odooclaw.audience</field>
+        <field name="arch" type="xml">
+            <form string="Audiencia">
+                <sheet>
+                    <widget
+                        name="web_ribbon"
+                        title="Archivada"
+                        bg_color="bg-danger"
+                        invisible="active"
+                    />
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="active" invisible="1" />
+                            <field name="internal_only" />
+                            <field name="include_inactive" />
+                        </group>
+                        <group>
+                            <field
+                                name="group_ids"
+                                widget="many2many_tags"
+                                options="{'no_create': True}"
+                            />
+                            <field
+                                name="excluded_group_ids"
+                                widget="many2many_tags"
+                                options="{'no_create': True}"
+                            />
+                            <field
+                                name="company_ids"
+                                widget="many2many_tags"
+                                options="{'no_create': True}"
+                            />
+                        </group>
+                    </group>
+                    <group>
+                        <div class="text-muted">
+                            Se ofrece ayuda a <b>cualquier usuario interno</b> (empleado). Los
+                            usuarios de portal y el usuario público nunca la reciben: no son
+                            personal de la empresa y los contadores citados en la oferta son
+                            cifras de negocio.
+                        </div>
+                    </group>
+                    <group string="Notas">
+                        <field name="note" nolabel="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_odooclaw_audience" model="ir.actions.act_window">
+        <field name="name">Audiencia de OdooClaw</field>
+        <field name="res_model">mail.odooclaw.audience</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define a quién se ofrece ayuda</p>
+            <p>
+                Sin una audiencia configurada no se ofrece ayuda a nadie: la ausencia de
+                configuración nunca se interpreta como "todos".
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_mail_odooclaw_audience"
+        name="Audiencia"
+        action="action_mail_odooclaw_audience"
+        parent="base.menu_custom"
+        sequence="90"
+    />
+</odoo>

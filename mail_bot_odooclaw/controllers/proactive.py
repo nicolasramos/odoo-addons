@@ -161,6 +161,20 @@ class OdooClawProactiveController(http.Controller):
                 "area": "",
             }
 
+        # WHO, before WHAT. The audience rule (DU: internal users only) is
+        # resolved here, in Odoo, because only Odoo knows whether a user is an
+        # employee, a portal user or the public user. The engine receives the
+        # verdict already made and fails closed on anything unclassified, so a
+        # gap in this resolution shows up as silence rather than as help offered
+        # to the wrong person.
+        audience = request.env["mail.odooclaw.audience"].sudo().resolve_for_user(user_id)
+        if not audience["eligible"]:
+            return {
+                "speak": False,
+                "reason": audience["reason"],
+                "area": area_rec.area,
+            }
+
         counters = area_rec.counters_for(model_name)
 
         engine_url = (
@@ -199,6 +213,14 @@ class OdooClawProactiveController(http.Controller):
                     "model": model_name,
                     "view_id": view_id or 0,
                     "counters": counters,
+                    # The classification travels with the signal so the engine
+                    # can assert it independently. Odoo decides, the engine
+                    # re-checks: one mistake on either side stays a silence.
+                    "user": {
+                        "id": audience["user_id"],
+                        "is_internal": audience["is_internal"],
+                        "is_active": audience["is_active"],
+                    },
                 },
                 headers=headers,
                 timeout=5,
