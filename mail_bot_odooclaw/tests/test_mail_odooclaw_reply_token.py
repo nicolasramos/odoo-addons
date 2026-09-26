@@ -62,7 +62,8 @@ class TestMailOdooClawReplyToken(TransactionCase):
 
     def test_validate_wrong_model(self):
         self._make_token()
-        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
+        # The token was issued for res.partner; a different model must not match.
+        self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.company", 1))
 
     def test_validate_wrong_res_id(self):
         self._make_token()

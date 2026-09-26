@@ -22,7 +22,7 @@
             <field name="model_name">product.product</field>
             <field
                 name="signal_definition"
-            >{"negative_stock_products": {"model": "product.product", "domain": [["qty_available", "&lt;", 0], ["is_storable", "=", True]]}}</field>
+            >{"negative_stock_products": {"model": "product.product", "domain": [["qty_available", "&lt;", 0], ["is_storable", "=", true]]}}</field>
         </record>
     </data>
 </odoo>

@@ -63,7 +63,7 @@
             <field name="model_name">account.bank.statement.line</field>
             <field
                 name="signal_definition"
-            >{"unreconciled_statement_lines": {"model": "account.bank.statement.line", "domain": [["is_reconciled", "=", False]]}}</field>
+            >{"unreconciled_statement_lines": {"model": "account.bank.statement.line", "domain": [["is_reconciled", "=", false]]}}</field>
         </record>
     </data>
 </odoo>

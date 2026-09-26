@@ -42,7 +42,7 @@
             <field name="model_name">crm.lead</field>
             <field
                 name="signal_definition"
-            >{"stale_opportunities": {"model": "crm.lead", "domain": [["type", "=", "opportunity"], ["activity_date_deadline", "=", False]]}}</field>
+            >{"stale_opportunities": {"model": "crm.lead", "domain": [["type", "=", "opportunity"], ["activity_date_deadline", "=", false]]}}</field>
         </record>
     </data>
 </odoo>

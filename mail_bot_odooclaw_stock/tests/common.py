@@ -18,6 +18,12 @@ from odoo.tests import TransactionCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestAreaCounters(TransactionCase):
+    # Odoo's test loader reads test_case_class.__dict__ and skips anything the
+    # class did not define itself — so a shared base class is INVISIBLE unless
+    # this flag is set. Without it the run reports "0 tests, 0 failed" and
+    # exits 0: a green that proves nothing, because nothing ran.
+    allow_inherited_tests_method = True
+
     AREA_XMLID = None            # set by the subclass
     SIGNAL_KEY = None            # set by the subclass
     MODEL = None                 # set by the subclass
