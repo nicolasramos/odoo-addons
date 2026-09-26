@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestSaleAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_sale.area_ventas"
+    AREA_XMLID = "mail_bot_odooclaw_sale.area_sales"
     SIGNAL_KEY = "draft_quotations"
     MODEL = "sale.order"
     DOMAIN = [("state", "=", "draft")]
@@ -26,7 +26,7 @@ class TestSaleAreaCounters(TestAreaCounters):
 
 @tagged("post_install", "-at_install")
 class TestCrmAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_sale.area_ventas_crm"
+    AREA_XMLID = "mail_bot_odooclaw_sale.area_sales_crm"
     SIGNAL_KEY = "stale_opportunities"
     MODEL = "crm.lead"
     DOMAIN = [("type", "=", "opportunity"), ("activity_date_deadline", "=", False)]

@@ -94,8 +94,8 @@ class OdooClawProactiveController(http.Controller):
             {
               "user_id": 7,
               "message": "...",
-              "playbook_id": "contabilidad.unposted_invoices",
-              "area": "contabilidad"
+              "playbook_id": "accounting.unposted_invoices",
+              "area": "accounting"
             }
 
         This route cannot post to a business record: the target is resolved from

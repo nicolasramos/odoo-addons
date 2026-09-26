@@ -52,8 +52,8 @@ class TestProactive(HttpCase):
             {
                 "user_id": self.user.id,
                 "message": "¿Quieres que te explique cómo publicar las facturas?",
-                "playbook_id": "contabilidad.unposted_invoices",
-                "area": "contabilidad",
+                "playbook_id": "accounting.unposted_invoices",
+                "area": "accounting",
             }
         )
         self.assertEqual(resp.status_code, 200, resp.text)
@@ -136,7 +136,7 @@ class TestProactive(HttpCase):
         area = self.env["mail.odooclaw.area"].sudo().create(
             {
                 "name": "Contabilidad",
-                "area": "contabilidad",
+                "area": "accounting",
                 "model_name": "res.partner",
                 "signal_definition": json.dumps(
                     {"partners": {"model": "res.partner", "domain": []}}
@@ -152,7 +152,7 @@ class TestProactive(HttpCase):
         area = self.env["mail.odooclaw.area"].sudo().create(
             {
                 "name": "Rota",
-                "area": "contabilidad",
+                "area": "accounting",
                 "model_name": "res.partner",
                 "signal_definition": "not json at all",
             }

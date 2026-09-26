@@ -16,7 +16,7 @@
     <data noupdate="0">
         <record id="area_inventario" model="mail.odooclaw.area">
             <field name="name">Inventory</field>
-            <field name="area">inventario</field>
+            <field name="area">inventory</field>
             <field name="sequence">40</field>
             <field name="enabled" eval="True" />
             <field name="model_name">product.product</field>

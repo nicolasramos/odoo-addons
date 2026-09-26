@@ -53,7 +53,7 @@ class MailOdooClawArea(models.Model):
         required=True,
         index=True,
         help="Functional area key shared with the knowledge base: "
-        "contabilidad, ventas, compras, inventario, rrhh...",
+        "accounting, sales, purchases, inventory, hr...",
     )
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
