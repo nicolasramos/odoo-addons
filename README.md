@@ -11,14 +11,14 @@ This repository contains installable Odoo addons intended to be consumed through
 | `odoo_agent` | 18.0 | AI agent execution system for Odoo Project: runtimes, agents, executions, logs, skills, MCP, and `@mentions`. | [`odoo_agent/README.md`](odoo_agent/README.md) |
 | `mail_bot_odooclaw` | 16.0, 17.0, 18.0, 19.0 | OdooClaw AI bot integration with Odoo Discuss via webhooks. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md) |
 | `mail_bot_odooclaw_account` | 18.0 | Proactive assistance: Accounting areas. Requires `mail_bot_odooclaw`. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md#proactive-assistance--one-module-per-area) |
-| `mail_bot_odooclaw_sale` | 18.0 | Proactive assistance: Sales areas. | same |
-| `mail_bot_odooclaw_crm` | 18.0 | Proactive assistance: CRM areas. | same |
-| `mail_bot_odooclaw_purchase` | 18.0 | Proactive assistance: Purchase areas. | same |
-| `mail_bot_odooclaw_stock` | 18.0 | Proactive assistance: Inventory areas. | same |
-| `mail_bot_odooclaw_hr` | 18.0 | Proactive assistance: Human resources areas. | same |
-| `mail_bot_odooclaw_expense` | 18.0 | Proactive assistance: Expenses areas. | same |
-| `mail_bot_odooclaw_project` | 18.0 | Proactive assistance: Projects areas. | same |
-| `mail_bot_odooclaw_fleet` | 18.0 | Proactive assistance: Fleet areas. | same |
+| `mail_bot_odooclaw_sale` | 18.0 | Proactive assistance: Sales areas. | ↑ |
+| `mail_bot_odooclaw_crm` | 18.0 | Proactive assistance: CRM areas. | ↑ |
+| `mail_bot_odooclaw_purchase` | 18.0 | Proactive assistance: Purchase areas. | ↑ |
+| `mail_bot_odooclaw_stock` | 18.0 | Proactive assistance: Inventory areas. | ↑ |
+| `mail_bot_odooclaw_hr` | 18.0 | Proactive assistance: Human resources areas. | ↑ |
+| `mail_bot_odooclaw_expense` | 18.0 | Proactive assistance: Expenses areas. | ↑ |
+| `mail_bot_odooclaw_project` | 18.0 | Proactive assistance: Projects areas. | ↑ |
+| `mail_bot_odooclaw_fleet` | 18.0 | Proactive assistance: Fleet areas. | ↑ |
 
 ## Repository strategy
 
