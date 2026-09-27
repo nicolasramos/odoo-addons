@@ -20,9 +20,9 @@
           never rots into a stale hardcoded date.
     -->
     <data noupdate="0">
-        <record id="area_proyectos" model="mail.odooclaw.area">
+        <record id="area_projects" model="mail.odooclaw.area">
             <field name="name">Projects</field>
-            <field name="area">proyectos</field>
+            <field name="area">projects</field>
             <field name="sequence">40</field>
             <field name="enabled" eval="True" />
             <field name="model_name">project.project</field>
@@ -30,9 +30,9 @@
                 name="signal_definition"
             >{"open_projects": {"model": "project.project", "domain": [["stage_id.fold", "=", false]]}}</field>
         </record>
-        <record id="area_proyectos_vencidos" model="mail.odooclaw.area">
+        <record id="area_projects_overdue" model="mail.odooclaw.area">
             <field name="name">Projects past their end date</field>
-            <field name="area">proyectos</field>
+            <field name="area">projects</field>
             <field name="sequence">41</field>
             <field name="enabled" eval="True" />
             <field name="model_name">project.project</field>
@@ -40,9 +40,9 @@
                 name="signal_definition"
             >{"overdue_projects": {"model": "project.project", "domain": [["date", "&lt;", "$today"], ["stage_id.fold", "=", false]]}}</field>
         </record>
-        <record id="area_proyectos_tareas" model="mail.odooclaw.area">
+        <record id="area_projects_tasks" model="mail.odooclaw.area">
             <field name="name">Project tasks</field>
-            <field name="area">proyectos</field>
+            <field name="area">projects</field>
             <field name="sequence">42</field>
             <field name="enabled" eval="True" />
             <field name="model_name">project.task</field>

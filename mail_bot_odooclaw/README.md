@@ -274,6 +274,14 @@ depend on `crm`, so bundling them would force CRM onto every sales install.
 
 ### Adding a new area — it is data, not code
 
+The `area` value is a **shared contract with the engine**, not a label: it
+travels in the payload and selects the playbook whose `Area` matches. Renaming
+it on one side only does not raise an error anywhere — it leaves the assistant
+**silently mute** for that area ("no signal above the threshold"). The canonical
+values are English (`accounting`, `sales`, `crm`, `purchases`, `inventory`,
+`hr`, `expenses`, `projects`, `fleet`); the human-readable name is a separate
+`name` field, translated through each module's `i18n/es.po`.
+
 Create a `mail.odooclaw.area` row with a `model_name` and a `signal_definition`:
 
 ```xml

@@ -19,9 +19,9 @@
         * is_editable is store=False, so it cannot be used in a domain.
     -->
     <data noupdate="0">
-        <record id="area_gastos" model="mail.odooclaw.area">
+        <record id="area_expenses" model="mail.odooclaw.area">
             <field name="name">Expenses</field>
-            <field name="area">gastos</field>
+            <field name="area">expenses</field>
             <field name="sequence">50</field>
             <field name="enabled" eval="True" />
             <field name="model_name">hr.expense</field>
@@ -29,9 +29,9 @@
                 name="signal_definition"
             >{"draft_expenses": {"model": "hr.expense", "domain": [["state", "in", ["draft", "reported"]]]}}</field>
         </record>
-        <record id="area_gastos_pendientes" model="mail.odooclaw.area">
+        <record id="area_expenses_awaiting_approval" model="mail.odooclaw.area">
             <field name="name">Expenses awaiting approval</field>
-            <field name="area">gastos</field>
+            <field name="area">expenses</field>
             <field name="sequence">51</field>
             <field name="enabled" eval="True" />
             <field name="model_name">hr.expense</field>

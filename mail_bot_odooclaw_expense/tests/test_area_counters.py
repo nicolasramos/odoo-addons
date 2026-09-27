@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestExpenseAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_expense.area_gastos"
+    AREA_XMLID = "mail_bot_odooclaw_expense.area_expenses"
     SIGNAL_KEY = "draft_expenses"
     MODEL = "hr.expense"
     DOMAIN = [("state", "in", ["draft", "reported"])]
@@ -49,7 +49,7 @@ class TestExpenseAreaCounters(TestAreaCounters):
 
 @tagged("post_install", "-at_install")
 class TestExpenseApprovalCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_expense.area_gastos_pendientes"
+    AREA_XMLID = "mail_bot_odooclaw_expense.area_expenses_awaiting_approval"
     SIGNAL_KEY = "expenses_awaiting_approval"
     MODEL = "hr.expense"
     DOMAIN = [("state", "in", ["submitted", "approved"])]

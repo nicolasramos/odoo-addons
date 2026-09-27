@@ -25,9 +25,9 @@
           installed.) Verified on a real Odoo 18 database.
     -->
     <data noupdate="0">
-        <record id="area_flota" model="mail.odooclaw.area">
+        <record id="area_fleet" model="mail.odooclaw.area">
             <field name="name">Fleet</field>
-            <field name="area">flota</field>
+            <field name="area">fleet</field>
             <field name="sequence">60</field>
             <field name="enabled" eval="True" />
             <field name="model_name">fleet.vehicle</field>

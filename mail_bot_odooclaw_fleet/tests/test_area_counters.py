@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestUnregisteredVehicleCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_fleet.area_flota"
+    AREA_XMLID = "mail_bot_odooclaw_fleet.area_fleet"
     SIGNAL_KEY = "unregistered_vehicles"
     MODEL = "fleet.vehicle"
     DOMAIN = [("state_id.name", "in", ["New Request", "To Order"])]
@@ -49,7 +49,7 @@ class TestUnregisteredVehicleCounters(TestAreaCounters):
 
 @tagged("post_install", "-at_install")
 class TestVehiclesWithoutDriverCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_fleet.area_flota"
+    AREA_XMLID = "mail_bot_odooclaw_fleet.area_fleet"
     SIGNAL_KEY = "vehicles_without_driver"
     MODEL = "fleet.vehicle"
     DOMAIN = [("state_id.name", "=", "Registered"), ("driver_id", "=", False)]

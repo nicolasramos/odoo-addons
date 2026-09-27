@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestOpenProjectCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_project.area_proyectos"
+    AREA_XMLID = "mail_bot_odooclaw_project.area_projects"
     SIGNAL_KEY = "open_projects"
     MODEL = "project.project"
     DOMAIN = [("stage_id.fold", "=", False)]
@@ -34,7 +34,7 @@ class TestOpenProjectCounters(TestAreaCounters):
 
 @tagged("post_install", "-at_install")
 class TestOverdueProjectCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_project.area_proyectos_vencidos"
+    AREA_XMLID = "mail_bot_odooclaw_project.area_projects_overdue"
     SIGNAL_KEY = "overdue_projects"
     MODEL = "project.project"
     DOMAIN = [("date", "<", "$today"), ("stage_id.fold", "=", False)]
@@ -53,7 +53,7 @@ class TestOverdueProjectCounters(TestAreaCounters):
 
 @tagged("post_install", "-at_install")
 class TestOverdueTaskCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_project.area_proyectos_tareas"
+    AREA_XMLID = "mail_bot_odooclaw_project.area_projects_tasks"
     SIGNAL_KEY = "overdue_tasks"
     MODEL = "project.task"
     DOMAIN = [
