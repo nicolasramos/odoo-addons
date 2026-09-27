@@ -91,6 +91,21 @@ class MailOdooClawArea(models.Model):
                     _("The area key must be lowercase and without spaces: %s", rec.area)
                 )
 
+    def _resolve_today(self, value):
+        """Replace the ``$today`` placeholder with today's date, recursively.
+
+        Overdue counters ("tasks past their deadline", "projects past their end
+        date") need a moving reference. Hardcoding a date makes the counter
+        silently rot: it keeps returning a number that is no longer meaningful,
+        which is worse than returning nothing. ``$today`` is resolved at count
+        time so the definition stays correct forever.
+        """
+        if isinstance(value, str):
+            return fields.Date.today().isoformat() if value == "$today" else value
+        if isinstance(value, (list, tuple)):
+            return [self._resolve_today(item) for item in value]
+        return value
+
     def _count_for(self, definition):
         """Count records for one signal definition. Returns 0 on any problem.
 
@@ -103,7 +118,8 @@ class MailOdooClawArea(models.Model):
         if not model_name:
             return 0
 
-        # The module only depends on `mail`, so an area can legitimately point at
+        domain = self._resolve_today(domain)
+
         # a model from a module that is not installed (Contabilidad needs
         # `account`). That is not an error: it is an area that cannot apply yet,
         # and it must stay silent without logging a traceback on every view open.

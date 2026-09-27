@@ -13,6 +13,9 @@ Because a counter failure degrades to silence by design, a broken domain cannot
 be detected by asserting "no exception" — hence the two-direction check.
 """
 
+import json
+
+from odoo import fields
 from odoo.tests import TransactionCase, tagged
 
 
@@ -62,6 +65,32 @@ class TestAreaCounters(TransactionCase):
             self._count(), before,
             "a record NOT matching %r moved the counter" % (self.DOMAIN,),
         )
+
+    def test_an_overdue_counter_uses_today_not_a_frozen_date(self):
+        """`$today` must resolve at count time.
+
+        An overdue counter with a hardcoded date keeps returning a number long
+        after it stopped meaning anything — worse than returning nothing,
+        because it looks healthy. Only modules whose domains use `$today` run
+        this; others skip it.
+        """
+        if "$today" not in (self._area().signal_definition or ""):
+            self.skipTest("this area does not use $today")
+
+        resolved = self._area()._resolve_today([["date", "<", "$today"]])
+        self.assertEqual(
+            resolved,
+            [["date", "<", fields.Date.today().isoformat()]],
+            "$today was not resolved to today's date",
+        )
+        # And the raw placeholder must never reach the ORM.
+        definitions = json.loads(self._area().signal_definition)
+        for definition in definitions.values():
+            self.assertNotIn(
+                "$today",
+                [str(v) for v in definition.get("domain", [])],
+                "the unresolved placeholder leaked into the area definition",
+            )
 
     # --- to be provided by each subclass ---
 

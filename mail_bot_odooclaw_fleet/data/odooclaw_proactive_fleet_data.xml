@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise, create a NEW mail.odooclaw.area row.
+
+        Every domain here was measured against a real Odoo 18 database by
+        creating records, in BOTH directions. Measured 2026-09-27.
+
+        Notes that are not obvious from the model definition:
+        * fleet.vehicle.state_id is a many2one to fleet.vehicle.state, whose
+          rows are data ("New Request", "To Order", "Registered", "Downgraded").
+          There is no "scrapped" state in a clean Odoo 18; the real states are
+          those four. Matching on state_id.name keeps the definition readable
+          and survives renames of the state records.
+        * vehicle.odometer is store=False (it is the LAST odometer reading), so
+          it cannot be filtered on. For mileage you filter fleet.vehicle.odometer
+          rows, not the vehicle.
+        * contract_count / service_count are store=False too.
+        * driver_id points to res.partner, NOT to hr.employee. A clean fleet
+          install does not even include hr. (driver_employee_id is the one that
+          links to hr.employee, and it only exists when fleet's HR bridge is
+          installed.) Verified on a real Odoo 18 database.
+    -->
+    <data noupdate="0">
+        <record id="area_flota" model="mail.odooclaw.area">
+            <field name="name">Fleet</field>
+            <field name="area">flota</field>
+            <field name="sequence">60</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">fleet.vehicle</field>
+            <field
+                name="signal_definition"
+            >{"unregistered_vehicles": {"model": "fleet.vehicle", "domain": [["state_id.name", "in", ["New Request", "To Order"]]]}, "vehicles_without_driver": {"model": "fleet.vehicle", "domain": [["state_id.name", "=", "Registered"], ["driver_id", "=", false]]}}</field>
+        </record>
+    </data>
+</odoo>

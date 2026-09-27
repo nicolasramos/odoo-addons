@@ -164,6 +164,72 @@ class TestProactive(HttpCase):
         )
         self.assertEqual(area.counters_for("no.such.model"), {"partners": 0})
 
+    # --- $today: counters that must not rot ---
+
+    def test_today_placeholder_counts_the_past_not_the_future(self):
+        """`$today` must resolve to the real date at count time.
+
+        An overdue counter written with a literal date keeps returning a number
+        long after that date, and a wrong count is not an error anywhere. This
+        pins the behaviour in both directions: a partner created BEFORE today is
+        counted, one created "in the future" by the domain's own clock is not.
+        """
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Vencidos",
+                "area": "contabilidad",
+                "model_name": "res.partner",
+                "signal_definition": json.dumps(
+                    {
+                        "past_partners": {
+                            "model": "res.partner",
+                            "domain": [["create_date", "<", "$today"]],
+                        }
+                    }
+                ),
+            }
+        )
+
+        # A record from yesterday must match. Backdate through SQL, because
+        # create_date is not writable.
+        old = self.env["res.partner"].create({"name": "De ayer"})
+        self.env.cr.execute(
+            "UPDATE res_partner SET create_date = now() - interval '2 days' "
+            "WHERE id = %s",
+            (old.id,),
+        )
+        self.env["res.partner"].invalidate_model()
+
+        counters = area.counters_for("res.partner")
+        self.assertIn("past_partners", counters)
+        self.assertGreaterEqual(
+            counters["past_partners"],
+            1,
+            "$today did not resolve to a date: nothing from the past matched",
+        )
+
+    def test_today_placeholder_is_resolved_not_stored(self):
+        """The stored definition keeps `$today`; only the count resolves it."""
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Vencidos 2",
+                "area": "contabilidad",
+                "model_name": "res.partner",
+                "signal_definition": json.dumps(
+                    {
+                        "future_partners": {
+                            "model": "res.partner",
+                            "domain": [["create_date", ">", "$today"]],
+                        }
+                    }
+                ),
+            }
+        )
+        # Nothing can be created after today, so a correctly resolved domain
+        # yields exactly 0 — and the definition is untouched.
+        self.assertEqual(area.counters_for("res.partner"), {"future_partners": 0})
+        self.assertIn("$today", area.signal_definition)
+
     # --- the invariant that matters ---
 
     def test_reply_still_requires_a_reply_token(self):
