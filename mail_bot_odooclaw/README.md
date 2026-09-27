@@ -246,6 +246,103 @@ rules, and company access of the requesting Odoo user.
 For production, configure `ODOO_USERNAME` with a dedicated technical user in
 the **OdooClaw Delegated RPC** group instead of a general-purpose administrator.
 
+## Proactive assistance — one module per area
+
+The bot can open a private chat when a user lands on a screen where it has
+something useful to say. **It is off by default.**
+
+The base module (`mail_bot_odooclaw`) depends only on `mail`: it is the engine
+(area model, routes, audience). Each functional area ships in its own module, so
+an installation only pays for the areas it uses and an area whose module is
+absent simply stays silent.
+
+| Module | Depends on | Ships |
+|--------|-----------|-------|
+| `mail_bot_odooclaw` | `mail` | Engine: area model, routes, audience |
+| `mail_bot_odooclaw_account` | `+ account` | Accounting |
+| `mail_bot_odooclaw_sale` | `+ sale_management` | Sales |
+| `mail_bot_odooclaw_crm` | `+ crm` | CRM |
+| `mail_bot_odooclaw_purchase` | `+ purchase` | Purchase |
+| `mail_bot_odooclaw_stock` | `+ stock` | Inventory |
+| `mail_bot_odooclaw_hr` | `+ hr_holidays` | Human resources |
+| `mail_bot_odooclaw_expense` | `+ hr_expense` | Expenses |
+| `mail_bot_odooclaw_project` | `+ project` | Projects |
+| `mail_bot_odooclaw_fleet` | `+ fleet` | Fleet |
+
+CRM is a module of its own rather than part of Sales: `sale_management` does not
+depend on `crm`, so bundling them would force CRM onto every sales install.
+
+### Adding a new area — it is data, not code
+
+Create a `mail.odooclaw.area` row with a `model_name` and a `signal_definition`:
+
+```xml
+<record id="area_my_area" model="mail.odooclaw.area">
+    <field name="name">My area</field>
+    <field name="area">my_area</field>
+    <field name="enabled" eval="True" />
+    <field name="model_name">my.model</field>
+    <field name="signal_definition"
+    >{"my_counter": {"model": "my.model", "domain": [["state", "=", "draft"]]}}</field>
+</record>
+```
+
+Use `noupdate="0"` so shipped defaults keep reaching existing installations; to
+customise, create a **new** row rather than editing the shipped one.
+
+The counter key must match a playbook `SignalKey` in the engine, or the signal
+can never fire. A Go test (`TestEveryShippedAreaCounterHasAPlaybook`) pins this
+per area and names the orphan counter when it breaks.
+
+For anything meaning "already passed", use the `$today` placeholder — it is
+resolved at count time, so the definition does not rot:
+
+```json
+{"overdue_tasks": {"model": "project.task",
+                   "domain": [["date_deadline", "<", "$today"]]}}
+```
+
+### Pitfalls, all of them silent
+
+Every one of these produces no error message; the counter just returns 0, or a
+number nobody can trust.
+
+1. `signal_definition` is parsed with **`json.loads`**, so inside it you write
+   JSON literals — `true`/`false`, not `True`/`False`. The `__manifest__.py` is
+   the opposite (Python `literal_eval`): there you write `True`/`False`.
+2. It sits inside XML, so `<` must be escaped as `&lt;`.
+3. A domain naming a field, a state or a module that does not exist returns
+   **0 forever**.
+4. A `store=False` field is generally **not searchable**. Measured on real
+   Odoo 18: `project.project.task_count`, the fleet odometer and
+   `hr.expense.is_editable`. The exception proves the rule:
+   `crm.lead.activity_date_deadline` is `store=False` but searchable, because it
+   is computed from the related activities.
+5. Fields you assume exist often do not. `project.project` has no `state` (it
+   is `stage_id`; closed is `stage_id.fold = true`), `project.task.user_id` does
+   not exist (it is `user_ids`), and `fleet.vehicle.driver_id` is a
+   `res.partner` — not an `hr.employee`.
+
+**Always verify a new counter in both directions**: a record that must match
+moves it, and one that must not leaves it unchanged. A counter that returns 0 is
+not proof of anything — it is also what a broken domain looks like.
+
+### Testing an area
+
+```bash
+odoo -d <db> -i <module> \
+     --test-enable --test-tags /<module> --stop-after-init --without-demo=all
+```
+
+Check the run reports a **non-zero** number of tests. Two unrelated faults both
+produce `0 tests, 0 failed, exit 0` and read exactly like a pass: `--test-tags`
+matching nothing, and (under Colima) a bind mount outside its allow-list being
+mounted as an empty directory.
+
+> **Sharing a test base class:** set `allow_inherited_tests_method = True`.
+> Odoo's loader reads `test_case_class.__dict__`, so inherited test methods are
+> invisible without it — the whole suite then reports `0 tests, 0 failed`.
+
 ## Security
 
 ### Threat Model
