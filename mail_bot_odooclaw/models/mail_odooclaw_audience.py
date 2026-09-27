@@ -44,47 +44,47 @@ class MailOdooclawAudience(models.Model):
     _rec_name = "name"
 
     name = fields.Char(
-        default=lambda self: _("Usuarios internos de DU"),
+        default=lambda self: _("Internal users of DU"),
         required=True,
     )
     active = fields.Boolean(default=True)
 
     # -- The rule ---------------------------------------------------------
     internal_only = fields.Boolean(
-        string="Solo usuarios internos",
+        string="Internal users only",
         default=True,
-        help="Solo se ofrece ayuda a usuarios internos (empleados). Los usuarios "
-        "de portal y el usuario público quedan fuera: no son personal de la "
-        "empresa y los contadores son cifras de negocio.",
+        help="Assistance is offered to internal users (employees) only. Portal "
+        "users and the public user are left out: they are not company staff "
+        "and the counters quoted in the offer are business figures.",
     )
     include_inactive = fields.Boolean(
-        string="Incluir usuarios desactivados",
+        string="Include deactivated users",
         default=False,
-        help="Un empleado dado de baja no debe recibir mensajes nuevos.",
+        help="An offboarded employee must not receive new messages.",
     )
 
     # -- Optional narrowing ----------------------------------------------
     group_ids = fields.Many2many(
         "res.groups",
-        string="Limitar a estos grupos",
-        help="Opcional. Si se indica, la audiencia se limita además a los "
-        "miembros de estos grupos. Vacío = cualquier usuario interno.",
+        string="Restrict to these groups",
+        help="Optional. When set, the audience is further restricted to the "
+        "members of these groups. Empty = any internal user.",
     )
     excluded_group_ids = fields.Many2many(
         "res.groups",
         "mail_odooclaw_audience_excluded_group_rel",
-        string="Excluir a estos grupos",
-        help="Opcional. Los miembros de estos grupos nunca reciben ayuda, "
-        "aunque cumplan el resto de condiciones.",
+        string="Exclude these groups",
+        help="Optional. The members of these groups never receive assistance, "
+        "even when they meet every other condition.",
     )
 
     company_ids = fields.Many2many(
         "res.company",
-        string="Limitar a estas compañías",
-        help="Opcional. Vacío = todas las compañías.",
+        string="Restrict to these companies",
+        help="Optional. Empty = all companies.",
     )
 
-    note = fields.Text(string="Notas")
+    note = fields.Text(string="Notes")
 
     @api.model
     def _internal_domain(self):
@@ -133,7 +133,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": False,
                 "is_active": False,
                 "eligible": False,
-                "reason": _("el usuario no existe"),
+                "reason": _("the user does not exist"),
             }
 
         bot = self.env.ref("mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False)
@@ -148,7 +148,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": is_internal,
                 "is_active": is_active,
                 "eligible": False,
-                "reason": _("no hay una audiencia configurada"),
+                "reason": _("no audience is configured"),
             }
 
         if bot and user.id == bot.id:
@@ -157,7 +157,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": is_internal,
                 "is_active": is_active,
                 "eligible": False,
-                "reason": _("es el propio bot"),
+                "reason": _("it is the bot itself"),
             }
 
         if not user.filtered_domain(audience._audience_domain()):
@@ -166,7 +166,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": is_internal,
                 "is_active": is_active,
                 "eligible": False,
-                "reason": _("el usuario queda fuera de la audiencia configurada"),
+                "reason": _("the user falls outside the configured audience"),
             }
 
         return {

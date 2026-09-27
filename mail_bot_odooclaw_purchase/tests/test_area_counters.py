@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestPurchaseAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_purchase.area_compras"
+    AREA_XMLID = "mail_bot_odooclaw_purchase.area_purchases"
     SIGNAL_KEY = "draft_purchase_orders"
     MODEL = "purchase.order"
     DOMAIN = [("state", "=", "draft")]

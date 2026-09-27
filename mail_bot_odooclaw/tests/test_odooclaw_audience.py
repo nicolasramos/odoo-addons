@@ -92,7 +92,10 @@ class TestOdooclawAudience(TransactionCase):
         self.Audience.search([]).write({"active": False})
         result = self.Audience.resolve_for_user(self.internal.id)
         self.assertFalse(result["eligible"])
-        self.assertIn("audiencia", result["reason"])
+        # Assert on the SOURCE string (English since NRA-3914). The Spanish the
+        # user reads lives in i18n/es.po, so asserting on it here would make the
+        # test depend on the translation file rather than on this behaviour.
+        self.assertIn("no audience is configured", result["reason"])
 
     def test_eligible_user_ids_excludes_portal_and_bot(self):
         ids = self.env.ref("mail_bot_odooclaw.audience_du_internal").eligible_user_ids()

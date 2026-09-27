@@ -1,0 +1,444 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mail_bot_odooclaw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-27 09:01+0000\n"
+"PO-Revision-Date: 2026-09-27 09:01+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__action_ids
+msgid "Actions"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__active
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__active
+msgid "Active"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:res.groups,comment:mail_bot_odooclaw.group_odooclaw_delegator
+msgid ""
+"Allows the OdooClaw technical user to execute ORM calls under the "
+"permissions of the requesting Odoo user."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
+msgid "An offboarded employee must not receive new messages."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
+msgid "Archived"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__area
+msgid "Area"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
+msgid ""
+"Assistance is offered to <b>any internal user</b> (employee). Portal\n"
+"                            users and the public user never receive it: they are not company\n"
+"                            staff and the counters quoted in the offer are business\n"
+"                            figures."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__internal_only
+msgid ""
+"Assistance is offered to internal users (employees) only. Portal users and "
+"the public user are left out: they are not company staff and the counters "
+"quoted in the offer are business figures."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_audience
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
+msgid "Audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_audience
+msgid "Audience de OdooClaw"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_list
+msgid "Audiences"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+msgid "Chat with OdooClaw"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__create_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__create_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__create_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__create_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_audience
+msgid "Define who is offered assistance"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__display_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__display_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_thread
+msgid "Email Thread"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__excluded_group_ids
+msgid "Exclude these groups"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__expiry
+msgid "Expiry"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__area
+msgid ""
+"Functional area key shared with the knowledge base: accounting, sales, "
+"purchases, inventory, hr..."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_area
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_message__odooclaw_area
+msgid "Functional area the suggestion belongs to."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__id
+msgid "ID"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_playbook_id
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_message__odooclaw_playbook_id
+msgid "Identifier of the playbook that produced this suggestion."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
+msgid "Include deactivated users"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
+msgid "Internal users of DU"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__internal_only
+msgid "Internal users only"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__signal_definition
+msgid ""
+"JSON object mapping a signal key to the count expression used to build the "
+"counters, e.g. {\"my_signal\": {\"model\": \"res.partner\", \"domain\": "
+"[[\"active\", \"=\", True]]}}. See the mail_bot_odooclaw_account module for "
+"real working examples."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__write_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__write_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__write_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__write_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_message
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__message_id
+msgid "Message"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__model
+msgid "Model"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__model_name
+msgid "Model Name"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_ir_module_module
+msgid "Module"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__name
+msgid "Name"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__note
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
+msgid "Notes"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:res.groups,name:mail_bot_odooclaw.group_odooclaw_delegator
+msgid "OdooClaw Delegated RPC"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_area
+msgid "OdooClaw Proactive Area"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_reply_token
+msgid "OdooClaw Reply Token"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_area
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_area
+msgid "OdooClaw area"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_playbook_id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_playbook_id
+msgid "OdooClaw playbook"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_audience
+msgid "OdooClaw proactive audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.server,name:mail_bot_odooclaw.ir_cron_cleanup_reply_tokens_ir_actions_server
+msgid "OdooClaw: Clean up expired reply tokens"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__company_ids
+msgid "Optional. Empty = all companies."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__excluded_group_ids
+msgid ""
+"Optional. The members of these groups never receive assistance, even when "
+"they meet every other condition."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__group_ids
+msgid ""
+"Optional. When set, the audience is further restricted to the members of "
+"these groups. Empty = any internal user."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_proactive
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_proactive
+msgid "Proactive suggestion"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__enabled
+msgid "Proactive suggestions"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__res_id
+msgid "Res"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__company_ids
+msgid "Restrict to these companies"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__group_ids
+msgid "Restrict to these groups"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_proactive
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_message__odooclaw_proactive
+msgid ""
+"Set when this message was an unsolicited suggestion from OdooClaw, not a "
+"reply to a user message."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__signal_definition
+msgid "Signal Definition"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_ir_config_parameter
+msgid "System Parameter"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__model_name
+msgid "Technical model that identifies this area, e.g. res.partner."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_area.py:0
+msgid "The area key must be lowercase and without spaces: %s"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__token
+msgid "Token"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__used
+msgid "Used"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_res_users
+msgid "User"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__view_ids
+msgid "Views"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__view_ids
+msgid "Views that belong to this area. Optional: the model is usually enough."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__enabled
+msgid "When unchecked, entering this area never triggers a suggestion."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__action_ids
+msgid "Window actions that open this area."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_audience
+msgid ""
+"Without a configured audience nobody is offered assistance: a missing\n"
+"                configuration is never read as \"everyone\"."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
+msgid "it is the bot itself"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
+msgid "no audience is configured"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "the proactive engine is not configured (odooclaw.proactive_url)"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "the proactive engine is not responding"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "the proactive engine returned %s"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
+msgid "the user does not exist"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
+msgid "the user falls outside the configured audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "there is no functional area for this screen"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "unreadable response from the proactive engine"
+msgstr ""

@@ -33,18 +33,18 @@ class TestProactiveAreas(TransactionCase):
     # --- the areas exist and are enabled ---
 
     def test_phase_one_areas_are_loaded(self):
-        for xmlid in ("area_contabilidad", "area_contabilidad_banco"):
+        for xmlid in ("area_accounting", "area_accounting_bank_statement"):
             area = self._area(xmlid)
             self.assertTrue(area, "%s was not loaded" % xmlid)
             self.assertTrue(area.enabled, "%s is disabled" % xmlid)
-            self.assertEqual(area.area, "contabilidad")
+            self.assertEqual(area.area, "accounting")
 
     def test_areas_resolve_by_model(self):
         """The resolver must map each Contabilidad screen to the area."""
         for model in ("account.move", "account.bank.statement.line"):
             resolved = self.env["mail.odooclaw.area"].sudo().resolve_area(model)
             self.assertTrue(resolved, "%s resolved to no area" % model)
-            self.assertEqual(resolved.area, "contabilidad")
+            self.assertEqual(resolved.area, "accounting")
 
     def test_an_unrelated_model_stays_silent(self):
         resolved = self.env["mail.odooclaw.area"].sudo().resolve_area("res.partner")
@@ -55,7 +55,7 @@ class TestProactiveAreas(TransactionCase):
     def test_unposted_invoices_counts_real_drafts(self):
         if not self.has_account:
             self.skipTest("account is not installed; nothing to count against")
-        area = self._area("area_contabilidad")
+        area = self._area("area_accounting")
         partner = self.env["res.partner"].create({"name": "Counter Test Client"})
         journal = self.env["account.journal"].search([("type", "=", "sale")], limit=1)
 
@@ -77,7 +77,7 @@ class TestProactiveAreas(TransactionCase):
     def test_unposted_invoices_ignores_posted_ones(self):
         if not self.has_account:
             self.skipTest("account is not installed; nothing to count against")
-        area = self._area("area_contabilidad")
+        area = self._area("area_accounting")
         partner = self.env["res.partner"].create({"name": "Counter Test Posted"})
         journal = self.env["account.journal"].search([("type", "=", "sale")], limit=1)
         move = self.env["account.move"].create(
@@ -103,7 +103,7 @@ class TestProactiveAreas(TransactionCase):
     def test_unreconciled_statement_lines_counts_bank_lines(self):
         if not self.has_account:
             self.skipTest("account is not installed; nothing to count against")
-        area = self._area("area_contabilidad_banco")
+        area = self._area("area_accounting_bank_statement")
         bank = self.env["account.journal"].search([("type", "=", "bank")], limit=1)
         before = area.counters_for("account.bank.statement.line").get(
             "unreconciled_statement_lines", 0
@@ -128,7 +128,7 @@ class TestProactiveAreas(TransactionCase):
         forever and nobody would ever be offered help with VeriFactu. This test
         fails loudly if the name is ever wrong.
         """
-        area = self._area("area_contabilidad")
+        area = self._area("area_accounting")
         definitions = json.loads(area.signal_definition)
         domain = definitions["verifactu_unconfigured"]["domain"]
 
@@ -156,7 +156,7 @@ class TestProactiveAreas(TransactionCase):
             "unreconciled_statement_lines",
         }
         seen = set()
-        for xmlid in ("area_contabilidad", "area_contabilidad_banco"):
+        for xmlid in ("area_accounting", "area_accounting_bank_statement"):
             area = self._area(xmlid)
             seen.update(json.loads(area.signal_definition).keys())
         self.assertEqual(
@@ -172,7 +172,7 @@ class TestProactiveAreas(TransactionCase):
         area = self.env["mail.odooclaw.area"].sudo().create(
             {
                 "name": "Typo",
-                "area": "contabilidad",
+                "area": "accounting",
                 "model_name": "account.move",
                 "signal_definition": json.dumps(
                     {"x": {"model": "account.move", "domain": [["no_such_field", "=", 1]]}}

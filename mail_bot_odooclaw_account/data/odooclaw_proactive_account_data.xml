@@ -39,9 +39,9 @@
               exists. Its domain counts unreconciled bank lines.
         -->
 
-        <record id="area_contabilidad" model="mail.odooclaw.area">
+        <record id="area_accounting" model="mail.odooclaw.area">
             <field name="name">Accounting</field>
-            <field name="area">contabilidad</field>
+            <field name="area">accounting</field>
             <field name="sequence">10</field>
             <field name="enabled" eval="True" />
             <field name="model_name">account.move</field>
@@ -55,9 +55,9 @@
             row: resolve_area() matches on model_name and account.move never
             resolves to a bank screen.
         -->
-        <record id="area_contabilidad_banco" model="mail.odooclaw.area">
+        <record id="area_accounting_bank_statement" model="mail.odooclaw.area">
             <field name="name">Accounting: bank</field>
-            <field name="area">contabilidad</field>
+            <field name="area">accounting</field>
             <field name="sequence">11</field>
             <field name="enabled" eval="True" />
             <field name="model_name">account.bank.statement.line</field>

@@ -12,9 +12,9 @@
         the counter and a confirmed one leaves it unchanged. Verified 2026-09.
     -->
     <data noupdate="0">
-        <record id="area_compras" model="mail.odooclaw.area">
+        <record id="area_purchases" model="mail.odooclaw.area">
             <field name="name">Purchase</field>
-            <field name="area">compras</field>
+            <field name="area">purchases</field>
             <field name="sequence">30</field>
             <field name="enabled" eval="True" />
             <field name="model_name">purchase.order</field>

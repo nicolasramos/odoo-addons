@@ -14,9 +14,9 @@
         match leaves it unchanged. Verified 2026-09.
     -->
     <data noupdate="0">
-        <record id="area_ventas" model="mail.odooclaw.area">
+        <record id="area_sales" model="mail.odooclaw.area">
             <field name="name">Sales</field>
-            <field name="area">ventas</field>
+            <field name="area">sales</field>
             <field name="sequence">20</field>
             <field name="enabled" eval="True" />
             <field name="model_name">sale.order</field>
@@ -34,9 +34,9 @@
             An opportunity goes cold when nobody planned the follow-up; the
             absence of a deadline is the observable, checkable fact.
         -->
-        <record id="area_ventas_crm" model="mail.odooclaw.area">
+        <record id="area_sales_crm" model="mail.odooclaw.area">
             <field name="name">Sales: CRM</field>
-            <field name="area">ventas</field>
+            <field name="area">sales</field>
             <field name="sequence">21</field>
             <field name="enabled" eval="True" />
             <field name="model_name">crm.lead</field>

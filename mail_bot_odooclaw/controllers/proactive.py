@@ -23,7 +23,7 @@ where they can only reach the bot's own private conversation with a user.
 import json
 import logging
 
-from odoo import http
+from odoo import _, http
 from odoo.http import request
 from werkzeug.exceptions import HTTPException
 
@@ -94,8 +94,8 @@ class OdooClawProactiveController(http.Controller):
             {
               "user_id": 7,
               "message": "...",
-              "playbook_id": "contabilidad.unposted_invoices",
-              "area": "contabilidad"
+              "playbook_id": "accounting.unposted_invoices",
+              "area": "accounting"
             }
 
         This route cannot post to a business record: the target is resolved from
@@ -157,7 +157,7 @@ class OdooClawProactiveController(http.Controller):
         if not area_rec:
             return {
                 "speak": False,
-                "reason": "no hay área funcional para esta pantalla",
+                "reason": _("there is no functional area for this screen"),
                 "area": "",
             }
 
@@ -185,8 +185,9 @@ class OdooClawProactiveController(http.Controller):
         if not engine_url:
             return {
                 "speak": False,
-                "reason": "el motor de proactividad no está configurado "
-                "(odooclaw.proactive_url)",
+                "reason": _(
+                    "the proactive engine is not configured (odooclaw.proactive_url)"
+                ),
                 "area": area_rec.area,
             }
 
@@ -231,14 +232,14 @@ class OdooClawProactiveController(http.Controller):
             )
             return {
                 "speak": False,
-                "reason": "el motor de proactividad no responde",
+                "reason": _("the proactive engine is not responding"),
                 "area": area_rec.area,
             }
 
         if resp.status_code != 200:
             return {
                 "speak": False,
-                "reason": "el motor de proactividad devolvió %s" % resp.status_code,
+                "reason": _("the proactive engine returned %s") % resp.status_code,
                 "area": area_rec.area,
             }
 
@@ -247,7 +248,7 @@ class OdooClawProactiveController(http.Controller):
         except ValueError:
             return {
                 "speak": False,
-                "reason": "respuesta ilegible del motor de proactividad",
+                "reason": _("unreadable response from the proactive engine"),
                 "area": area_rec.area,
             }
 
