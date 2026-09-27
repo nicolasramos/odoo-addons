@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise, create a NEW mail.odooclaw.area row: the
+        resolver prefers the most specific match and an upgrade restores this
+        one.
+
+        Every domain here was measured against a real Odoo 18 database by
+        creating records, in BOTH directions: one record that must move the
+        counter and one that must leave it unchanged. Measured 2026-09-27.
+
+        Notes that are not obvious from the model definition:
+        * hr.expense has NO "to approve" state on its own. An expense is a line;
+          the approval workflow lives on the expense REPORT (hr.expense.sheet).
+          The states are draft/reported/submitted/approved/done/refused.
+        * is_editable is store=False, so it cannot be used in a domain.
+    -->
+    <data noupdate="0">
+        <record id="area_expenses" model="mail.odooclaw.area">
+            <field name="name">Expenses</field>
+            <field name="area">expenses</field>
+            <field name="sequence">50</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">hr.expense</field>
+            <field
+                name="signal_definition"
+            >{"draft_expenses": {"model": "hr.expense", "domain": [["state", "in", ["draft", "reported"]]]}}</field>
+        </record>
+        <record id="area_expenses_awaiting_approval" model="mail.odooclaw.area">
+            <field name="name">Expenses awaiting approval</field>
+            <field name="area">expenses</field>
+            <field name="sequence">51</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">hr.expense</field>
+            <field
+                name="signal_definition"
+            >{"expenses_awaiting_approval": {"model": "hr.expense", "domain": [["state", "in", ["submitted", "approved"]]]}}</field>
+        </record>
+    </data>
+</odoo>
