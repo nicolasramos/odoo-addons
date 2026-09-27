@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise, create a NEW mail.odooclaw.area row.
+
+        Every domain here was measured against a real Odoo 18 database by
+        creating records, in BOTH directions. Measured 2026-09-27.
+
+        Notes that are not obvious from the model definition:
+        * project.project has NO "state" field. Its lifecycle is stage_id, and
+          the closed stages are the ones with fold=True (Done / Cancelled). That
+          is why "still open" is expressed as [["stage_id.fold", "=", False]].
+        * task_count and the project's odometer-like computed counters are
+          store=False: they cannot be filtered on.
+        * project.task has no user_id; assignees are user_ids (a many2many).
+        * $today is resolved when the counter is computed, so an overdue counter
+          never rots into a stale hardcoded date.
+    -->
+    <data noupdate="0">
+        <record id="area_proyectos" model="mail.odooclaw.area">
+            <field name="name">Projects</field>
+            <field name="area">proyectos</field>
+            <field name="sequence">40</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">project.project</field>
+            <field
+                name="signal_definition"
+            >{"open_projects": {"model": "project.project", "domain": [["stage_id.fold", "=", false]]}}</field>
+        </record>
+        <record id="area_proyectos_vencidos" model="mail.odooclaw.area">
+            <field name="name">Projects past their end date</field>
+            <field name="area">proyectos</field>
+            <field name="sequence">41</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">project.project</field>
+            <field
+                name="signal_definition"
+            >{"overdue_projects": {"model": "project.project", "domain": [["date", "&lt;", "$today"], ["stage_id.fold", "=", false]]}}</field>
+        </record>
+        <record id="area_proyectos_tareas" model="mail.odooclaw.area">
+            <field name="name">Project tasks</field>
+            <field name="area">proyectos</field>
+            <field name="sequence">42</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">project.task</field>
+            <field
+                name="signal_definition"
+            >{"overdue_tasks": {"model": "project.task", "domain": [["date_deadline", "&lt;", "$today"], ["state", "not in", ["1_done", "1_canceled"]]]}, "waiting_tasks": {"model": "project.task", "domain": [["state", "=", "04_waiting_normal"]]}, "urgent_tasks": {"model": "project.task", "domain": [["priority", "=", "1"], ["state", "not in", ["1_done", "1_canceled"]]]}}</field>
+        </record>
+    </data>
+</odoo>
