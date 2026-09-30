@@ -8,6 +8,54 @@ from ..utils.markdown_html import markdown_to_safe_html
 from . import security
 
 
+def _normalize_x2many_ids(value, field_name):
+    """Return a flat list of ints from an id field's payload.
+
+    Odoo's ``mail.thread.message_post`` validates ``attachment_ids`` (and
+    ``voice_ids``) as a literal list of ints and raises ``ValueError`` on
+    anything else — before the message exists. Measured on Odoo Server 17.0:
+
+        attachment_ids=[(6, 0, [48341])]  -> ValueError, nothing created
+        attachment_ids=[48341]            -> message created, attachment linked
+
+    Both shapes are natural for a caller to send: the x2many command form is how
+    every other m2m field is written, and it is what the OdooClaw MCP tool layer
+    produced. Accept either and hand `message_post` the flat form it requires,
+    so neither client has to know this Odoo-internal detail.
+    """
+    if value is None:
+        return []
+
+    # x2many command form: (6, 0, [ids]) / [6, 0, [ids]] — take the last element.
+    if (
+        isinstance(value, (list, tuple))
+        and len(value) == 3
+        and value[0] in (6, "6")
+        and isinstance(value[2], (list, tuple))
+    ):
+        value = value[2]
+
+    # A single command wrapped in a list, e.g. [[6, 0, [ids]]].
+    if (
+        isinstance(value, (list, tuple))
+        and len(value) == 1
+        and isinstance(value[0], (list, tuple))
+        and len(value[0]) == 3
+        and value[0][0] in (6, "6")
+    ):
+        value = value[0][2]
+
+    if isinstance(value, (list, tuple)):
+        return [int(v) for v in value]
+
+    if isinstance(value, int):
+        return [value]
+
+    raise ValueError(
+        "%s must be a list of ids or an x2many command, got %r" % (field_name, value)
+    )
+
+
 class OdooClawController(http.Controller):
     @http.route(
         "/odooclaw/reply", type="http", auth="public", methods=["POST"], csrf=False
@@ -80,11 +128,15 @@ class OdooClawController(http.Controller):
 
             # Add attachments if provided
             if attachment_ids:
-                post_values["attachment_ids"] = [(6, 0, attachment_ids)]
+                post_values["attachment_ids"] = _normalize_x2many_ids(
+                    attachment_ids, "attachment_ids"
+                )
 
             # Add voice metadata if provided (links attachments to voice player)
             if voice_metadata_ids:
-                post_values["voice_ids"] = [(6, 0, voice_metadata_ids)]
+                post_values["voice_ids"] = _normalize_x2many_ids(
+                    voice_metadata_ids, "voice_metadata_ids"
+                )
 
             # Perform action as the bot user to circumvent public access rights
             record = request.env[model_name].sudo().browse(res_id)
