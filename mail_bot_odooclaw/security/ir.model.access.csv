@@ -1,2 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mail_odooclaw_reply_token_system,mail.odooclaw.reply.token system,model_mail_odooclaw_reply_token,base.group_system,1,1,1,1
+access_runonweb_settings_system,runonweb.settings system,model_runonweb_settings,base.group_system,1,1,1,1
+access_runonweb_feature_flag_system,runonweb.feature.flag system,model_runonweb_feature_flag,base.group_system,1,1,1,1
+access_runonweb_feature_flag_user,runonweb.feature.flag user,model_runonweb_feature_flag,base.group_user,1,0,0,0

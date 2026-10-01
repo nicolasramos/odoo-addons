@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Default feature flags for runonweb features -->
+    <record id="feature_flag_stt_discuss" model="runonweb.feature.flag">
+        <field name="name">STT in Discuss</field>
+        <field name="module_id" ref="mail_bot_odooclaw"/>
+        <field name="feature_type">stt</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="feature_flag_ocr_invoices" model="runonweb.feature.flag">
+        <field name="name">OCR on Invoice fields</field>
+        <field name="module_id" ref="mail_bot_odooclaw"/>
+        <field name="feature_type">ocr</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="feature_flag_embed_semantic" model="runonweb.feature.flag">
+        <field name="name">Semantic search (embeddings)</field>
+        <field name="module_id" ref="mail_bot_odooclaw"/>
+        <field name="feature_type">embed</field>
+        <field name="active" eval="False"/>
+    </record>
+</odoo>
