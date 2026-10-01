@@ -14,9 +14,9 @@
         match leaves it unchanged. Verified 2026-09.
     -->
     <data noupdate="0">
-        <record id="area_ventas" model="mail.odooclaw.area">
+        <record id="area_sales" model="mail.odooclaw.area">
             <field name="name">Sales</field>
-            <field name="area">ventas</field>
+            <field name="area">sales</field>
             <field name="sequence">20</field>
             <field name="enabled" eval="True" />
             <field name="model_name">sale.order</field>

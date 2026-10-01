@@ -11,12 +11,12 @@
           without anyone having to configure it, while still being editable later.
         -->
         <record id="audience_du_internal" model="mail.odooclaw.audience">
-            <field name="name">Usuarios internos de DU</field>
+            <field name="name">Internal users of DU</field>
             <field name="internal_only" eval="True" />
             <field name="include_inactive" eval="False" />
-            <field name="note">Cualquier usuario interno (empleado). Los usuarios de portal y el
-usuario público quedan fuera: los contadores que se citan en la oferta son cifras
-de negocio y no deben mostrarse fuera de la empresa.</field>
+            <field name="note">Any internal user (employee). Portal users and the public user
+are left out: the counters quoted in the offer are business figures and must not
+be shown outside the company.</field>
         </record>
     </data>
 </odoo>

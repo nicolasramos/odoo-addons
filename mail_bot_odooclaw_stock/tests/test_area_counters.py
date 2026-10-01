@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestStockAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_stock.area_inventario"
+    AREA_XMLID = "mail_bot_odooclaw_stock.area_inventory"
     SIGNAL_KEY = "negative_stock_products"
     MODEL = "product.product"
     DOMAIN = [("qty_available", "<", 0), ("is_storable", "=", True)]

@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestHrAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_hr.area_rrhh"
+    AREA_XMLID = "mail_bot_odooclaw_hr.area_hr"
     SIGNAL_KEY = "pending_leave_requests"
     MODEL = "hr.leave"
     DOMAIN = [("state", "in", ["confirm", "validate1"])]

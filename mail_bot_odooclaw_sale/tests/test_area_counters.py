@@ -8,7 +8,7 @@ from .common import TestAreaCounters
 
 @tagged("post_install", "-at_install")
 class TestSaleAreaCounters(TestAreaCounters):
-    AREA_XMLID = "mail_bot_odooclaw_sale.area_ventas"
+    AREA_XMLID = "mail_bot_odooclaw_sale.area_sales"
     SIGNAL_KEY = "draft_quotations"
     MODEL = "sale.order"
     DOMAIN = [("state", "=", "draft")]
@@ -22,4 +22,3 @@ class TestSaleAreaCounters(TestAreaCounters):
         self.env["sale.order"].create(
             {"partner_id": partner.id, "state": "cancel"}
         )
-

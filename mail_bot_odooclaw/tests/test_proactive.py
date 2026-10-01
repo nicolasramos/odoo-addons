@@ -51,9 +51,12 @@ class TestProactive(HttpCase):
         resp = self._post(
             {
                 "user_id": self.user.id,
+                # Playbook copy lives in the engine (odooclaw pkg/proactive); this
+                # module only relays it. The value is a stand-in for the engine text,
+                # so it is intentionally NOT translated here (see NRA-3914).
                 "message": "¿Quieres que te explique cómo publicar las facturas?",
-                "playbook_id": "contabilidad.unposted_invoices",
-                "area": "contabilidad",
+                "playbook_id": "accounting.unposted_invoices",
+                "area": "accounting",
             }
         )
         self.assertEqual(resp.status_code, 200, resp.text)
@@ -136,7 +139,7 @@ class TestProactive(HttpCase):
         area = self.env["mail.odooclaw.area"].sudo().create(
             {
                 "name": "Contabilidad",
-                "area": "contabilidad",
+                "area": "accounting",
                 "model_name": "res.partner",
                 "signal_definition": json.dumps(
                     {"partners": {"model": "res.partner", "domain": []}}
@@ -152,7 +155,7 @@ class TestProactive(HttpCase):
         area = self.env["mail.odooclaw.area"].sudo().create(
             {
                 "name": "Rota",
-                "area": "contabilidad",
+                "area": "accounting",
                 "model_name": "res.partner",
                 "signal_definition": "not json at all",
             }

@@ -6,7 +6,7 @@
         <field name="name">mail.odooclaw.audience.list</field>
         <field name="model">mail.odooclaw.audience</field>
         <field name="arch" type="xml">
-            <list string="Audiencias">
+            <list string="Audiences">
                 <field name="name" />
                 <field name="internal_only" />
                 <field name="include_inactive" />
@@ -21,11 +21,11 @@
         <field name="name">mail.odooclaw.audience.form</field>
         <field name="model">mail.odooclaw.audience</field>
         <field name="arch" type="xml">
-            <form string="Audiencia">
+            <form string="Audience">
                 <sheet>
                     <widget
                         name="web_ribbon"
-                        title="Archivada"
+                        title="Archived"
                         bg_color="bg-danger"
                         invisible="active"
                     />
@@ -56,13 +56,13 @@
                     </group>
                     <group>
                         <div class="text-muted">
-                            Se ofrece ayuda a <b>cualquier usuario interno</b> (empleado). Los
-                            usuarios de portal y el usuario público nunca la reciben: no son
-                            personal de la empresa y los contadores citados en la oferta son
-                            cifras de negocio.
+                            Assistance is offered to <b>any internal user</b> (employee). Portal
+                            users and the public user never receive it: they are not company
+                            staff and the counters quoted in the offer are business
+                            figures.
                         </div>
                     </group>
-                    <group string="Notas">
+                    <group string="Notes">
                         <field name="note" nolabel="1" />
                     </group>
                 </sheet>
@@ -71,21 +71,21 @@
     </record>
 
     <record id="action_mail_odooclaw_audience" model="ir.actions.act_window">
-        <field name="name">Audiencia de OdooClaw</field>
+        <field name="name">OdooClaw Proactive Audience</field>
         <field name="res_model">mail.odooclaw.audience</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Define a quién se ofrece ayuda</p>
+            <p class="o_view_nocontent_smiling_face">Define who is offered assistance</p>
             <p>
-                Sin una audiencia configurada no se ofrece ayuda a nadie: la ausencia de
-                configuración nunca se interpreta como "todos".
+                Without a configured audience nobody is offered assistance: a missing
+                configuration is never read as "everyone".
             </p>
         </field>
     </record>
 
     <menuitem
         id="menu_mail_odooclaw_audience"
-        name="Audiencia"
+        name="Audience"
         action="action_mail_odooclaw_audience"
         parent="base.menu_custom"
         sequence="90"

@@ -14,9 +14,9 @@
         than by reading the field definition. Verified 2026-09.
     -->
     <data noupdate="0">
-        <record id="area_rrhh" model="mail.odooclaw.area">
+        <record id="area_hr" model="mail.odooclaw.area">
             <field name="name">Human Resources</field>
-            <field name="area">rrhh</field>
+            <field name="area">hr</field>
             <field name="sequence">50</field>
             <field name="enabled" eval="True" />
             <field name="model_name">hr.leave</field>
