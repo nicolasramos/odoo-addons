@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_mail_odooclaw_audience_list" model="ir.ui.view">
+        <field name="name">mail.odooclaw.audience.list</field>
+        <field name="model">mail.odooclaw.audience</field>
+        <field name="arch" type="xml">
+            <list string="Audiences">
+                <field name="name" />
+                <field name="internal_only" />
+                <field name="include_inactive" />
+                <field name="group_ids" widget="many2many_tags" />
+                <field name="excluded_group_ids" widget="many2many_tags" />
+                <field name="active" invisible="1" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mail_odooclaw_audience_form" model="ir.ui.view">
+        <field name="name">mail.odooclaw.audience.form</field>
+        <field name="model">mail.odooclaw.audience</field>
+        <field name="arch" type="xml">
+            <form string="Audience">
+                <sheet>
+                    <widget
+                        name="web_ribbon"
+                        title="Archived"
+                        bg_color="text-danger"
+                        invisible="active"
+                    />
+                    <div class="title-group">
+                        <field name="name" />
+                        <field name="active" invisible="1" />
+                    </div>
+                    <group>
+                        <group>
+                            <field name="internal_only" />
+                            <field name="include_inactive" />
+                        </group>
+                        <group>
+                            <field name="group_ids" widget="many2many_tags" />
+                            <field name="excluded_group_ids" widget="many2many_tags" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Note">
+                            <field name="note" />
+                        </page>
+                    </notebook>
+                    <div class="alert alert-info" role="alert">
+                        <body>
+                            <p>
+                                The audience defines who may receive proactive offers. An empty
+                                body is offered assistance: a missing
+                                configuration is never read as "everyone".
+                            </p>
+                        </body>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_odooclaw_audience" model="ir.actions.act_window">
+        <field name="name">Audience</field>
+        <field name="res_model">mail.odooclaw.audience</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create the first audience.
+            </p>
+            <p>
+                The default audience is "all internal users". Edit it or create
+                new ones for departments, roles, or subsidiaries.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_mail_odooclaw_audience"
+        name="Audience"
+        action="action_mail_odooclaw_audience"
+        parent="base.menu_custom"
+        sequence="90"
+    />
+</odoo>

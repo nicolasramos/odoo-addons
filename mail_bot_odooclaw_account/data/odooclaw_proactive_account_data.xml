@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0" on purpose: these rows are SHIPPED DEFAULTS and must keep
+        reaching existing installations. With noupdate="1" a counter added in a
+        later release would never arrive — the module would load cleanly and the
+        signal would simply never fire, which is invisible from the outside.
+
+        The convention that makes this safe: to customise a threshold or a
+        domain, create a NEW mail.odooclaw.area row (the resolver picks by
+        action, then view, then model, so a more specific row wins). Do not edit
+        a shipped row: an upgrade will restore it.
+
+        Why this lives in its own module and not in mail_bot_odooclaw: the base
+        module depends only on `mail` (Discuss). Accounting knowledge is not
+        Discuss, so shipping these rows from the base would make a generic
+        integration responsible for account.move — and would break the base
+        module's install in any database without Accounting. This module adds the
+        accounting rows only when the user actually has Accounting installed.
+
+        Every domain here was measured against a real Odoo 18 database by
+        creating records, in BOTH directions. Measured 2026-09.
+    -->
+    <data noupdate="0">
+        <record id="area_accounting" model="mail.odooclaw.area">
+            <field name="name">Accounting</field>
+            <field name="area">accounting</field>
+            <field name="sequence">10</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">account.move</field>
+            <field
+                name="signal_definition"
+            >{"unposted_invoices": {\"model\": \"account.move\", \"domain\": [[\"move_type\", \"=\", \"out_invoice\"], [\"state\", \"=\", \"draft\"]]}, \"unposted_credit_notes\": {\"model\": \"account.move\", \"domain\": [[\"move_type\", \"=\", \"out_refund\"], [\"state\", \"=\", \"draft\"]]}, \"unreconciled_invoices\": {\"model\": \"account.move\", \"domain\": [[\"move_type\", \"=\", \"out_invoice\"], [\"state\", \"=\", \"posted\"], [\"matching_amount\", \"!=\", 0]]}, \"unreconciled_debits\": {\"model\": \"account.move\", \"domain\": [[\"move_type\", \"=\", \"in_invoice\"], [\"state\", \"=\", \"posted\"], [\"matching_amount\", \"!=\", 0]]}, \"unreconciled_credits\": {\"model\": \"account.move\", \"domain\": [[\"move_type\", \"=\", \"in_refund\"], [\"state\", \"=\", \"posted\"], [\"matching_amount\", \"!=\", 0]]}}</field>
+        </record>
+        <record id="area_accounting_bank" model="mail.odooclaw.area">
+            <field name="name">Accounting - Bank</field>
+            <field name="area">accounting</field>
+            <field name="sequence">10</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">account.bank.statement.line</field>
+            <field
+                name="signal_definition"
+            >{"unreconciled_statement_lines": {\"model\": \"account.bank.statement.line\", \"domain\": [[\"is_reconciled\", \"=\", false]]}}</field>
+        </record>
+    </data>
+</odoo>
