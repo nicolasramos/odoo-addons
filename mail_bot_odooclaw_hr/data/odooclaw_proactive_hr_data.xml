@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise, create a NEW mail.odooclaw.area row.
+
+        The states are `confirm` and `validate1`. hr.leave has NO `draft` state:
+        its real selection is confirm / refuse / validate1 / validate / cancel.
+        A domain written with a state that does not exist returns 0 forever and
+        the user is simply never told — which is why this was verified by
+        creating a leave in each state against a real Odoo 18 database rather
+        than by reading the field definition. Verified 2026-09.
+    -->
+    <data noupdate="0">
+        <record id="area_hr" model="mail.odooclaw.area">
+            <field name="name">Human Resources</field>
+            <field name="area">hr</field>
+            <field name="sequence">50</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">hr.leave</field>
+            <field name="signal_definition">{"pending_leave_requests": {"model": "hr.leave", "domain": [["state", "in", ["confirm", "validate1"]]]}}</field>
+        </record>
+    </data>
+</odoo>

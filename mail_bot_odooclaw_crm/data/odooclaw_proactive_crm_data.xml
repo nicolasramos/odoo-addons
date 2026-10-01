@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise, create a NEW mail.odooclaw.area row.
+
+        CRM is its own area, not part of Sales. Two reasons: the engine filters
+        playbooks strictly by functional area, and the model is different
+        (crm.lead, not sale.order) so resolve_area() would never reach it from
+        the sales-order screen anyway.
+
+        Every domain here was measured against a real Odoo 18 database by
+        creating records, in BOTH directions. Measured 2026-09-27.
+
+        Notes that are not obvious from the model definition:
+        * activity_date_deadline is store=False BUT searchable: it is computed
+          from the activities on the lead. "No activity scheduled" is the real
+          observable that an opportunity has gone cold, so it is expressed as
+          [[\"activity_date_deadline\", \"=\", false]] and NOT as an old write_date.
+          Verified by creating a lead with a mail activity scheduled for the past.
+    -->
+    <data noupdate="0">
+        <record id="area_crm" model="mail.odooclaw.area">
+            <field name="name">CRM</field>
+            <field name="area">crm</field>
+            <field name="sequence">15</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">crm.lead</field>
+            <field name="signal_definition">{"open_opportunities": {"model": "crm.lead", "domain": [["type", "=", "opportunity"], ["stage_id.is_won", "=", false]]}, "overdue_opportunities": {"model": "crm.lead", "domain": [["type", "=", "opportunity"], ["date_deadline", "<", "$today"], ["stage_id.is_won", "=", false]]}}</field>
+        </record>
+    </data>
+</odoo>

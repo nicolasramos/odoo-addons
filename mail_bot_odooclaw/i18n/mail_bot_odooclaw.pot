@@ -1,0 +1,169 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mail_bot_odooclaw
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mail_bot_odooclaw 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-27 09:01+0000\n"
+"PO-Revision-Date: 2026-09-27 09:01+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__action_ids
+msgid "Actions"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__active
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__active
+msgid "Active"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:res.groups,comment:mail_bot_odooclaw.group_odooclaw_delegator
+msgid ""
+"Allows the OdooClaw technical user to execute ORM calls under the "
+"permissions of the requesting Odoo user."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__name
+msgid "Audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_audience
+msgid "Audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_audience
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_audience
+msgid "Audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__note
+msgid "Note"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_area.py:0
+msgid "Area '%s' already exists."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "no area for this screen"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
+msgid "unreadable response from the proactive engine"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__area
+msgid "Area"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__name
+msgid "Name"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__counter_ids
+msgid "Counters"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__internal_only
+msgid "Internal Only"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
+msgid "Include Inactive"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__group_ids
+msgid "Required groups"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__excluded_group_ids
+msgid "Excluded groups"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__active
+msgid "Active"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__active
+msgid "Active"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_area
+msgid "OdooClaw proactive area"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_area_counter
+msgid "OdooClaw proactive area counter"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_audience
+msgid "OdooClaw proactive audience"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__area
+msgid "Area"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area_counter__trigger
+msgid "Trigger"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area_counter__model_name
+msgid "Model"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area_counter__domain
+msgid "Domain"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_proactive
+msgid "Proactive suggestion"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_playbook_id
+msgid "OdooClaw playbook"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_area
+msgid "OdooClaw area"
+msgstr ""

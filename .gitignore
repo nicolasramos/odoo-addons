@@ -19,6 +19,8 @@ htmlcov/
 Thumbs.db
 .vscode/
 .idea/
+# macOS extended attributes (NAS artifacts)
+._*
 # Local agent/code intelligence caches
 .codebase-memory/
 .atl/
