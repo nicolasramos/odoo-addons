@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+
+        <!-- Load the proactive signal trigger into the backend webclient -->
+        <template id="assets_backend" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <script
+                    type="text/javascript"
+                    src="/mail_bot_odooclaw/static/src/proactive_signal/proactive_signal.js"
+                />
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

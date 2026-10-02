@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+    <t t-name="mail_bot_odooclaw.ProactiveSignal" owl="1">
+        <!-- Invisible component that fires the proactive signal on mount -->
+    </t>
+</templates>
