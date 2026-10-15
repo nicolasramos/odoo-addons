@@ -1,0 +1,20 @@
+<odoo>
+    <data noupdate="0">
+        <record id="area_expenses" model="mail.odooclaw.area">
+            <field name="name">Expenses</field>
+            <field name="area">expenses</field>
+            <field name="sequence">30</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">hr.expense</field>
+            <field name="signal_definition">{"draft_expenses": {"model": "hr.expense", "domain": [["state", "in", ["draft", "reported"]]]}}</field>
+        </record>
+        <record id="area_expenses_approval" model="mail.odooclaw.area">
+            <field name="name">Expenses - Approval</field>
+            <field name="area">expenses</field>
+            <field name="sequence">30</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">hr.expense</field>
+            <field name="signal_definition">{"expenses_awaiting_approval": {"model": "hr.expense", "domain": [["state", "in", ["submitted", "approved"]]]}}</field>
+        </record>
+    </data>
+</odoo>

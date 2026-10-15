@@ -1,24 +1,24 @@
 {
     "name": "OdooClaw AI Bot",
-    "version": "16.0.1.1.0",
+    "version": "16.0.1.2.0",
     "category": "Discuss",
-    "summary": "Integrate OdooClaw AI agent via webhooks in Odoo Discuss",
-    "description": """
-OdooClaw AI Bot for Odoo Discuss.
-
-Features:
-- Bot user for Discuss channels and direct messages.
-- Webhook bridge between Odoo and OdooClaw.
-- Voice attachment support.
-""",
+    "summary": "AI assistant integration for Odoo — chat, voice, and proactive assistance",
     "author": "Nicolás Ramos",
     "license": "AGPL-3",
-    "depends": ["mail"],
+    "depends": [
+        "mail_bot_odooclaw_account",
+        "mail_bot_odooclaw_crm",
+        "mail_bot_odooclaw_expense",
+        "mail_bot_odooclaw_fleet",
+        "mail_bot_odooclaw_hr",
+        "mail_bot_odooclaw_project",
+        "mail_bot_odooclaw_purchase",
+        "mail_bot_odooclaw_sale",
+        "mail_bot_odooclaw_stock",
+    ],
     "data": [
-        "security/odooclaw_security.xml",
-        "security/ir.model.access.csv",
-        "data/odooclaw_bot_data.xml",
-        "data/odooclaw_cron.xml",
+        "data/odooclaw_audience_data.xml",
+        "views/mail_odooclaw_audience_views.xml",
     ],
     "installable": True,
     "application": False,
