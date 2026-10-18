@@ -12,27 +12,36 @@ class MailThread(models.AbstractModel):
 
     def _resolve_private_reply_channel(self, author_partner, bot_partner):
         Channel = self.env["mail.channel"].sudo()
+        # Odoo 14 has no mail.channel.member model: the members of a channel are
+        # its ``channel_partner_ids`` (mail_channel_partner table).
         existing = Channel.search(
             [
                 ("channel_type", "=", "chat"),
-                ("channel_member_ids.partner_id", "=", author_partner.id),
-                ("channel_member_ids.partner_id", "=", bot_partner.id),
+                ("channel_partner_ids", "=", author_partner.id),
+                ("channel_partner_ids", "=", bot_partner.id),
             ],
             limit=1,
         )
         if existing:
             return existing
 
-        return Channel.create(
+        channel = Channel.create(
             {
                 "name": _("Chat with OdooClaw"),
                 "channel_type": "chat",
-                "channel_member_ids": [
-                    (0, 0, {"partner_id": author_partner.id}),
-                    (0, 0, {"partner_id": bot_partner.id}),
+                "channel_partner_ids": [
+                    (4, author_partner.id),
+                    (4, bot_partner.id),
                 ],
             }
         )
+        # Odoo 14 always adds the current user to the channel it creates (it has
+        # to, otherwise the channel is invisible to them). In a 1-to-1 chat with
+        # the bot nobody else belongs there, so drop that partner again.
+        own_partner = channel.env.user.partner_id
+        if own_partner not in (author_partner | bot_partner):
+            channel.write({"channel_partner_ids": [(3, own_partner.id)]})
+        return channel
 
     @api.returns("mail.message", lambda value: value.id)
     def message_post(self, **kwargs):
@@ -58,8 +67,7 @@ class MailThread(models.AbstractModel):
             channel = self.env["mail.channel"].browse(message.res_id)
             if (
                 channel.channel_type == "chat"
-                and odooclaw_partner_id
-                in channel.channel_member_ids.mapped("partner_id").ids
+                and odooclaw_partner_id in channel.channel_partner_ids.ids
             ):
                 is_dm = True
 
@@ -192,13 +200,12 @@ class MailThread(models.AbstractModel):
             )
             threaded_call.start()
 
-            # Trigger "typing..." indicator if it's a discuss channel
+            # Trigger "typing..." indicator if it's a discuss channel. Odoo 14
+            # keeps typing on the channel itself and attributes it to env.user,
+            # so the notification is sent with the bot's environment.
             if message.model == "mail.channel":
                 channel = self.env["mail.channel"].browse(message.res_id)
-                bot_member = channel.channel_member_ids.filtered(
-                    lambda m: m.partner_id.id == odooclaw_partner_id
-                )
-                if bot_member:
-                    bot_member.sudo()._notify_typing(is_typing=True)
+                if odooclaw_partner_id in channel.channel_partner_ids.ids:
+                    channel.with_user(odooclaw_user).sudo().notify_typing(True)
 
         return message

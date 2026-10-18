@@ -56,9 +56,15 @@ def _normalize_x2many_ids(value, field_name):
     )
 
 
+def _error(reason, status=400):
+    return security.json_response(
+        {"status": "error", "reason": reason}, status=status
+    )
+
+
 class OdooClawController(http.Controller):
     @http.route(
-        "/odooclaw/reply", type="http", auth="public", methods=["POST"], csrf=False
+        "/odooclaw/reply", type="json", auth="public", methods=["POST"], csrf=False
     )
     def odooclaw_reply(self, **kwargs):
         """
@@ -86,24 +92,22 @@ class OdooClawController(http.Controller):
             reply_token = payload.get("reply_token", "")
 
             if not model_name or not res_id:
-                return security.error_response("Missing parameters")
+                raise _error("Missing parameters")
 
             # Must have either a message body or attachments
             if not message_body and not attachment_ids:
-                return security.error_response("Missing message or attachments")
+                raise _error("Missing message or attachments")
 
             # Validate reply token — ensures this reply was solicited by a human message
             if not reply_token:
-                return security.error_response("Missing reply_token", status=401)
+                raise _error("Missing reply_token", status=401)
             token_valid = (
                 request.env["mail.odooclaw.reply.token"]
                 .sudo()
                 ._validate(reply_token, model_name, res_id)
             )
             if not token_valid:
-                return security.error_response(
-                    "Invalid or expired reply_token", status=403
-                )
+                raise _error("Invalid or expired reply_token", status=403)
 
             bot_user = (
                 request.env["res.users"]
@@ -111,7 +115,7 @@ class OdooClawController(http.Controller):
                 .search([("login", "=", "odooclaw_bot")], limit=1)
             )
             if not bot_user:
-                return security.error_response("OdooClaw bot user not found")
+                raise _error("OdooClaw bot user not found")
 
             message_html = markdown_to_safe_html(message_body)
 
@@ -158,26 +162,23 @@ class OdooClawController(http.Controller):
 
                 # Clear typing indicator after replying
                 if model_name == "mail.channel":
-                    bot_member = record.channel_member_ids.filtered(
-                        lambda m: m.partner_id.id == bot_user.partner_id.id
-                    )
-                    if bot_member:
-                        bot_member.sudo()._notify_typing(is_typing=False)
+                    # Odoo 14 has no mail.channel.member records: typing lives on
+                    # mail.channel itself and is always attributed to env.user.
+                    record.with_user(bot_user).sudo().notify_typing(False)
 
-                body = json.dumps({"status": "ok"})
-                return request.make_response(
-                    body, headers=[("Content-Type", "application/json")]
-                )
+                raise security.json_response({"status": "ok"})
 
-            return security.error_response("Record not found")
+            raise _error("Record not found")
+        except security.ResponseCarrier:
+            raise
         except Exception as e:
             if isinstance(e, (http.Response, HTTPException)):
                 raise
-            return security.log_exception(security._logger, "odooclaw_reply error")
+            raise security.log_exception(security._logger, "odooclaw_reply error")
 
     @http.route(
         "/odooclaw/call_kw_as_user",
-        type="http",
+        type="json",
         auth="public",
         methods=["POST"],
         csrf=False,
@@ -206,11 +207,11 @@ class OdooClawController(http.Controller):
             context_dict = payload.get("context") or {}
 
             if not user_id or not model or not method:
-                return security.error_response("Missing user_id, model, or method")
+                raise _error("Missing user_id, model, or method")
 
             # Security: Verify the caller is an internal OdooClaw/Admin session
             if not request.session.uid:
-                return security.error_response(
+                raise _error(
                     "Unauthorized. Must be logged in via session.",
                     status=401,
                 )
@@ -224,7 +225,7 @@ class OdooClawController(http.Controller):
                 or caller.has_group("mail_bot_odooclaw.group_odooclaw_delegator")
                 or caller.has_group("base.group_system")
             ):
-                return security.error_response(
+                raise _error(
                     "Unauthorized. Delegated RPC permission required.",
                     status=401,
                 )
@@ -232,11 +233,11 @@ class OdooClawController(http.Controller):
             try:
                 user_id = int(user_id)
             except (TypeError, ValueError):
-                return security.error_response("Invalid user_id")
+                raise _error("Invalid user_id")
 
             target_user = request.env["res.users"].sudo().browse(user_id)
             if user_id == SUPERUSER_ID or not target_user.exists() or not target_user.active:
-                return security.error_response("Invalid delegated user")
+                raise _error("Invalid delegated user")
 
             # Merge explicit context from caller if provided
             if not isinstance(kwargs_dict, dict):
@@ -275,14 +276,16 @@ class OdooClawController(http.Controller):
                         result = result.ids[0]
                     else:
                         result = result.ids
-                body = json.dumps({"status": "ok", "result": result})
-                return request.make_response(
-                    body, headers=[("Content-Type", "application/json")]
-                )
+                raise security.json_response({"status": "ok", "result": result})
+            except security.ResponseCarrier:
+                raise
             except Exception as orm_error:
-                return security.error_response("Odoo ORM error", status=500)
+                security._logger.exception("OdooClaw call_kw_as_user ORM error")
+                raise _error("Odoo ORM error", status=500)
 
+        except security.ResponseCarrier:
+            raise
         except Exception as e:
             if isinstance(e, (http.Response, HTTPException)):
                 raise
-            return security.log_exception(security._logger, "call_kw_as_user error")
+            raise security.log_exception(security._logger, "call_kw_as_user error")

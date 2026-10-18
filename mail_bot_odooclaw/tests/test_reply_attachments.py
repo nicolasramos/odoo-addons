@@ -80,8 +80,13 @@ class TestReplyDeliversAttachments(TransactionCase):
 
         Without this, someone could "fix" a later refactor by removing the
         helper and the suite would still be green.
+
+        Odoo 14 raises TypeError ("unhashable type: 'list'") from the ORM cache
+        when the raw x2many command reaches message_post; 16+ raises
+        ValueError earlier. Both mean the raw form is rejected, which is the
+        point of the control.
         """
-        with self.assertRaises(ValueError):
+        with self.assertRaises((ValueError, TypeError)):
             self.channel.sudo().message_post(
                 body="raw", attachment_ids=[(6, 0, [self.attachment.id])]
             )

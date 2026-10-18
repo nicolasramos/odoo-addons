@@ -112,40 +112,43 @@ class TestMailOdooClawReplyToken(TransactionCase):
                 return real_env[key]
 
         mock.env = _EnvProxy()
-        mock.make_response = lambda d, **kw: MagicMock(
-            data=d.encode() if isinstance(d, str) else d
-        )
         return mock
 
-    def test_controller_no_token_rejected(self):
+    def _call_controller(self, mock_req):
+        """Run the endpoint and unwrap the response it carries.
+
+        On Odoo 14 the controller raises ``ResponseCarrier`` with the response
+        already built (see ``models/ir_http.py``), so the body lives in the
+        exception instead of in the return value.
+        """
         from ..controllers.main import OdooClawController
-        mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
-                                       "message": "hi"})
+        from ..controllers.security import ResponseCarrier
+
         with patch("odoo.addons.mail_bot_odooclaw.controllers.main.request", new=mock_req), \
              patch("odoo.addons.mail_bot_odooclaw.controllers.security.request", new=mock_req):
-            resp = OdooClawController.odooclaw_reply.__wrapped__(OdooClawController())
-            data = json.loads(resp.data)
-            self.assertEqual(data["reason"], "Missing reply_token")
+            try:
+                OdooClawController.odooclaw_reply.__wrapped__(OdooClawController())
+            except ResponseCarrier as carrier:
+                return json.loads(carrier.odooclaw_response.data)
+        self.fail("the endpoint must always carry a response")
+
+    def test_controller_no_token_rejected(self):
+        mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
+                                       "message": "hi"})
+        data = self._call_controller(mock_req)
+        self.assertEqual(data["reason"], "Missing reply_token")
 
     def test_controller_expired_token_rejected(self):
         rec = self._make_token(offset_seconds=-1)
-        from ..controllers.main import OdooClawController
         mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
                                        "message": "hi", "reply_token": rec.token})
-        with patch("odoo.addons.mail_bot_odooclaw.controllers.main.request", new=mock_req), \
-             patch("odoo.addons.mail_bot_odooclaw.controllers.security.request", new=mock_req):
-            resp = OdooClawController.odooclaw_reply.__wrapped__(OdooClawController())
-            data = json.loads(resp.data)
-            self.assertEqual(data["reason"], "Invalid or expired reply_token")
+        data = self._call_controller(mock_req)
+        self.assertEqual(data["reason"], "Invalid or expired reply_token")
 
     def test_controller_valid_token_passes_validation(self):
         rec = self._make_token()
-        from ..controllers.main import OdooClawController
         mock_req = self._mock_request({"model": "res.partner", "res_id": 1,
                                        "message": "hi", "reply_token": rec.token})
-        with patch("odoo.addons.mail_bot_odooclaw.controllers.main.request", new=mock_req), \
-             patch("odoo.addons.mail_bot_odooclaw.controllers.security.request", new=mock_req):
-            resp = OdooClawController.odooclaw_reply.__wrapped__(OdooClawController())
-            data = json.loads(resp.data)
-            self.assertNotEqual(data.get("reason"), "Invalid or expired reply_token")
-            self.assertNotEqual(data.get("reason"), "Missing reply_token")
+        data = self._call_controller(mock_req)
+        self.assertNotEqual(data.get("reason"), "Invalid or expired reply_token")
+        self.assertNotEqual(data.get("reason"), "Missing reply_token")

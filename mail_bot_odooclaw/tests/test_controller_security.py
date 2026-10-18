@@ -20,7 +20,7 @@ class TestSecurityHelpers(TransactionCase):
 
     def test_default_deny_no_config(self):
         """Without any config, authorize() should reject the request."""
-        from ..controllers.security import authorize, _abort
+        from ..controllers.security import authorize, ResponseCarrier
 
         with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
                         new=MagicMock()) as mock_request:
@@ -30,17 +30,13 @@ class TestSecurityHelpers(TransactionCase):
             )
             mock_request.httprequest.remote_addr = "10.0.0.1"
             mock_request.httprequest.headers.get = lambda key, default="": ""
-            mock_request.make_response = lambda d, **kw: MagicMock(
-                data=d.encode() if isinstance(d, str) else d
-            )
-            with self.assertRaises(Exception) as ctx:
+            with self.assertRaises(ResponseCarrier) as ctx:
                 authorize()
-            # The reason lives in the HTTPException's response body,
-            # not in str(exception).
+            # The reason lives in the carried response body, not in
+            # str(exception).
             exc = ctx.exception
-            self.assertTrue(hasattr(exc, "response") and exc.response is not None,
-                            "authorize() must raise HTTPException with a response")
-            body = json.loads(exc.response.data)
+            self.assertIsNotNone(exc.odooclaw_response)
+            body = json.loads(exc.odooclaw_response.data)
             self.assertEqual(body.get("reason"), "Unauthorized: no security configuration. Set odooclaw.reply_token or odooclaw.allowed_ips")
 
     def test_ip_allowed_cidr(self):
@@ -121,33 +117,31 @@ class TestSecurityHelpers(TransactionCase):
 
     def test_error_response_sanitized(self):
         """Test that error responses don't leak internals."""
-        from ..controllers.security import error_response
+        from ..controllers.security import json_response
 
         with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
                    new=MagicMock()) as mock_req:
-            mock_req.make_response = lambda d, **kw: MagicMock(
-                data=d.encode() if isinstance(d, str) else d
-            )
-            result = error_response("Something went wrong", status=500)
+            result = json_response(
+                {"status": "error", "reason": "Something went wrong"}, status=500
+            ).odooclaw_response
         data = json.loads(result.data)
         self.assertEqual(data["status"], "error")
         self.assertEqual(data["reason"], "Something went wrong")
         self.assertEqual(result.status_code, 500)
 
     def test_error_response_default_status(self):
-        """Test default status code is 400."""
-        from ..controllers.security import error_response
+        """Test default status code is 200 for json_response, 401 for _abort."""
+        from ..controllers.security import _abort, ResponseCarrier
 
         with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
                    new=MagicMock()) as mock_req:
-            mock_req.make_response = lambda d, **kw: MagicMock(
-                data=d.encode() if isinstance(d, str) else d
-            )
-            result = error_response("Bad request")
+            with self.assertRaises(ResponseCarrier) as ctx:
+                _abort(401, "Bad request")
+            result = ctx.exception.odooclaw_response
         data = json.loads(result.data)
         self.assertEqual(data["status"], "error")
         self.assertEqual(data["reason"], "Bad request")
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(result.status_code, 401)
 
     def test_authorize_passes_with_token_only(self):
         """authorize() should pass when only token is configured and valid."""

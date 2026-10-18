@@ -11,11 +11,14 @@ Odoo 14 uses `mail.channel` (not `discuss.channel` from 16+) and
 so it passes cleanly through the core.
 """
 
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import SavepointCase, tagged
 
 
+# Odoo 14 only sets a class-level ``cls.env`` on Single/SavepointCase, not on
+# TransactionCase (15+ does); these classes build their fixtures in setUpClass,
+# so they must inherit SavepointCase on this branch.
 @tagged("post_install", "-at_install")
-class TestMailChannelResolution(TransactionCase):
+class TestMailChannelResolution(SavepointCase):
     """Test that _resolve_private_reply_channel works with mail.channel."""
 
     @classmethod
@@ -34,8 +37,8 @@ class TestMailChannelResolution(TransactionCase):
             self.user.partner_id, self.bot.partner_id
         )
         self.assertEqual(channel.channel_type, "chat")
-        self.assertIn(self.user.partner_id, channel.channel_member_ids.partner_id)
-        self.assertIn(self.bot.partner_id, channel.channel_member_ids.partner_id)
+        self.assertIn(self.user.partner_id, channel.channel_partner_ids)
+        self.assertIn(self.bot.partner_id, channel.channel_partner_ids)
 
     def test_resolve_reuses_existing_channel(self):
         """Two calls with the same partners must return the same channel."""
@@ -63,7 +66,7 @@ class TestMailChannelResolution(TransactionCase):
 
 
 @tagged("post_install", "-at_install")
-class TestMessagePostOverride(TransactionCase):
+class TestMessagePostOverride(SavepointCase):
     """Test that the message_post override works with mail.channel in Odoo 14."""
 
     @classmethod

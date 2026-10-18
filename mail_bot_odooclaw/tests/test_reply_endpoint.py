@@ -15,30 +15,26 @@ from odoo.tests import HttpCase, tagged
 class TestReplyEndpoint(HttpCase):
     """End-to-end HTTP test for the /odooclaw/reply endpoint."""
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.bot = cls.env.ref("mail_bot_odooclaw.odooclaw_bot")
-        cls.user = cls.env["res.users"].create({
+    def setUp(self):
+        # Odoo 14's HttpCase has no class-level ``cls.env``: the fixtures are
+        # built per test. ``super().setUp()`` has already entered test mode, so
+        # the HTTP requests issued by url_open share this cursor and see them.
+        super().setUp()
+        self.bot = self.env.ref("mail_bot_odooclaw.odooclaw_bot")
+        self.user = self.env["res.users"].create({
             "name": "HTTP Test User",
             "login": "http_test_user",
         })
         # Create a channel so test 2 has a valid target (avoids dependency on
         # whether id=1 exists in the test database).
-        cls.channel = cls.env["mail.channel"].create({
+        self.channel = self.env["mail.channel"].create({
             "name": "HTTP test channel",
             "channel_type": "chat",
         })
         # Configure the shared secret so authorize() passes.
-        cls.env["ir.config_parameter"].sudo().set_param(
+        self.env["ir.config_parameter"].sudo().set_param(
             "odooclaw.reply_token", "test-secret"
         )
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        # Clean up the config parameter so it doesn't leak into other tests.
-        cls.env["ir.config_parameter"].sudo().search([("key", "=", "odooclaw.reply_token")]).unlink()
 
     def _post(self, payload):
         """POST to /odooclaw/reply with the shared secret."""
