@@ -25,7 +25,9 @@ import logging
 
 from odoo import _, http
 from odoo.http import request
-from werkzeug.exceptions import Unauthorized, Forbidden
+from werkzeug.exceptions import Unauthorized
+
+from ..utils.markdown_html import markdown_to_safe_html
 
 _logger = logging.getLogger(__name__)
 
@@ -39,10 +41,14 @@ def _resolve_area(screen):
 
 
 def _get_bot_user():
-    """Return the bot user record."""
+    """Return the bot user record.
+
+    sudo(): the proactive routes are ``auth="public"``, so without superuser
+    rights reading the bot's own ``res.users`` row is denied by record rules.
+    """
     return request.env.ref(
         "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False
-    )
+    ).sudo()
 
 
 def _get_service_secret():
@@ -58,10 +64,33 @@ def _get_allowed_ips():
     return [ip.strip() for ip in ips.split(",") if ip.strip()] if ips else []
 
 
+def _json_body():
+    """Return the parsed JSON body of the request, or ``None``.
+
+    Odoo 18 exposes ``request.get_json()``; Odoo 17 only has
+    ``request.get_json_data()``, which raises on an empty or malformed body
+    instead of returning a falsy value, so the callers' ``if not body`` guard
+    needs this wrapper.
+    """
+    try:
+        return request.get_json_data()
+    except ValueError:
+        return None
+
+
+def _json_response(payload, status=200):
+    """Return a plain JSON response (the routes are ``type="http"``)."""
+    return request.make_json_response(payload, status=status)
+
+
+def _error_response(reason, status=400):
+    return _json_response({"status": "error", "reason": reason}, status=status)
+
+
 def _authorize():
     """Authorize the request via service secret or IP allowlist.
 
-    Raises ``Unauthorized`` or ``Forbidden`` on failure.
+    Raises ``Unauthorized`` (with a JSON body) on failure.
     """
     secret = _get_service_secret()
     if secret:
@@ -80,7 +109,11 @@ def _authorize():
         client_ip = forwarded.split(",")[0].strip()
         if client_ip in allowed_ips:
             return
-    raise Unauthorized("Invalid or missing authentication token")
+    raise Unauthorized(
+        response=_error_response(
+            "Invalid or missing authentication token", status=401
+        )
+    )
 
 
 class Proactive(http.Controller):
@@ -93,57 +126,51 @@ class Proactive(http.Controller):
         message behind it, so it is narrow, authenticated with the service
         secret (or the IP allowlist) and it can only ever target the bot's
         own private chat with a user — never a business record's chatter.
+
+        Reuses ``_resolve_private_reply_channel`` so a proactive message lands in
+        the same conversation the reply path uses, and posts as the bot user: the
+        route is ``auth="public"``, so reading ``res.users`` or creating the
+        channel needs superuser rights.
         """
-        bot = _get_bot_user()
-        if not bot:
+        bot_user = _get_bot_user()
+        if not bot_user:
+            return None
+        env = bot_user.env  # superuser
+        user = env["res.users"].browse(int(user_id))
+        if not user.exists() or not user.partner_id:
             return None
 
-        # Find or create the bot channel for this user
-        Channel = request.env["mail.channel"]
-        domain = [
-            ("channel_type", "=", "channel"),
-            ("channel_last_notification_date", "=", False),
-        ]
-        # Find existing private channel between bot and user
-        channels = Channel.sudo().search(domain)
-        private_channel = None
-        for ch in channels:
-            if (
-                bot.partner_id.id in ch.partner_ids.ids
-                and user_id in ch.partner_ids.ids
-            ):
-                private_channel = ch
-                break
+        channel = (
+            env["mail.thread"]
+            .sudo()
+            ._resolve_private_reply_channel(user.partner_id, bot_user.partner_id)
+        )
+        if not channel:
+            return None
 
-        if not private_channel:
-            # Create a new private channel
-            user = request.env["res.users"].browse(user_id)
-            private_channel = Channel.sudo().create(
-                {
-                    "name": bot.partner_id.name + " / " + user.name,
-                    "channel_type": "channel",
-                    "channel_last_notification_date": False,
-                    "channel_is_private": True,
-                    "channel_user_ids": [(4, user.partner_id.id)],
-                    "channel_user_ids": [(4, bot.partner_id.id)],
-                }
+        posted = (
+            channel.with_user(bot_user)
+            .sudo()
+            .message_post(
+                body=markdown_to_safe_html(message),
+                author_id=bot_user.partner_id.id,
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
             )
-
-        # Post the message
-        values = {
-            "body": message,
-            "message_type": "comment",
-            "model": private_channel._name,
-            "res_id": private_channel.id,
-            "odooclaw_proactive": True,
-            "odooclaw_playbook_id": playbook_id,
-            "odooclaw_area": area,
-        }
-        message = private_channel.message_post(**values)
+        )
+        # Odoo 17's message_post() rejects any kwarg that is not a supported
+        # parameter, so the proactive markers are written on the created message.
+        posted.sudo().write(
+            {
+                "odooclaw_proactive": True,
+                "odooclaw_playbook_id": playbook_id or "",
+                "odooclaw_area": area or "",
+            }
+        )
 
         # Stop typing indicator
-        bot_member = private_channel.channel_channel_member_ids.filtered(
-            lambda m: m.partner_id.id == bot.partner_id.id
+        bot_member = channel.channel_member_ids.filtered(
+            lambda member: member.partner_id == bot_user.partner_id
         )
         if bot_member:
             bot_member.sudo()._notify_typing(is_typing=False)
@@ -154,32 +181,41 @@ class Proactive(http.Controller):
             area,
             playbook_id,
         )
-        return message
+        return posted
 
-    @http.route("/odooclaw/signal", type="json", auth="public", methods=["POST"],
+    @http.route("/odooclaw/signal", type="http", auth="public", methods=["POST"],
                 csrf=False, website_published=False)
     def signal(self, **kwargs):
-        """Handle a proactive signal from the frontend.
+        """Evaluate a proactive signal and answer with the engine's decision.
 
-        The frontend posts the current screen name and the user id.
-        The controller resolves the area, calls the Go engine, and posts
-        the result to the bot's private chat.
+        ``type="http"`` (not ``"json"``) on purpose: Odoo wraps a json route's
+        result in a JSON-RPC envelope and turns every error — including an auth
+        rejection — into HTTP 200, so the caller could not tell a refusal from a
+        success. The module's other public route (``/odooclaw/reply``) already
+        works this way.
         """
         _authorize()
 
-        body = request.get_json()
+        body = _json_body()
         if not body:
-            return {"error": "empty body"}
+            return _error_response("empty body")
 
         user_id = body.get("user_id")
         screen = body.get("screen")
         if not user_id or not screen:
-            return {"error": "missing user_id or screen"}
+            return _error_response("missing user_id or screen")
 
         # Resolve area
         area_rec = _resolve_area(screen)
         if not area_rec:
-            return {"speak": False, "reason": _("no area for this screen"), "area": ""}
+            return _json_response(
+                {
+                    "status": "ok",
+                    "speak": False,
+                    "reason": _("no area for this screen"),
+                    "area": "",
+                }
+            )
 
         # Call Go engine
         icp = request.env["ir.config_parameter"].sudo()
@@ -206,21 +242,27 @@ class Proactive(http.Controller):
             resp.raise_for_status()
             decision = resp.json()
         except Exception as exc:
-            return {
-                "speak": False,
-                "reason": str(exc),
+            return _json_response(
+                {
+                    "status": "ok",
+                    "speak": False,
+                    "reason": str(exc),
+                    "area": area_rec.area,
+                }
+            )
+
+        return _json_response(
+            {
+                "status": "ok",
+                "speak": True,
+                "reason": decision.get("reason", ""),
+                "playbook_id": decision.get("playbook_id", ""),
                 "area": area_rec.area,
+                "message": decision.get("message", ""),
             }
+        )
 
-        return {
-            "speak": True,
-            "reason": decision.get("reason", ""),
-            "playbook_id": decision.get("playbook_id", ""),
-            "area": area_rec.area,
-            "message": decision.get("message", ""),
-        }
-
-    @http.route("/odooclaw/notify", type="json", auth="public", methods=["POST"],
+    @http.route("/odooclaw/notify", type="http", auth="public", methods=["POST"],
                 csrf=False, website_published=False)
     def notify(self, **kwargs):
         """Handle a proactive notification from OdooClaw.
@@ -230,9 +272,9 @@ class Proactive(http.Controller):
         """
         _authorize()
 
-        body = request.get_json()
+        body = _json_body()
         if not body:
-            return {"error": "empty body"}
+            return _error_response("empty body")
 
         user_id = body.get("user_id")
         message = body.get("message")
@@ -240,10 +282,10 @@ class Proactive(http.Controller):
         playbook_id = body.get("playbook_id", "")
 
         if not user_id or not message:
-            return {"error": "missing user_id or message"}
+            return _error_response("missing user_id or message")
 
         posted_msg = self._post_to_bot_chat(user_id, message, area, playbook_id)
         if not posted_msg:
-            return {"error": "bot user not configured"}
+            return _error_response("bot user not configured")
 
-        return {"status": "ok", "message_id": posted_msg.id}
+        return _json_response({"status": "ok", "message_id": posted_msg.id})
