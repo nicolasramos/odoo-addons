@@ -1,9 +1,12 @@
 from datetime import timedelta
-from unittest.mock import patch, MagicMock
 import json
 
 from odoo import fields
 from odoo.tests import TransactionCase, tagged
+
+from ..controllers import main as main_controller
+from ..controllers import security
+from .request_mock import FakeRequest, patch_request
 
 
 @tagged("post_install", "-at_install")
@@ -14,6 +17,11 @@ class TestMailOdooClawReplyToken(TransactionCase):
         self.Token = self.env["mail.odooclaw.reply.token"]
         self.env["ir.config_parameter"].sudo().set_param(
             "odooclaw.reply_token_ttl", "300"
+        )
+        # The controller runs security.authorize() first, which default-denies
+        # unless a credential is configured; the URL client is the loopback.
+        self.env["ir.config_parameter"].sudo().set_param(
+            "odooclaw.allowed_ips", "127.0.0.1"
         )
 
     def _make_token(self, token="test-uuid-1234", model="crm.lead", res_id=1,
@@ -90,41 +98,44 @@ class TestMailOdooClawReplyToken(TransactionCase):
 
     # --- Controller ---
 
-    def _mock_request(self, payload):
-        mock = MagicMock()
-        mock.httprequest.data = json.dumps(payload).encode()
-        mock.env = self.env
-        mock.make_json_response = lambda d, **kw: MagicMock(
-            data=json.dumps(d).encode()
-        )
-        return mock
+    def _call_reply(self, payload):
+        """Run the reply route with a fake request bound to this transaction."""
+        fake = FakeRequest(self.env, payload=payload)
+        with patch_request(fake, main_controller, security):
+            return main_controller.OdooClawController().odooclaw_reply()
 
     def test_controller_no_token_rejected(self):
-        from ..controllers.main import OdooClawController
-        with patch("odoo.http.request",
-                   self._mock_request({"model": "crm.lead", "res_id": 1,
-                                       "message": "hi"})):
-            resp = OdooClawController().odooclaw_reply()
-            data = json.loads(resp.data)
-            self.assertEqual(data["reason"], "Missing reply_token")
+        resp = self._call_reply(
+            {"model": "crm.lead", "res_id": 1, "message": "hi"}
+        )
+        data = json.loads(resp.data)
+        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(data["reason"], "Missing reply_token")
 
     def test_controller_expired_token_rejected(self):
         rec = self._make_token(offset_seconds=-1)
-        from ..controllers.main import OdooClawController
-        with patch("odoo.http.request",
-                   self._mock_request({"model": "crm.lead", "res_id": 1,
-                                       "message": "hi", "reply_token": rec.token})):
-            resp = OdooClawController().odooclaw_reply()
-            data = json.loads(resp.data)
-            self.assertEqual(data["reason"], "Invalid or expired reply_token")
+        resp = self._call_reply(
+            {
+                "model": "crm.lead",
+                "res_id": 1,
+                "message": "hi",
+                "reply_token": rec.token,
+            }
+        )
+        data = json.loads(resp.data)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(data["reason"], "Invalid or expired reply_token")
 
     def test_controller_valid_token_passes_validation(self):
         rec = self._make_token()
-        from ..controllers.main import OdooClawController
-        with patch("odoo.http.request",
-                   self._mock_request({"model": "crm.lead", "res_id": 1,
-                                       "message": "hi", "reply_token": rec.token})):
-            resp = OdooClawController().odooclaw_reply()
-            data = json.loads(resp.data)
-            self.assertNotEqual(data.get("reason"), "Invalid or expired reply_token")
-            self.assertNotEqual(data.get("reason"), "Missing reply_token")
+        resp = self._call_reply(
+            {
+                "model": "crm.lead",
+                "res_id": 1,
+                "message": "hi",
+                "reply_token": rec.token,
+            }
+        )
+        data = json.loads(resp.data)
+        self.assertNotEqual(data.get("reason"), "Invalid or expired reply_token")
+        self.assertNotEqual(data.get("reason"), "Missing reply_token")
