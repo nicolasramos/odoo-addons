@@ -51,18 +51,18 @@ class TestOdooclawAudience(TransactionCase):
 
     def test_internal_user_is_eligible(self):
         """An internal user without any special groups is eligible."""
-        result = self.Audience.resolve_for_user(self.internal.id)
+        result = self.audience.resolve_for_user(self.internal.id)
         self.assertTrue(result["eligible"], result["reason"])
 
     def test_portal_user_is_excluded(self):
         """A portal user (share=True) is never eligible."""
-        result = self.Audience.resolve_for_user(self.portal.id)
+        result = self.audience.resolve_for_user(self.portal.id)
         self.assertFalse(result["eligible"])
         self.assertIn("portal", result["reason"].lower())
 
     def test_public_user_is_excluded(self):
         """The public user is never eligible."""
-        result = self.Audience.resolve_for_user(self.public.id)
+        result = self.audience.resolve_for_user(self.public.id)
         self.assertFalse(result["eligible"])
 
     def test_bot_user_is_excluded(self):
@@ -73,5 +73,5 @@ class TestOdooclawAudience(TransactionCase):
     def test_admin_is_internal_and_eligible(self):
         """The baseline: a plain internal user is eligible, with no groups set."""
         admin = self.env.ref("base.user_admin")
-        result = self.Audience.resolve_for_user(admin.id)
+        result = self.audience.resolve_for_user(admin.id)
         self.assertTrue(result["eligible"], result["reason"])

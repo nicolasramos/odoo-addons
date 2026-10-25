@@ -67,7 +67,7 @@ class OdooClawController(http.Controller):
 
         Expected payload:
         {
-            "model": "mail.channel",
+            "model": "discuss.channel",
             "res_id": 123,
             "message": "Hello!",
             "attachment_ids": [456, 457],
@@ -138,8 +138,8 @@ class OdooClawController(http.Controller):
             if record.exists():
                 record.with_user(bot_user).sudo().message_post(**post_values)
 
-                if model_name == "mail.channel":
-                    channel_partner = request.env["mail.channel.member"].search(
+                if model_name == "discuss.channel":
+                    channel_partner = request.env["discuss.channel.member"].search(
                         [
                             ("channel_id", "=", record.id),
                             ("partner_id", "=", bot_user.partner_id.id),

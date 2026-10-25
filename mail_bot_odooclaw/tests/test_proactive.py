@@ -80,7 +80,9 @@ class TestProactive(HttpCase):
             },
         )
         body = resp.json()
-        self.assertIn("error", body)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(body["status"], "error")
+        self.assertIn("user_id", body["reason"])
 
     def test_notify_missing_auth(self):
         """/odooclaw/notify without auth must default-deny."""
@@ -119,5 +121,6 @@ class TestProactive(HttpCase):
             },
         )
         body = resp.json()
+        self.assertEqual(resp.status_code, 400)
         self.assertEqual(body["status"], "error")
-        self.assertIn("reply_token", body["reason"].lower())
+        self.assertIn("user_id", body["reason"])
