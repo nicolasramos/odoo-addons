@@ -1,0 +1,20 @@
+<odoo>
+    <data noupdate="0">
+        <record id="area_accounting" model="mail.odooclaw.area">
+            <field name="name">Accounting</field>
+            <field name="area">accounting</field>
+            <field name="sequence">10</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">account.move</field>
+            <field name="signal_definition">{"unposted_invoices": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["out_invoice", "out_refund"]]]}, "unposted_vendor_bills": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["in_invoice", "in_refund"]]]}, "verifactu_unconfigured": {"model": "ir.module.module", "domain": [["name", "=", "l10n_es_edi_verifactu"], ["state", "!=", "installed"]]}}</field>
+        </record>
+        <record id="area_accounting_bank" model="mail.odooclaw.area">
+            <field name="name">Accounting - Bank</field>
+            <field name="area">accounting</field>
+            <field name="sequence">10</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">account.bank.statement.line</field>
+            <field name="signal_definition">{"unreconciled_statement_lines": {"model": "account.bank.statement.line", "domain": [["is_reconciled", "=", false]]}}</field>
+        </record>
+    </data>
+</odoo>

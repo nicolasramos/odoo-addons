@@ -5,7 +5,10 @@ class ResUsers(models.Model):
     _inherit = "res.users"
 
     def _compute_im_status(self):
-        # Set im_status to 'online' for the OdooClaw bot (shown in chatter as online)
+        """
+        Override to set im_status to 'online' for the OdooClaw bot.
+        Useful for Live chat.
+        """
         odooclaw_user = self.env.ref(
             "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False
         )
