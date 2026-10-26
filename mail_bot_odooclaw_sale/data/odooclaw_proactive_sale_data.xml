@@ -2,17 +2,6 @@
 <!-- Copyright 2026 Nicolás Ramos
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
-    <!--
-        noupdate="0": shipped defaults that must keep reaching existing
-        installations. To customise a threshold or a domain, create a NEW
-        mail.odooclaw.area row instead of editing this one — the resolver picks
-        by action, then view, then model, so a more specific row wins, and an
-        upgrade restores shipped rows.
-
-        Both domains below were verified against a real Odoo 18 database: a
-        record matching the domain moves the counter, and one that must not
-        match leaves it unchanged. Verified 2026-09.
-    -->
     <data noupdate="0">
         <record id="area_sales" model="mail.odooclaw.area">
             <field name="name">Sales</field>
@@ -20,7 +9,7 @@
             <field name="sequence">20</field>
             <field name="enabled" eval="True" />
             <field name="model_name">sale.order</field>
-            <field name="signal_definition">{"draft_quotations": {"model": "sale.order", "domain": [["state", "=", "draft"]]}}</field>
+            <field name="signal_definition">{"draft_quotations": {"model": "sale.order", "domain": [["state", "=", "draft"]]}, "stale_opportunities": {"model": "sale.order", "domain": [["state", "=", "draft"], ["date_order", "&lt;", "$today_minus_30_days"]]}}</field>
         </record>
     </data>
 </odoo>
