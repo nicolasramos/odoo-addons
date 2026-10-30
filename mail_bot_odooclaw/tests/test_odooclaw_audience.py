@@ -108,3 +108,27 @@ class TestOdooclawAudience(TransactionCase):
         admin = self.env.ref("base.user_admin")
         result = self.Audience.resolve_for_user(admin.id)
         self.assertTrue(result["eligible"], result["reason"])
+
+    # --- the user's own opt-out (issue #27) ---
+
+    def test_default_mode_offers_direct_messages(self):
+        """The opt-out is opt-in: shipping it must not silence the feature.
+
+        If the default ever flipped, every existing installation would stop
+        receiving proactive help at the next upgrade, silently. This test is the
+        tripwire for that.
+        """
+        self.assertEqual(self.internal.odooclaw_proactive_mode, "dm")
+
+    def test_user_who_disabled_suggestions_is_not_eligible(self):
+        """A user may exclude themselves; the audience is not the only gate.
+
+        The audience is administrative — internal-only, groups, companies. That
+        is an administrator deciding for people. This is the person deciding for
+        themselves, and the verdict has to say so rather than swallow it.
+        """
+        self.internal.odooclaw_proactive_mode = "disabled"
+        verdict = self.Audience.resolve_for_user(self.internal.id)
+        self.assertFalse(verdict["eligible"])
+        self.assertIn("disabled", verdict["reason"])
+

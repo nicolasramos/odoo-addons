@@ -1,6 +1,6 @@
 {
     "name": "OdooClaw AI Bot",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.3.0",
     "category": "Discuss",
     "summary": "Integrate OdooClaw AI agent via webhooks in Odoo Discuss",
     "author": "Nicolás Ramos",
@@ -13,6 +13,8 @@
         "data/odooclaw_audience_data.xml",
         "data/odooclaw_cron.xml",
         "views/mail_odooclaw_audience_views.xml",
+        "views/mail_odooclaw_area_views.xml",
+        "views/res_users_views.xml",
     ],
     "installable": True,
     "application": False,

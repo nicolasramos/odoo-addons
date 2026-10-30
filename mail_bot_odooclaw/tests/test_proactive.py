@@ -3,7 +3,7 @@
 
 import json
 
-from odoo.tests import HttpCase, tagged
+from odoo.tests import HttpCase, TransactionCase, tagged
 
 
 @tagged("post_install", "-at_install")
@@ -103,6 +103,24 @@ class TestProactive(HttpCase):
     def test_notify_rejects_bad_token(self):
         resp = self._post({"user_id": self.user.id, "message": "hola"}, token="wrong")
         self.assertEqual(resp.status_code, 401)
+
+    def test_notify_refuses_a_user_who_disabled_suggestions(self):
+        """The opt-out is enforced at the delivery choke point, not only upstream.
+
+        `/odooclaw/signal` asks the audience resolver first, but `/odooclaw/notify`
+        does not: an agent, a cron or an external trigger can reach it directly.
+        Both go through `post_proactive_message`, so that is where the user's own
+        "do not message me" has to hold — otherwise the opt-out would be a
+        suggestion the engine can walk around.
+        """
+        self.user.odooclaw_proactive_mode = "disabled"
+        resp = self._post({"user_id": self.user.id, "message": "hola"})
+        self.assertIn(resp.status_code, (400, 401), resp.text)
+        self.assertEqual(resp.json()["status"], "error")
+        posted = self.env["mail.message"].sudo().search(
+            [("odooclaw_proactive", "=", True)]
+        )
+        self.assertFalse(posted, "a disabled user received a proactive message")
 
     # --- area resolution ---
 
@@ -325,3 +343,51 @@ class TestProactive(HttpCase):
         body = resp.json()
         self.assertEqual(body["status"], "error")
         self.assertIn("reply_token", body["reason"].lower())
+
+
+@tagged("post_install", "-at_install")
+class TestAreaAdminViews(TransactionCase):
+    """`mail.odooclaw.area` has to be reachable without technical mode (issue #27).
+
+    Every row carries an `enabled` switch, and the whole point of shipping the
+    areas as data was that an administrator can retarget one without a code
+    change. With no view and no menu, that switch was only reachable by editing
+    XML or by turning on developer mode — which means, in practice, that nobody
+    turned anything off.
+    """
+
+    def test_area_views_action_and_menu_are_shipped(self):
+        for xmlid in (
+            "view_mail_odooclaw_area_list",
+            "view_mail_odooclaw_area_form",
+            "action_mail_odooclaw_area",
+            "menu_mail_odooclaw_area",
+        ):
+            self.assertTrue(
+                self.env.ref("mail_bot_odooclaw.%s" % xmlid, raise_if_not_found=False),
+                "%s is missing from the module data" % xmlid,
+            )
+
+        action = self.env.ref("mail_bot_odooclaw.action_mail_odooclaw_area")
+        self.assertEqual(action.res_model, "mail.odooclaw.area")
+        menu = self.env.ref("mail_bot_odooclaw.menu_mail_odooclaw_area")
+        self.assertEqual(menu.action, action)
+
+    def test_area_views_render(self):
+        """The arch must survive postprocessing: an unknown field raises here."""
+        Area = self.env["mail.odooclaw.area"].sudo()
+        list_view = self.env.ref("mail_bot_odooclaw.view_mail_odooclaw_area_list")
+        form_view = self.env.ref("mail_bot_odooclaw.view_mail_odooclaw_area_form")
+        list_arch = Area.get_view(list_view.id)["arch"]
+        form_arch = Area.get_view(form_view.id)["arch"]
+
+        # The switch this whole view exists for, reachable from the list.
+        self.assertIn('name="enabled"', list_arch)
+        for field in ("name", "area", "enabled", "signal_definition"):
+            self.assertIn('name="%s"' % field, form_arch)
+
+    def test_opt_out_is_on_the_user_preferences(self):
+        """A user must be able to turn the assistant off without an administrator."""
+        view = self.env.ref("base.view_users_form_simple_modif")
+        arch = self.env["res.users"].get_view(view.id)["arch"]
+        self.assertIn("odooclaw_proactive_mode", arch)
