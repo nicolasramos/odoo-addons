@@ -160,6 +160,17 @@ class MailOdooclawAudience(models.Model):
                 "reason": _("it is the bot itself"),
             }
 
+        # The person's own "do not message me" outranks any administrative
+        # audience rule that would otherwise include them.
+        if user.odooclaw_proactive_mode == "disabled":
+            return {
+                "user_id": user.id,
+                "is_internal": is_internal,
+                "is_active": is_active,
+                "eligible": False,
+                "reason": _("this user has proactive suggestions disabled"),
+            }
+
         if not user.filtered_domain(audience._audience_domain()):
             return {
                 "user_id": user.id,

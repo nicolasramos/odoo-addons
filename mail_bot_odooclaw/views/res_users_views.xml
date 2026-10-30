@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        The opt-out has to be somewhere the user can reach alone. The audience is
+        an administrator's tool; this is the user's own preferences, so turning
+        the assistant off does not need a ticket.
+    -->
+    <record id="view_users_form_simple_modif_odooclaw" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.odooclaw</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif" />
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='preferences']" position="inside">
+                <group string="OdooClaw assistant">
+                    <field name="odooclaw_proactive_mode" readonly="0" widget="radio" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
