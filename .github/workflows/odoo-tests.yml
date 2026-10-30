@@ -58,6 +58,13 @@ jobs:
             git clone --depth 1 -b 18.0 https://github.com/odoo/odoo.git odoo-src
           fi
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libldap2-dev libsasl2-dev libpq-dev libxml2-dev libxslt1-dev \
+            libjpeg-dev zlib1g-dev libffi-dev libssl-dev
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip wheel
