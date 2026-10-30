@@ -37,6 +37,20 @@
               would return 0 forever and the user would simply never be told.
             * `account.bank.statement.line.is_reconciled` is the field that
               exists. Its domain counts unreconciled bank lines.
+
+            A third, from issue #26: a counter can count correctly and still
+            describe the wrong company. `verifactu_unconfigured` sits at 1 in
+            every database outside Spain — the module is simply absent — and the
+            playbook threshold is 1, so the assistant used to tell a
+            French-Polynesian accountant that their company invoices in Spain,
+            once a day. The counter now carries a `requires` gate: it only means
+            anything where the Spanish fiscal country is in use.
+
+            Why the fiscal country and not `l10n_es` being installed: the
+            obligation follows the company's tax residency, and a Spanish
+            company that has not installed the localization yet is precisely the
+            one that needs the hint. A company with no chart configured fails
+            the gate, which is silence — the safe direction.
         -->
 
         <record id="area_accounting" model="mail.odooclaw.area">
@@ -47,7 +61,7 @@
             <field name="model_name">account.move</field>
             <field
                 name="signal_definition"
-            >{"unposted_invoices": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["out_invoice", "out_refund"]]]}, "unposted_vendor_bills": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["in_invoice", "in_refund"]]]}, "verifactu_unconfigured": {"model": "ir.module.module", "domain": [["name", "=", "l10n_es_edi_verifactu"], ["state", "!=", "installed"]]}}</field>
+            >{"unposted_invoices": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["out_invoice", "out_refund"]]]}, "unposted_vendor_bills": {"model": "account.move", "domain": [["state", "=", "draft"], ["move_type", "in", ["in_invoice", "in_refund"]]]}, "verifactu_unconfigured": {"model": "ir.module.module", "domain": [["name", "=", "l10n_es_edi_verifactu"], ["state", "!=", "installed"]], "requires": {"model": "res.company", "domain": [["account_fiscal_country_id.code", "=", "ES"]]}}}</field>
         </record>
 
         <!--
