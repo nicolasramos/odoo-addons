@@ -72,6 +72,7 @@
                             <field name="max_concurrent_executions"/>
                             <field name="timeout_seconds"/>
                             <field name="retry_limit"/>
+                            <field name="dispatch_on_assign"/>
                             <field name="user_id"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="active"/>

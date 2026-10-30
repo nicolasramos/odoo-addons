@@ -106,9 +106,11 @@ class TestAgentRuntimeApi(HttpCase):
         self.assertEqual(payload.get('runtime_id'), self.runtime.id)
 
     def test_heartbeat_strips_api_key_whitespace(self):
+        # The API key travels in the JSON body because HTTP headers cannot carry
+        # leading or trailing whitespace; the server must strip it either way.
         status, payload = self._json_request(
             '/api/agent/runtime/heartbeat',
-            api_key=f'  {self.runtime.api_key}  ',
+            payload={'api_key': f'  {self.runtime.api_key}  '},
         )
         self.assertEqual(status, 200)
         self.assertEqual(payload.get('status'), 'ok')

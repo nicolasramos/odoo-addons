@@ -1,9 +1,12 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import base64
 import json
 import logging
 
-from odoo import fields, http
+from markupsafe import Markup, escape
+
+from odoo import _, fields, http
 from odoo.http import Response, request
 from odoo.tools import html2plaintext
 
@@ -326,7 +329,64 @@ class AgentApiController(http.Controller):
             execution_id=execution.id,
             author_id=execution.requested_by_id.id,
         )
+        # Mirror progress messages into the target chatter so users following the
+        # record (and not only the agent tab) see what the agent is doing.
+        record = execution._agent_target_record()
+        if record and hasattr(record, '_agent_post'):
+            record._agent_post(
+                Markup('<p><b>%s</b>: %s</p>') % (
+                    escape(execution.agent_id.display_name),
+                    escape(content),
+                ),
+                subject=_('Agent progress'),
+            )
         return self._json_response({'status': 'ok', 'message_id': message.id})
+
+    @http.route('/api/agent/execution/<int:execution_id>/context', type='http', methods=['GET'], auth='public', csrf=False)
+    def get_execution_context(self, execution_id, **kwargs):
+        runtime = self._authenticate_runtime()
+        if not runtime:
+            return self._error('Invalid API key', status=401, code='invalid_api_key')
+        execution, error = self._get_runtime_execution(runtime, execution_id)
+        if error:
+            return error
+        record = execution._agent_target_record()
+        payload = record._agent_context_payload() if record and hasattr(record, '_agent_context_payload') else {}
+        return self._json_response({
+            'status': 'ok',
+            'execution_id': execution.id,
+            'res_model': record._name if record else None,
+            'res_id': record.id if record else None,
+            'record': payload,
+        })
+
+    @http.route('/api/agent/execution/<int:execution_id>/attachment/<int:attachment_id>', type='http', methods=['GET'], auth='public', csrf=False)
+    def get_execution_attachment(self, execution_id, attachment_id, **kwargs):
+        runtime = self._authenticate_runtime()
+        if not runtime:
+            return self._error('Invalid API key', status=401, code='invalid_api_key')
+        execution, error = self._get_runtime_execution(runtime, execution_id)
+        if error:
+            return error
+        record = execution._agent_target_record()
+        attachment = request.env['ir.attachment'].sudo().browse(attachment_id)
+        if (
+            not record
+            or not attachment.exists()
+            or attachment.res_model != record._name
+            or attachment.res_id != record.id
+        ):
+            return self._error('Attachment not found for this execution', status=404, code='not_found')
+        data = attachment.datas or b''
+        return Response(
+            base64.b64decode(data),
+            status=200,
+            content_type=attachment.mimetype or 'application/octet-stream',
+            headers=[
+                ('Content-Disposition', f'attachment; filename="{attachment.name}"'),
+                ('Content-Length', attachment.file_size),
+            ],
+        )
 
     # Compatibility routes for older runtimes that still call /task/{id}.
     @http.route('/api/agent/task/<int:task_id>/start', type='http', methods=['POST'], auth='public', csrf=False)

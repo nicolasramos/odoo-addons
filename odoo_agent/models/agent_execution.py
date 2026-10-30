@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import re
+from datetime import timedelta
 
 from markupsafe import Markup, escape
 
@@ -49,6 +50,22 @@ class AgentExecution(models.Model):
         index=True,
         check_company=True,
     )
+    res_model = fields.Char(
+        string='Target Model',
+        index=True,
+        copy=False,
+        help='Model of the record this execution works on. '
+             'Project tasks keep using task_id for backward compatibility.',
+    )
+    res_id = fields.Integer(
+        string='Target Record ID',
+        index=True,
+        copy=False,
+    )
+    target_display_name = fields.Char(
+        string='Target',
+        compute='_compute_target_display_name',
+    )
     requested_by_id = fields.Many2one(
         'res.users',
         string='Requested By',
@@ -93,6 +110,8 @@ class AgentExecution(models.Model):
             ('task', 'Project Task'),
             ('chat', 'Chat'),
             ('manual', 'Manual'),
+            ('mention', 'Chatter Mention'),
+            ('stage', 'Stage Entry'),
         ],
         string='Source',
         default='task',
@@ -159,7 +178,7 @@ class AgentExecution(models.Model):
         index=True,
     )
 
-    @api.model_cr_context
+    @api.model
     def _auto_init(self):
         res = super()._auto_init()
         self.env.cr.execute('''
@@ -170,7 +189,17 @@ class AgentExecution(models.Model):
             CREATE INDEX IF NOT EXISTS idx_agent_execution_create_date
             ON odoo_agent_execution (create_date)
         ''')
+        self.env.cr.execute('''
+            CREATE INDEX IF NOT EXISTS idx_agent_execution_target
+            ON odoo_agent_execution (res_model, res_id)
+        ''')
         return res
+
+    @api.depends('res_model', 'res_id', 'task_id')
+    def _compute_target_display_name(self):
+        for execution in self:
+            record = execution._agent_target_record()
+            execution.target_display_name = record.display_name if record else False
 
     @api.depends('log_ids')
     def _compute_log_count(self):
@@ -195,6 +224,8 @@ class AgentExecution(models.Model):
             if task:
                 vals.setdefault('project_id', task.project_id.id)
                 vals.setdefault('company_id', task.company_id.id or self.env.company.id)
+                vals.setdefault('res_model', 'project.task')
+                vals.setdefault('res_id', task.id)
             if not vals.get('runtime_id'):
                 raise UserError(_('The selected agent must have a runtime before creating an execution.'))
         executions = super().create(vals_list)
@@ -202,12 +233,7 @@ class AgentExecution(models.Model):
             mentioned_agents = execution._get_prompt_mentioned_agents()
             if mentioned_agents:
                 execution.mentioned_agent_ids = [(6, 0, mentioned_agents.ids)]
-            if execution.task_id:
-                execution.task_id.latest_execution_id = execution.id
-                execution.task_id.message_post(
-                    body=Markup(_('Agent execution queued for <b>%s</b>.')) % escape(execution.agent_id.display_name),
-                    subject=_('Agent execution queued'),
-                )
+            execution._post_queued_note()
             if not self.env.context.get('skip_agent_mentions'):
                 execution._create_mentioned_agent_executions(mentioned_agents)
             execution._sync_project_task_stage()
@@ -220,6 +246,55 @@ class AgentExecution(models.Model):
             for execution in self:
                 execution._notify_execution_event('execution_updated')
         return result
+
+    # ------------------------------------------------------------------
+    # Target record helpers
+    # ------------------------------------------------------------------
+    def _agent_target_record(self):
+        self.ensure_one()
+        if self.task_id:
+            return self.task_id
+        if self.res_model and self.res_id:
+            record = self.env[self.res_model].sudo().browse(self.res_id)
+            return record.exists()
+        return self.env['project.task']
+
+    def _post_queued_note(self):
+        self.ensure_one()
+        if self.task_id:
+            self.task_id.latest_execution_id = self.id
+        record = self._agent_target_record()
+        if not record or not hasattr(record, '_agent_post'):
+            return
+        record._agent_post(
+            Markup(_('Agent execution queued for <b>%s</b>.')) % escape(self.agent_id.display_name),
+            subject=_('Agent execution queued'),
+        )
+
+    def _cron_mark_stale(self):
+        """Fail executions whose runtime stopped reporting heartbeats.
+
+        A runtime is considered gone when no log or heartbeat arrived for longer
+        than the execution timeout plus a safety margin. The cron is the only
+        writer of ``failed`` for this case, so a dead daemon cannot leave tasks
+        stuck in ``running`` forever.
+        """
+        now = fields.Datetime.now()
+        stale = self.browse()
+        for execution in self.search([('status', '=', 'running')]):
+            margin = 600
+            reference = execution.last_heartbeat_at or execution.started_at or execution.create_date
+            deadline = (execution.timeout_seconds or 0) + margin
+            if reference and reference < now - timedelta(seconds=deadline):
+                stale |= execution
+        for execution in stale:
+            execution.with_context(agent_no_auto_retry=True).action_fail(
+                error_message=_(
+                    'Runtime heartbeat timeout: no activity for more than %(seconds)s seconds.',
+                    seconds=(execution.timeout_seconds or 0) + 600,
+                )
+            )
+        return len(stale)
 
     @api.model
     def get_queued_for_runtime(self, runtime, limit=10):
@@ -242,6 +317,10 @@ class AgentExecution(models.Model):
 
     def action_complete(self, result=None):
         for execution in self:
+            if execution.status == 'completed':
+                continue
+            if execution.status in ('failed', 'cancelled'):
+                continue
             vals = {
                 'status': 'completed',
                 'completed_at': fields.Datetime.now(),
@@ -258,6 +337,8 @@ class AgentExecution(models.Model):
 
     def action_fail(self, error_message=None):
         for execution in self:
+            if execution.status in ('completed', 'failed', 'cancelled'):
+                continue
             vals = {
                 'status': 'failed',
                 'completed_at': fields.Datetime.now(),
@@ -271,6 +352,15 @@ class AgentExecution(models.Model):
                 escape(execution.display_name),
                 escape(error_message or ''),
             ))
+            execution._schedule_auto_retry()
+
+    def _schedule_auto_retry(self):
+        self.ensure_one()
+        if self.env.context.get('agent_no_auto_retry'):
+            return self.env['odoo.agent.execution']
+        if not self.retry_limit or self.attempt > self.retry_limit:
+            return self.env['odoo.agent.execution']
+        return self.action_retry()
 
     def action_request_cancel(self):
         for execution in self:
@@ -311,6 +401,8 @@ class AgentExecution(models.Model):
             'company_id': self.company_id.id,
             'source': self.source,
             'chat_message_id': self.chat_message_id.id,
+            'res_model': self.res_model,
+            'res_id': self.res_id,
         })
 
     def action_view_logs(self):
@@ -373,23 +465,26 @@ class AgentExecution(models.Model):
                 'runtime_id': agent.runtime_id.id,
                 'project_id': self.project_id.id,
                 'task_id': self.task_id.id,
+                'res_model': self.res_model,
+                'res_id': self.res_id,
                 'parent_id': self.id,
                 'requested_by_id': self.requested_by_id.id,
                 'company_id': self.company_id.id,
             })
 
         children = self.env['odoo.agent.execution'].with_context(skip_agent_mentions=True).create(child_vals)
-        if self.task_id and children:
+        record = self._agent_target_record()
+        if record and children and hasattr(record, '_agent_post'):
             body = Markup(_('<p><b>%s</b> delegated work to: %s.</p>')) % (
                 escape(self.agent_id.display_name),
                 Markup(', ').join(Markup('<b>%s</b>') % escape(agent.display_name) for agent in children.agent_id),
             )
-            self.task_id.message_post(body=body, subject=_('Agent delegation created'))
-        if self.task_id and skipped_agents:
+            record._agent_post(body, subject=_('Agent delegation created'))
+        if record and skipped_agents and hasattr(record, '_agent_post'):
             body = Markup(_('<p>Skipped mentioned agents without runtime: %s.</p>')) % (
                 Markup(', ').join(Markup('<b>%s</b>') % escape(agent.display_name) for agent in skipped_agents)
             )
-            self.task_id.message_post(body=body, subject=_('Agent delegation skipped'))
+            record._agent_post(body, subject=_('Agent delegation skipped'))
         return children
 
     def _build_delegated_prompt(self, agent):
@@ -408,11 +503,12 @@ class AgentExecution(models.Model):
         self.ensure_one()
         self.agent_id._refresh_status_from_executions()
         self._sync_project_task_stage()
-        if self.task_id:
+        record = self._agent_target_record()
+        if record and hasattr(record, '_agent_post'):
             body = task_message if isinstance(task_message, Markup) else escape(task_message)
             if self.result:
                 body += Markup('<p><b>Result:</b></p><pre style="white-space:pre-wrap">%s</pre>') % escape(self.result)
-            self.task_id.message_post(body=body, subject=_('Agent execution finished'))
+            record._agent_post(body, subject=_('Agent execution finished'))
         self._notify_execution_event('execution_updated')
 
     def _create_chat_reply(self, result=None):
@@ -459,18 +555,24 @@ class AgentExecution(models.Model):
 
     def _sync_project_task_stage(self):
         self.ensure_one()
-        if not self.task_id:
+        task = self._agent_target_record()
+        if not task or task._name != 'project.task':
             return
         stage = self.env['odoo.agent.stage.map'].get_stage_for_status(
             self.status,
             company_id=self.company_id.id,
-            project=self.task_id.project_id,
+            project=task.project_id,
         )
         if stage:
-            self.task_id.stage_id = stage.id
+            # Prevent an incoming stage from re-triggering automatic dispatch.
+            task.with_context(agent_skip_auto_dispatch=True).stage_id = stage.id
 
     def to_runtime_payload(self):
         self.ensure_one()
+        record = self._agent_target_record()
+        record_payload = {}
+        if record and hasattr(record, '_agent_context_payload'):
+            record_payload = record._agent_context_payload()
         return {
             'id': self.id,
             'name': self.name,
@@ -483,6 +585,9 @@ class AgentExecution(models.Model):
             'retry_limit': self.retry_limit,
             'project_id': self.project_id.id if self.project_id else None,
             'task_id': self.task_id.id if self.task_id else None,
+            'res_model': self.res_model or (record._name if record else None),
+            'res_id': self.res_id or (record.id if record else None),
+            'record': record_payload,
             'parent_execution_id': self.parent_id.id if self.parent_id else None,
             'child_execution_ids': self.child_ids.ids,
             'mentioned_agents': [

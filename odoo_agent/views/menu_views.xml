@@ -12,5 +12,6 @@
     <menuitem id="menu_agent_skill" name="Skills" parent="menu_agent_config" sequence="10" action="odoo_agent.action_agent_skill"/>
     <menuitem id="menu_agent_mcp_server" name="MCP Servers" parent="menu_agent_config" sequence="20" action="odoo_agent.action_agent_mcp_server"/>
     <menuitem id="menu_agent_stage_map" name="Stage Mapping" parent="menu_agent_config" sequence="30" action="odoo_agent.action_agent_stage_map"/>
+    <menuitem id="menu_agent_stage_trigger" name="Dispatch Stages" parent="menu_agent_config" sequence="35" action="odoo_agent.action_agent_stage_trigger"/>
     <menuitem id="menu_agent_task" name="Legacy Tasks" parent="menu_agent_config" sequence="90" action="odoo_agent.action_agent_task"/>
 </odoo>

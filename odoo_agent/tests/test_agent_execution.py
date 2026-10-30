@@ -101,13 +101,15 @@ class TestAgentExecution(AgentTestMixin):
     def test_bus_notifications_are_sent_for_chat_log_and_execution(self):
         calls = []
         bus = self.env['bus.bus']
-        original = type(bus)._sendone
+        bus_type = type(bus)
+        had_own_sendone = '_sendone' in bus_type.__dict__
+        original = bus_type._sendone
 
         def patched_sendone(record, target, notification_type, message):
             calls.append((target, notification_type, message))
             return original(record, target, notification_type, message)
 
-        type(bus)._sendone = patched_sendone
+        bus_type._sendone = patched_sendone
         try:
             message = self.env['odoo.agent.chat.message'].send_user_message(
                 self.agent.id,
@@ -130,7 +132,10 @@ class TestAgentExecution(AgentTestMixin):
             })
             execution.action_start()
         finally:
-            type(bus)._sendone = original
+            if had_own_sendone:
+                bus_type._sendone = original
+            else:
+                delattr(bus_type, '_sendone')
 
         event_names = {call[2].get('event') for call in calls if call[1] == 'odoo_agent'}
         self.assertIn('chat_message_created', event_names)

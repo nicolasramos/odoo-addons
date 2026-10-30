@@ -90,6 +90,12 @@ class Agent(models.Model):
     )
     timeout_seconds = fields.Integer(string='Timeout (seconds)', default=3600, required=True)
     retry_limit = fields.Integer(string='Retry Limit', default=0, required=True)
+    dispatch_on_assign = fields.Boolean(
+        string='Dispatch On Assignment',
+        default=True,
+        help='Queue an execution automatically when a record is assigned to this agent. '
+             'Disable it for agents that must only run on demand.',
+    )
     user_id = fields.Many2one(
         'res.users',
         string='Linked User',

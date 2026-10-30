@@ -68,4 +68,19 @@
         <field name="res_model">odoo.agent.stage.map</field>
         <field name="view_mode">list,form</field>
     </record>
+
+    <record id="action_agent_stage_trigger" model="ir.actions.act_window">
+        <field name="name">Stages That Dispatch Agents</field>
+        <field name="res_model">project.task.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No project stages yet
+            </p>
+            <p>
+                Mark a stage as dispatching and every task entering it will queue
+                an execution for its assigned agent.
+            </p>
+        </field>
+    </record>
 </odoo>

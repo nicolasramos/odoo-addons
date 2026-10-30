@@ -79,6 +79,17 @@ See:
 - [`docs/runtime-installation.md`](docs/runtime-installation.md)
 - [`docs/runtime-contract.md`](docs/runtime-contract.md)
 
+## Orchestration in Odoo
+
+[`docs/agent-orchestration.md`](docs/agent-orchestration.md) closes the loop
+without any extra module: assign an agent, dispatch automatically on assignment
+or on stage entry, map execution states to project stages per project, and
+mention agents in the chatter of any record.
+
+`odoo_agent_sale` extends the same loop to quotations and sales orders, so a
+salesperson can write `@hermes review this quotation` in the order chatter and
+get the answer in the same thread.
+
 ## Documentation
 
 | Document | Purpose |

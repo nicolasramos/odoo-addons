@@ -11,6 +11,8 @@
                 <field name="runtime_id"/>
                 <field name="source"/>
                 <field name="task_id"/>
+                <field name="target_display_name"/>
+                <field name="res_model"/>
                 <field name="attempt"/>
                 <field name="started_at"/>
                 <field name="completed_at"/>
@@ -54,6 +56,9 @@
                         <group>
                             <field name="project_id"/>
                             <field name="task_id"/>
+                            <field name="res_model" readonly="1"/>
+                            <field name="res_id" readonly="1"/>
+                            <field name="target_display_name" readonly="1"/>
                             <field name="parent_id"/>
                             <field name="mentioned_agent_ids" widget="many2many_tags" readonly="1"/>
                             <field name="attempt" readonly="1"/>
