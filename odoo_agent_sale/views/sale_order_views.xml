@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_agent" model="ir.ui.view">
+        <field name="name">sale.order.form.agent</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="agent_has_active_execution" invisible="1"/>
+                <button name="action_send_to_agent"
+                        type="object"
+                        string="Send to Agent"
+                        class="btn-secondary"
+                        invisible="not agent_id"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="AI Agent" name="agent">
+                    <group>
+                        <group>
+                            <field name="agent_id"
+                                   options="{'no_create': True}"/>
+                            <field name="agent_last_execution_status" readonly="1"/>
+                        </group>
+                        <group>
+                            <button name="action_view_agent_executions"
+                                    type="object"
+                                    class="btn-link"
+                                    string="View executions"
+                                    icon="fa-list"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        Mention an agent in the chatter with its handle, for example
+                        <code>@hermes review this quotation</code>, to start a
+                        conversation inside this order.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
