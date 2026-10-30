@@ -6,7 +6,7 @@ from odoo import api, fields, models
 class AgentStageMap(models.Model):
     _name = 'odoo.agent.stage.map'
     _description = 'Agent Status to Project Stage Mapping'
-    _order = 'agent_status, id'
+    _order = 'project_id, agent_status, id'
     _rec_name = 'display_name'
     _check_company_auto = True
 
@@ -33,6 +33,14 @@ class AgentStageMap(models.Model):
         ondelete='cascade',
         domain="[('fold', '=', False)]",
     )
+    project_id = fields.Many2one(
+        'project.project',
+        string='Project',
+        ondelete='cascade',
+        index=True,
+        help='Leave empty to apply this mapping to every project of the company. '
+             'A project specific mapping always wins over the company wide one.',
+    )
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -44,16 +52,27 @@ class AgentStageMap(models.Model):
 
     _sql_constraints = [
         (
-            'agent_status_company_unique',
-            'unique(agent_status, company_id)',
-            'Each agent status can only have one mapping per company.',
+            'agent_status_project_company_unique',
+            'unique(agent_status, company_id, project_id)',
+            'Each agent status can only have one mapping per project and company.',
         ),
     ]
 
-    @api.depends('agent_status', 'stage_id')
+    def init(self):
+        # ``project_id`` is nullable and PostgreSQL treats NULLs as distinct in a
+        # unique constraint, so the SQL constraint above does not prevent two
+        # company wide fallbacks. A partial unique index does.
+        self.env.cr.execute('''
+            CREATE UNIQUE INDEX IF NOT EXISTS odoo_agent_stage_map_company_default_uniq
+            ON odoo_agent_stage_map (agent_status, company_id)
+            WHERE project_id IS NULL
+        ''')
+
+    @api.depends('agent_status', 'stage_id', 'project_id')
     def _compute_display_name(self):
         for rec in self:
-            rec.display_name = f'{rec.get_agent_status_display()} -> {rec.stage_id.name}'
+            scope = rec.project_id.display_name or 'All projects'
+            rec.display_name = f'{rec.get_agent_status_display()} -> {rec.stage_id.name} ({scope})'
 
     def get_agent_status_display(self):
         self.ensure_one()
@@ -61,18 +80,30 @@ class AgentStageMap(models.Model):
 
     @api.model
     def get_stage_for_status(self, agent_status, company_id=None, project=None):
+        """Return the stage configured for ``agent_status``.
+
+        Resolution order is the project specific mapping first and the company
+        wide mapping second. An empty recordset means no mapping is configured,
+        and callers must leave the task stage untouched.
+        """
         if not company_id:
             company_id = self.env.company.id
-        mapping = self.search([
+        base_domain = [
             ('agent_status', '=', agent_status),
             ('company_id', '=', company_id),
-        ], limit=1)
-        if mapping and self._stage_matches_project(mapping.stage_id, project):
+        ]
+        if project:
+            mapping = self.search(base_domain + [('project_id', '=', project.id)], limit=1)
+            if mapping:
+                return mapping.stage_id
+        mapping = self.search(base_domain + [('project_id', '=', False)], limit=1)
+        if mapping:
             return mapping.stage_id
         return self.env['project.task.type']
 
     @api.model
     def _stage_matches_project(self, stage, project):
+        """Backward compatible helper kept for external callers."""
         if not stage or not project:
             return bool(stage)
         return not stage.project_ids or project in stage.project_ids

@@ -81,7 +81,7 @@ class AgentChatMessage(models.Model):
         index=True,
     )
 
-    @api.model_cr_context
+    @api.model
     def _auto_init(self):
         res = super()._auto_init()
         self.env.cr.execute('''

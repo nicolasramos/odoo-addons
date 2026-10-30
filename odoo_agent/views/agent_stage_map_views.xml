@@ -5,8 +5,10 @@
         <field name="model">odoo.agent.stage.map</field>
         <field name="arch" type="xml">
             <list>
+                <field name="project_id"/>
                 <field name="agent_status"/>
                 <field name="stage_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
             </list>
         </field>
     </record>
@@ -20,9 +22,15 @@
                     <group>
                         <group>
                             <field name="agent_status"/>
+                            <field name="project_id"
+                                options="{'no_create': True}"/>
                             <field name="stage_id"
                                 domain="[('fold', '=', False)]"
                                 options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="display_name"/>
                         </group>
                     </group>
                 </sheet>
@@ -37,6 +45,12 @@
             <search>
                 <field name="agent_status"/>
                 <field name="stage_id"/>
+                <field name="project_id"/>
+                <separator/>
+                <filter name="global_scope" string="All projects"
+                        domain="[('project_id', '=', False)]"/>
+                <filter name="project_scope" string="Project specific"
+                        domain="[('project_id', '!=', False)]"/>
             </search>
         </field>
     </record>

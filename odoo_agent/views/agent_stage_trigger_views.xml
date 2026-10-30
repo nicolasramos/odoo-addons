@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_agent_stage_trigger_tree" model="ir.ui.view">
+        <field name="name">project.task.type.agent.trigger.tree</field>
+        <field name="model">project.task.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="project_ids" widget="many2many_tags"/>
+                <field name="agent_auto_dispatch"/>
+                <field name="fold"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_agent_stage_trigger_form" model="ir.ui.view">
+        <field name="name">project.task.type.agent.trigger.form</field>
+        <field name="model">project.task.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="fold"/>
+                        </group>
+                        <group>
+                            <field name="agent_auto_dispatch"/>
+                            <field name="project_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

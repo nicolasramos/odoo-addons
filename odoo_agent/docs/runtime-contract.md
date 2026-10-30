@@ -41,11 +41,37 @@ Legacy `tasks` remains only as compatibility fallback.
 | --- | --- |
 | Start | `POST /api/agent/execution/{id}/start` |
 | Log | `POST /api/agent/execution/{id}/log` |
+| Progress message | `POST /api/agent/execution/{id}/message` |
+| Context | `GET /api/agent/execution/{id}/context` |
+| Attachment | `GET /api/agent/execution/{id}/attachment/{attachment_id}` |
 | Complete | `POST /api/agent/execution/{id}/complete` |
 | Fail | `POST /api/agent/execution/{id}/fail` |
 | Request cancel | `POST /api/agent/execution/{id}/cancel` |
 | Acknowledge cancel | `POST /api/agent/execution/{id}/cancel/ack` |
 | Read logs | `GET /api/agent/execution/{id}/logs` |
+
+## Record context
+
+Every execution payload includes a `record` block with the target record data.
+Project tasks expose name, description, project, stage, tags, assignees and
+attachments. Models that use `odoo.agent.mixin` can add their own fields by
+overriding `_agent_context_payload()`.
+
+```json
+{
+  "res_model": "project.task",
+  "res_id": 42,
+  "record": {
+    "name": "Fix the invoice export",
+    "description": "The CSV export misses the tax column.",
+    "project": "Billing",
+    "stage": "In progress",
+    "tags": ["bug"],
+    "attachments": [{"id": 7, "name": "trace.txt", "mimetype": "text/plain"}],
+    "url": "https://odoo.example.com/web#id=42&model=project.task&view_type=form"
+  }
+}
+```
 
 ## Runtime behavior expectations
 

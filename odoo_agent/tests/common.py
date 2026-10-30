@@ -44,7 +44,7 @@ class AgentTestMixin(TransactionCase):
             'name': 'Agent Test Project',
             'company_id': cls.company.id,
         })
-        cls.task = cls.env['project.task'].create({
+        cls.task = cls.env['project.task'].with_context(agent_skip_auto_dispatch=True).create({
             'name': 'Agent Test Task',
             'description': 'Execute the test task.',
             'project_id': cls.project.id,

@@ -9,4 +9,6 @@ from . import agent_task
 from . import agent_log
 from . import agent_chat
 from . import agent_stage_map
+from . import project_task_type
+from . import odoo_agent_mixin
 from . import project_task_inherit

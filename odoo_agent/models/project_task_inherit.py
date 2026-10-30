@@ -1,21 +1,13 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
 from odoo.tools import html2plaintext
 
 
 class ProjectTask(models.Model):
-    _inherit = 'project.task'
+    _name = 'project.task'
+    _inherit = ['project.task', 'odoo.agent.mixin']
 
-    agent_id = fields.Many2one(
-        'odoo.agent',
-        string='AI Agent',
-        ondelete='set null',
-        tracking=True,
-        check_company=True,
-        help='Assign this task to an AI agent',
-    )
     execution_ids = fields.One2many(
         'odoo.agent.execution',
         'task_id',
@@ -79,35 +71,78 @@ class ProjectTask(models.Model):
         for task in self:
             task.agent_chat_message_count = len(task.agent_chat_message_ids)
 
+    # ------------------------------------------------------------------
+    # Mixin hooks
+    # ------------------------------------------------------------------
+    def _agent_backend_url(self):
+        self.ensure_one()
+        return f'{self.get_base_url()}/web#id={self.id}&model=project.task&view_type=form'
+
     def _agent_execution_prompt(self):
         self.ensure_one()
         parts = [self.name or '']
         if self.description:
             parts.append(html2plaintext(self.description).strip())
-        return '\n\n'.join(parts)
+        return '\n\n'.join(part for part in parts if part)
 
-    def action_send_to_agent(self):
-        for task in self:
-            if not task.agent_id:
-                raise UserError(_('Assign an AI agent before sending the task.'))
-            if not task.agent_id.runtime_id:
-                raise UserError(_('The selected AI agent must have a runtime.'))
-            execution = self.env['odoo.agent.execution'].create({
-                'name': task.name or _('Project Task'),
-                'prompt': task._agent_execution_prompt(),
-                'agent_id': task.agent_id.id,
-                'runtime_id': task.agent_id.runtime_id.id,
-                'project_id': task.project_id.id,
-                'task_id': task.id,
-                'requested_by_id': self.env.user.id,
-                'company_id': task.company_id.id or self.env.company.id,
-            })
-            task.latest_execution_id = execution.id
-        return True
+    def _agent_context_payload(self):
+        self.ensure_one()
+        payload = super()._agent_context_payload()
+        payload.update({
+            'name': self.name,
+            'description': html2plaintext(self.description or '').strip(),
+            'project': self.project_id.display_name,
+            'project_id': self.project_id.id,
+            'stage': self.stage_id.display_name,
+            'stage_id': self.stage_id.id,
+            'priority': self.priority,
+            'date_deadline': fields.Date.to_string(self.date_deadline) if self.date_deadline else None,
+            'tags': self.tag_ids.mapped('name'),
+            'assignees': self.user_ids.mapped('name'),
+            'partner': self.partner_id.display_name if 'partner_id' in self._fields else None,
+        })
+        return payload
+
+    def _prepare_agent_execution_vals(self, agent, prompt=None, source='task'):
+        vals = super()._prepare_agent_execution_vals(agent, prompt=prompt, source=source)
+        vals.update({
+            'task_id': self.id,
+            'project_id': self.project_id.id,
+        })
+        return vals
+
+    # ------------------------------------------------------------------
+    # Automatic dispatch
+    # ------------------------------------------------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        tasks = super().create(vals_list)
+        tasks._agent_after_create()
+        return tasks
+
+    def write(self, vals):
+        result = super().write(vals)
+        self._agent_after_write(vals)
+        if self.env.context.get('agent_skip_auto_dispatch'):
+            return result
+        stage_id = vals.get('stage_id')
+        if stage_id:
+            stage = self.env['project.task.type'].browse(stage_id)
+            if stage.agent_auto_dispatch:
+                self.filtered('agent_id')._dispatch_agent_execution(source='stage')
+        return result
+
+    def message_post(self, **kwargs):
+        message = super().message_post(**kwargs)
+        self._agent_hook_message_post(message)
+        return message
 
     def action_assign_agent(self):
         return self.action_send_to_agent()
 
+    # ------------------------------------------------------------------
+    # Agent communications
+    # ------------------------------------------------------------------
     def action_send_agent_chat_message(self):
         chat_model = self.env['odoo.agent.chat.message']
         for task in self:
@@ -125,8 +160,8 @@ class ProjectTask(models.Model):
             task.agent_chat_composer_body = False
             if not task.agent_chat_composer_agent_id:
                 task.agent_chat_composer_agent_id = agent.id
-            task.message_post(
-                body=_('Agent communication queued for %s.') % agent.display_name,
+            task._agent_post(
+                _('Agent communication queued for %s.') % agent.display_name,
                 subject=_('Agent communication queued'),
             )
         return True
@@ -159,18 +194,12 @@ class ProjectTask(models.Model):
 
     def action_view_agent_executions(self):
         self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Agent Executions'),
-            'res_model': 'odoo.agent.execution',
-            'view_mode': 'list,form',
-            'domain': [('task_id', '=', self.id)],
-            'context': {
-                'default_task_id': self.id,
-                'default_project_id': self.project_id.id,
-                'default_agent_id': self.agent_id.id,
-            },
-        }
+        action = super().action_view_agent_executions()
+        action['context'].update({
+            'default_task_id': self.id,
+            'default_project_id': self.project_id.id,
+        })
+        return action
 
     def action_view_agent_communications(self):
         self.ensure_one()

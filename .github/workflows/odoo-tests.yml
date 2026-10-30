@@ -1,0 +1,87 @@
+name: Odoo 18 Tests
+
+on:
+  pull_request:
+    paths:
+      - 'odoo_agent/**'
+      - 'odoo_agent_sale/**'
+      - '.github/workflows/odoo-tests.yml'
+  push:
+    branches:
+      - '18.0'
+    paths:
+      - 'odoo_agent/**'
+      - 'odoo_agent_sale/**'
+      - '.github/workflows/odoo-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: odoo-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache Odoo source
+        uses: actions/cache@v4
+        with:
+          path: odoo-src
+          key: odoo-18-${{ runner.os }}-${{ hashFiles('.github/workflows/odoo-tests.yml') }}
+
+      - name: Fetch Odoo 18
+        run: |
+          if [ ! -d odoo-src/.git ]; then
+            git clone --depth 1 -b 18.0 https://github.com/odoo/odoo.git odoo-src
+          fi
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libldap2-dev libsasl2-dev libpq-dev libxml2-dev libxslt1-dev \
+            libjpeg-dev zlib1g-dev libffi-dev libssl-dev
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -r odoo-src/requirements.txt
+
+      - name: Install addons and run tests
+        run: |
+          python odoo-src/odoo-bin \
+            --addons-path=odoo-src/addons,"$GITHUB_WORKSPACE" \
+            --db_host=127.0.0.1 \
+            --db_port=5432 \
+            --db_user=odoo \
+            --db_password=odoo \
+            -d odoo_agent_ci \
+            -i odoo_agent,odoo_agent_sale \
+            --test-enable \
+            --test-tags=/odoo_agent,/odoo_agent_sale \
+            --stop-after-init \
+            --without-demo=all \
+            --log-level=test
