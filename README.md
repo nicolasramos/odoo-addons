@@ -9,6 +9,7 @@ This repository contains installable Odoo addons intended to be consumed through
 | Addon | Odoo versions | Summary | Documentation |
 | --- | --- | --- | --- |
 | `odoo_agent` | 18.0 | AI agent execution system for Odoo Project: runtimes, agents, executions, logs, skills, MCP, and `@mentions`. | [`odoo_agent/README.md`](odoo_agent/README.md) |
+| `odoo_agent_sale` | 18.0 | Assign sales orders and quotations to AI agents. Requires `odoo_agent`. | [`odoo_agent_sale/`](odoo_agent_sale/) |
 | `mail_bot_odooclaw` | 16.0, 17.0, 18.0, 19.0 | OdooClaw AI bot integration with Odoo Discuss via webhooks. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md) |
 | `mail_bot_odooclaw_account` | 18.0 | Proactive assistance: Accounting areas. Requires `mail_bot_odooclaw`. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md#proactive-assistance--one-module-per-area) |
 | `mail_bot_odooclaw_sale` | 18.0 | Proactive assistance: Sales areas. | ↑ |
@@ -19,6 +20,8 @@ This repository contains installable Odoo addons intended to be consumed through
 | `mail_bot_odooclaw_expense` | 18.0 | Proactive assistance: Expenses areas. | ↑ |
 | `mail_bot_odooclaw_project` | 18.0 | Proactive assistance: Projects areas. | ↑ |
 | `mail_bot_odooclaw_fleet` | 18.0 | Proactive assistance: Fleet areas. | ↑ |
+| `account_dynamic_rules` | 18.0 | Dynamic rules for account, product and payment terms mapping. | [`account_dynamic_rules/`](account_dynamic_rules/) |
+| `partner_data_hygiene` | 18.0 | Normalize phone numbers and email addresses on contacts. | [`partner_data_hygiene/README.md`](partner_data_hygiene/README.md) |
 
 ## Repository strategy
 
