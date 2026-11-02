@@ -150,6 +150,81 @@ class TestProactive(HttpCase):
         self.assertIn("partners", counters)
         self.assertGreater(counters["partners"], 0)
 
+    def test_a_counter_with_an_unmet_requires_gate_stays_silent(self):
+        """``requires`` gates a counter behind a second domain.
+
+        A counter can be arithmetically correct and still be a false statement:
+        "the VeriFactu module is not installed" counts 1 in every database that
+        has never been Spanish, which is why the shipped counter is gated behind
+        "this company is under the Spanish rules". A gate that does not match
+        means the counter is 0 — silence — never an error and never a guess.
+        """
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Gated",
+                "area": "accounting",
+                "model_name": "res.partner",
+                "signal_definition": json.dumps(
+                    {
+                        "spanish_only": {
+                            "model": "res.partner",
+                            "domain": [],
+                            "requires": {
+                                "model": "ir.module.module",
+                                "domain": [["name", "=", "no_such_module_xyz"]],
+                            },
+                        }
+                    }
+                ),
+            }
+        )
+        self.assertEqual(
+            area.counters_for("res.partner"),
+            {"spanish_only": 0},
+            "a counter whose `requires` gate does not match must count 0",
+        )
+
+        # Same counter, gate satisfied: it counts normally.
+        area.signal_definition = json.dumps(
+            {
+                "spanish_only": {
+                    "model": "res.partner",
+                    "domain": [],
+                    "requires": {"model": "res.users", "domain": []},
+                }
+            }
+        )
+        self.assertGreater(
+            area.counters_for("res.partner")["spanish_only"],
+            0,
+            "a counter whose `requires` gate matches must count normally",
+        )
+
+    def test_a_malformed_requires_gate_fails_closed(self):
+        """A broken gate is silence, not an unguarded counter."""
+        for broken in ({}, "nonsense", {"model": "no.such.model", "domain": []}):
+            area = self.env["mail.odooclaw.area"].sudo().create(
+                {
+                    "name": "Broken gate",
+                    "area": "accounting",
+                    "model_name": "res.partner",
+                    "signal_definition": json.dumps(
+                        {
+                            "gated": {
+                                "model": "res.partner",
+                                "domain": [],
+                                "requires": broken,
+                            }
+                        }
+                    ),
+                }
+            )
+            self.assertEqual(
+                area.counters_for("res.partner")["gated"],
+                0,
+                "a gate that cannot be evaluated must not let the counter fire",
+            )
+
     def test_a_broken_definition_degrades_to_zero(self):
         """A configuration mistake must produce silence, never a 500."""
         area = self.env["mail.odooclaw.area"].sudo().create(

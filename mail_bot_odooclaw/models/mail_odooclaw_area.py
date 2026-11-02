@@ -79,8 +79,11 @@ class MailOdooClawArea(models.Model):
         default="{}",
         help="JSON object mapping a signal key to the count expression used to "
         "build the counters, e.g. "
-        '{"my_signal": {"model": "res.partner", "domain": [["active", "=", True]]}}.'
-        " See the mail_bot_odooclaw_account module for real working examples.",
+        '{"my_signal": {"model": "res.partner", "domain": [["active", "=", True]]}}. '
+        'A counter may add a "requires" gate: a second {"model": ..., "domain": '
+        "...} that must match at least one record for the counter to mean "
+        "anything. When the gate does not match the counter is 0. See the "
+        "mail_bot_odooclaw_account module for real working examples.",
     )
 
     @api.constrains("area")
@@ -106,6 +109,43 @@ class MailOdooClawArea(models.Model):
             return [self._resolve_today(item) for item in value]
         return value
 
+    def _requires_matches(self, definition):
+        """Evaluate the optional ``requires`` gate of a counter definition.
+
+        A counter can be arithmetically correct and still say something false.
+        "the VeriFactu module is not installed" counts 1 in every database that
+        has never been Spanish, so the offer it feeds tells a French-Polynesian
+        accountant that their company invoices in Spain. The gate is the
+        general answer: ship the counter, and state the condition under which
+        it means anything.
+
+        Returns True when no gate is declared. Anything that cannot be
+        evaluated — an unknown model, a malformed domain, a query that raises —
+        returns False: a gate we cannot read is a signal we must not send.
+        """
+        if "requires" not in definition:
+            return True
+        gate = definition.get("requires")
+        if not isinstance(gate, dict):
+            return False
+        gate_model = gate.get("model")
+        gate_domain = gate.get("domain") or []
+        if not gate_model or gate_model not in self.env:
+            return False
+        if not isinstance(gate_domain, (list, tuple)):
+            return False
+        try:
+            return bool(
+                self.env[gate_model].sudo().search_count(self._resolve_today(gate_domain))
+            )
+        except Exception:  # noqa: BLE001 - an unreadable gate means silence
+            _logger.warning(
+                "odooclaw: could not evaluate the `requires` gate (model=%s)",
+                gate_model,
+                exc_info=True,
+            )
+            return False
+
     def _count_for(self, definition):
         """Count records for one signal definition. Returns 0 on any problem.
 
@@ -116,6 +156,11 @@ class MailOdooClawArea(models.Model):
         domain = definition.get("domain") or []
         model_name = definition.get("model") or self.model_name
         if not model_name:
+            return 0
+
+        # The gate is checked before the counter: a signal that does not apply to
+        # this database is silence, and there is no point counting it.
+        if not self._requires_matches(definition):
             return 0
 
         domain = self._resolve_today(domain)

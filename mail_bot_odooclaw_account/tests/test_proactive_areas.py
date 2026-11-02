@@ -139,10 +139,45 @@ class TestProactiveAreas(TransactionCase):
             "the VeriFactu counter names module %r, which does not exist in this "
             "Odoo" % module,
         )
-
-        # And the counter must be positive while the module is not installed.
         self.assertEqual(exists.state, "uninstalled")
-        self.assertEqual(area.counters_for("account.move").get("verifactu_unconfigured"), 1)
+
+    # --- the VeriFactu signal is Spanish-only (issue #26) ---
+
+    def _set_fiscal_country(self, code):
+        country = self.env["res.country"].search([("code", "=", code)], limit=1)
+        self.assertTrue(country, "country %s is not available" % code)
+        self.env.company.sudo().account_fiscal_country_id = country
+        return country
+
+    def test_verifactu_counter_is_silent_outside_spain(self):
+        """A French company must never be told it invoices in Spain.
+
+        The counter is `ir.module.module` "l10n_es_edi_verifactu is not
+        installed", which sits permanently at 1 in every database outside Spain
+        — and the playbook threshold is 1. Without a country gate the assistant
+        repeats a false premise to the whole world, once a day.
+        """
+        if not self.has_account:
+            self.skipTest("account is not installed; nothing to count against")
+        area = self._area("area_accounting")
+        self._set_fiscal_country("FR")
+        self.assertEqual(
+            area.counters_for("account.move").get("verifactu_unconfigured"),
+            0,
+            "a non-Spanish company must not be offered the VeriFactu suggestion",
+        )
+
+    def test_verifactu_counter_fires_for_a_spanish_company(self):
+        """The gate must not silence the signal for the companies it is for."""
+        if not self.has_account:
+            self.skipTest("account is not installed; nothing to count against")
+        area = self._area("area_accounting")
+        self._set_fiscal_country("ES")
+        self.assertEqual(
+            area.counters_for("account.move").get("verifactu_unconfigured"),
+            1,
+            "a Spanish company without VeriFactu must still be offered the help",
+        )
 
     # --- the counters match the playbook signal keys ---
 

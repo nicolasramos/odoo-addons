@@ -180,8 +180,10 @@ msgstr ""
 msgid ""
 "JSON object mapping a signal key to the count expression used to build the "
 "counters, e.g. {\"my_signal\": {\"model\": \"res.partner\", \"domain\": "
-"[[\"active\", \"=\", True]]}}. See the mail_bot_odooclaw_account module for "
-"real working examples."
+"[[\"active\", \"=\", True]]}}. A counter may add a \"requires\" gate: a "
+"second {\"model\": ..., \"domain\": ...} that must match at least one record "
+"for the counter to mean anything. When the gate does not match the counter is "
+"0. See the mail_bot_odooclaw_account module for real working examples."
 msgstr ""
 
 #. module: mail_bot_odooclaw
