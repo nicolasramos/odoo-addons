@@ -11,13 +11,13 @@
                 <field name="latest_execution_id" readonly="1"/>
             </field>
             <div name="button_box" position="inside">
-                <button name="action_view_agent_executions" type="object" class="oe_stat_button" icon="fa-play-circle">
+                <button name="action_view_agent_executions" type="object" class="oe_stat_button" icon="play_circle" icon_class="oi-filled">
                     <field name="execution_count" widget="statinfo" string="Executions"/>
                 </button>
-                <button name="action_view_agent_communications" type="object" class="oe_stat_button" icon="fa-comments">
+                <button name="action_view_agent_communications" type="object" class="oe_stat_button" icon="forum" icon_class="oi-filled">
                     <field name="agent_chat_message_count" widget="statinfo" string="Agent Messages"/>
                 </button>
-                <button name="action_view_agent_logs" type="object" class="oe_stat_button" icon="fa-list-alt" string="Agent Logs" invisible="not latest_execution_id"/>
+                <button name="action_view_agent_logs" type="object" class="oe_stat_button" icon="list_alt" string="Agent Logs" invisible="not latest_execution_id"/>
             </div>
             <xpath expr="//header" position="inside">
                 <button name="action_send_to_agent" type="object" string="Send to Agent" class="btn-primary" invisible="not agent_id"/>
@@ -56,8 +56,8 @@
                                         <t t-name="card">
                                             <div t-att-class="'o_agent_message ' + (record.author_type.raw_value == 'agent' ? 'o_agent_message_agent' : 'o_agent_message_user')">
                                                 <div class="o_agent_message_avatar">
-                                                    <i t-if="record.author_type.raw_value == 'agent'" class="fa fa-magic" title="Agent"/>
-                                                    <i t-else="" class="fa fa-user" title="User"/>
+                                                    <i t-if="record.author_type.raw_value == 'agent'" class="oi" data-icon="wand_stars" title="Agent"/>
+                                                    <i t-else="" class="oi oi-filled" data-icon="person" title="User"/>
                                                 </div>
                                                 <div class="o_agent_message_body">
                                                     <div class="o_agent_message_meta">
@@ -82,7 +82,7 @@
                                                         <field name="content"/>
                                                     </div>
                                                     <div class="o_agent_message_execution" t-if="record.execution_id.raw_value">
-                                                        <i class="fa fa-bolt"/>
+                                                        <i class="oi" data-icon="flash_on"/>
                                                         <field name="execution_id"/>
                                                     </div>
                                                 </div>
@@ -108,7 +108,7 @@
                             <button name="action_send_agent_chat_message"
                                     type="object"
                                     string="Send"
-                                    icon="fa-paper-plane"
+                                    icon="send" icon_class="oi-filled"
                                     class="btn-primary o_agent_comms_send"/>
                         </div>
                     </div>
@@ -152,33 +152,33 @@
             <xpath expr="//t[@t-name='card']//field[@name='name']" position="after">
                 <div t-if="record.agent_id.raw_value" class="d-flex align-items-center justify-content-between gap-1 mt-1 mb-1">
                     <span class="badge rounded-pill text-bg-light border text-truncate" title="Assigned agent">
-                        <i class="fa fa-magic me-1" aria-label="Agent"/>
+                        <i class="oi me-1" data-icon="wand_stars" aria-label="Agent"/>
                         <field name="agent_id"/>
                     </span>
                     <span t-if="['queued', 'running', 'waiting_input', 'cancel_requested'].includes(record.latest_execution_status.raw_value)"
                           class="badge rounded-pill text-bg-primary" title="Agent is working on this task">
-                        <i class="fa fa-play-circle me-1" aria-label="Working"/>
+                        <i class="oi oi-filled me-1" data-icon="play_circle" aria-label="Working"/>
                         Working
                     </span>
                     <span t-elif="record.latest_execution_status.raw_value == 'failed'"
                           class="badge rounded-pill text-bg-danger" title="Latest agent execution failed">
-                        <i class="fa fa-exclamation-triangle me-1" aria-label="Failed"/>
+                        <i class="oi me-1" data-icon="warning" aria-label="Failed"/>
                         Failed
                     </span>
                     <span t-elif="record.latest_execution_status.raw_value == 'completed'"
                           class="badge rounded-pill text-bg-success" title="Latest agent execution completed">
-                        <i class="fa fa-check me-1" aria-label="Done"/>
+                        <i class="oi me-1" data-icon="check" aria-label="Done"/>
                         Done
                     </span>
                 </div>
             </xpath>
             <xpath expr="//t[@t-name='card']//footer/div[1]" position="inside">
                 <span t-if="record.execution_count.raw_value" class="badge rounded-pill text-bg-secondary" title="Agent executions">
-                    <i class="fa fa-bolt me-1" aria-label="Executions"/>
+                    <i class="oi me-1" data-icon="flash_on" aria-label="Executions"/>
                     <field name="execution_count"/>
                 </span>
                 <span t-if="record.agent_chat_message_count.raw_value" class="badge rounded-pill text-bg-light border" title="Agent messages">
-                    <i class="fa fa-comments me-1" aria-label="Agent messages"/>
+                    <i class="oi oi-filled me-1" data-icon="forum" aria-label="Agent messages"/>
                     <field name="agent_chat_message_count"/>
                 </span>
             </xpath>

@@ -42,13 +42,10 @@ class AgentStageMap(models.Model):
     )
     display_name = fields.Char(string='Display Name', compute='_compute_display_name', store=True)
 
-    _sql_constraints = [
-        (
-            'agent_status_company_unique',
-            'unique(agent_status, company_id)',
-            'Each agent status can only have one mapping per company.',
-        ),
-    ]
+    _agent_status_company_unique = models.Constraint(
+        'unique(agent_status, company_id)',
+        "Each agent status can only have one mapping per company.",
+    )
 
     @api.depends('agent_status', 'stage_id')
     def _compute_display_name(self):

@@ -49,7 +49,7 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_executions" type="object" class="oe_stat_button" icon="fa-play-circle">
+                        <button name="action_view_executions" type="object" class="oe_stat_button" icon="play_circle" icon_class="oi-filled">
                             <field name="active_execution_count" widget="statinfo" string="Active Executions"/>
                         </button>
                     </div>

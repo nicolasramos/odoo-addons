@@ -1,0 +1,28 @@
+id,name,model_id,group_id/id,operation,domain
+access_agent_runtime_user,agent.runtime.user,odoo.agent.runtime,odoo_agent.group_agent_user,r,
+access_agent_runtime_admin,agent.runtime.admin,odoo.agent.runtime,odoo_agent.group_agent_admin,crud,
+rule_agent_runtime_company,Agent Runtime: Multi-Company,odoo.agent.runtime,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_user,agent.user,odoo.agent,odoo_agent.group_agent_user,r,
+access_agent_admin,agent.admin,odoo.agent,odoo_agent.group_agent_admin,crud,
+rule_agent_company,Agent: Multi-Company,odoo.agent,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_skill_user,agent.skill.user,odoo.agent.skill,odoo_agent.group_agent_user,r,
+access_agent_skill_admin,agent.skill.admin,odoo.agent.skill,odoo_agent.group_agent_admin,crud,
+rule_agent_skill_company,Agent Skill: Multi-Company,odoo.agent.skill,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_mcp_server_user,agent.mcp.server.user,odoo.agent.mcp.server,odoo_agent.group_agent_user,r,
+access_agent_mcp_server_admin,agent.mcp.server.admin,odoo.agent.mcp.server,odoo_agent.group_agent_admin,crud,
+rule_agent_mcp_server_company,Agent MCP Server: Multi-Company,odoo.agent.mcp.server,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_execution_user,agent.execution.user,odoo.agent.execution,odoo_agent.group_agent_user,cru,
+access_agent_execution_admin,agent.execution.admin,odoo.agent.execution,odoo_agent.group_agent_admin,crud,
+rule_agent_execution_company,Agent Execution: Multi-Company,odoo.agent.execution,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_task_user,agent.task.user,odoo.agent.task,odoo_agent.group_agent_user,r,
+access_agent_task_admin,agent.task.admin,odoo.agent.task,odoo_agent.group_agent_admin,crud,
+rule_agent_task_company,Legacy Agent Task: Multi-Company,odoo.agent.task,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_log_user,agent.log.user,odoo.agent.log,odoo_agent.group_agent_user,cru,
+access_agent_log_admin,agent.log.admin,odoo.agent.log,odoo_agent.group_agent_admin,crud,
+rule_agent_log_company,Agent Log: Multi-Company,odoo.agent.log,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_agent_chat_message_user,agent.chat.message.user,odoo.agent.chat.message,odoo_agent.group_agent_user,cru,
+access_agent_chat_message_admin,agent.chat.message.admin,odoo.agent.chat.message,odoo_agent.group_agent_admin,crud,
+rule_agent_chat_company,Agent Chat: Agent Company,odoo.agent.chat.message,,crud,"['|', ('agent_id.company_id', '=', False), ('agent_id.company_id', 'in', company_ids)]"
+access_agent_stage_map_user,agent.stage.map.user,odoo.agent.stage.map,odoo_agent.group_agent_user,r,
+access_agent_stage_map_admin,agent.stage.map.admin,odoo.agent.stage.map,odoo_agent.group_agent_admin,crud,
+rule_agent_stage_map_company,Agent Stage Map: Multi-Company,odoo.agent.stage.map,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"

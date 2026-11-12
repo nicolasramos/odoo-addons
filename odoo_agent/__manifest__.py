@@ -32,7 +32,6 @@ Provides a native multi-agent execution architecture inside Odoo.
     },
     'data': [
         'security/agent_security.xml',
-        'security/ir.model.access.csv',
         'views/actions_views.xml',
         'views/menu_views.xml',
         'views/agent_runtime_views.xml',
@@ -46,6 +45,7 @@ Provides a native multi-agent execution architecture inside Odoo.
         'views/agent_stage_map_views.xml',
         'views/project_task_inherit_views.xml',
         'data/agent_data.xml',
+        'security/ir.access.csv',
     ],
     'installable': True,
     'application': True,

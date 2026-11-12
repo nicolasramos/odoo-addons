@@ -120,13 +120,10 @@ class Agent(models.Model):
     )
     active = fields.Boolean(string='Active', default=True)
 
-    _sql_constraints = [
-        (
-            'mention_key_company_unique',
-            'unique(mention_key, company_id)',
-            'The mention handle must be unique per company.',
-        ),
-    ]
+    _mention_key_company_unique = models.Constraint(
+        'unique(mention_key, company_id)',
+        "The mention handle must be unique per company.",
+    )
 
     @api.onchange('engine')
     def _onchange_engine(self):

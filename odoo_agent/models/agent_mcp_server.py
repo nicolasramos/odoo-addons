@@ -42,13 +42,10 @@ class AgentMcpServer(models.Model):
         index=True,
     )
 
-    _sql_constraints = [
-        (
-            'server_key_company_unique',
-            'unique(server_key, company_id)',
-            'The MCP server key must be unique per company.',
-        ),
-    ]
+    _server_key_company_unique = models.Constraint(
+        'unique(server_key, company_id)',
+        "The MCP server key must be unique per company.",
+    )
 
     def to_runtime_config(self):
         self.ensure_one()

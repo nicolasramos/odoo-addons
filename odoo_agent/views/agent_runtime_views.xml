@@ -34,7 +34,7 @@
                         streams logs, and reports completion. Keep API keys scoped and rotate them when a host changes owner.
                     </div>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_executions" type="object" class="oe_stat_button" icon="fa-play-circle">
+                        <button name="action_view_executions" type="object" class="oe_stat_button" icon="play_circle" icon_class="oi-filled">
                             <field name="running_execution_count" widget="statinfo" string="Running"/>
                         </button>
                     </div>

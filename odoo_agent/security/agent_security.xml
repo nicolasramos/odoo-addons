@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="0">
         <record id="group_agent_user" model="res.groups">
@@ -14,67 +13,5 @@
             <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
         </record>
 
-        <record id="rule_agent_runtime_company" model="ir.rule">
-            <field name="name">Agent Runtime: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_runtime"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_company" model="ir.rule">
-            <field name="name">Agent: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_skill_company" model="ir.rule">
-            <field name="name">Agent Skill: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_skill"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_mcp_server_company" model="ir.rule">
-            <field name="name">Agent MCP Server: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_mcp_server"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_execution_company" model="ir.rule">
-            <field name="name">Agent Execution: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_execution"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_task_company" model="ir.rule">
-            <field name="name">Legacy Agent Task: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_task"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_log_company" model="ir.rule">
-            <field name="name">Agent Log: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_log"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_chat_company" model="ir.rule">
-            <field name="name">Agent Chat: Agent Company</field>
-            <field name="model_id" ref="model_odoo_agent_chat_message"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('agent_id.company_id', '=', False), ('agent_id.company_id', 'in', company_ids)]</field>
-        </record>
-
-        <record id="rule_agent_stage_map_company" model="ir.rule">
-            <field name="name">Agent Stage Map: Multi-Company</field>
-            <field name="model_id" ref="model_odoo_agent_stage_map"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
-        </record>
-    </data>
+        </data>
 </odoo>

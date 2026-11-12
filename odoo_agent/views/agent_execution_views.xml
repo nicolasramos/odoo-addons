@@ -34,10 +34,10 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_logs" type="object" class="oe_stat_button" icon="fa-list-alt">
+                        <button name="action_view_logs" type="object" class="oe_stat_button" icon="list_alt">
                             <field name="log_count" widget="statinfo" string="Logs"/>
                         </button>
-                        <button name="action_view_child_executions" type="object" class="oe_stat_button" icon="fa-sitemap" invisible="not child_execution_count">
+                        <button name="action_view_child_executions" type="object" class="oe_stat_button" icon="account_tree" invisible="not child_execution_count">
                             <field name="child_execution_count" widget="statinfo" string="Delegated"/>
                         </button>
                     </div>

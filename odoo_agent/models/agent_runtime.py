@@ -66,13 +66,10 @@ class AgentRuntime(models.Model):
         index=True,
     )
 
-    _sql_constraints = [
-        (
-            'machine_id_unique',
-            'unique(machine_id, company_id)',
-            'Machine ID must be unique per company.',
-        ),
-    ]
+    _machine_id_unique = models.Constraint(
+        'unique(machine_id, company_id)',
+        "Machine ID must be unique per company.",
+    )
 
     @api.depends('agent_ids', 'agent_ids.status')
     def _compute_active_agent_count(self):
