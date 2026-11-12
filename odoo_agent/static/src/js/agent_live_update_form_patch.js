@@ -1,5 +1,3 @@
-/** @odoo-module **/
-
 /**
  * Live update for the form view of odoo_agent models.
  *
@@ -16,152 +14,131 @@
  *
  * Models covered:
  *   - odoo.agent.execution
- *   - odoo.agent.agent
- *   - odoo.agent.runtime
- *   - odoo.agent.chat
- *   - project.task  (only when an agent_id is set, to keep cost down)
+ *   - odoo.agent
+ *   - project.task
  *
  * Why the ``load`` re-fetch rather than a field-level patch?
  * ---------------------------------------------------------
  * The backend can mutate more fields than we can sensibly patch client
  * side (status, started_at, completed_at, log_count, deliverability,
  * etc.). A ``model.root.load()`` is one round trip and is guaranteed to
- * show the new state. We throttle it (see ``_shouldReload``) so a
+ * show the new state. We debounce it (see ``_scheduleReload``) so a
  * burst of notifications does not produce a thundering herd of
  * requests.
  */
 
 import { FormController } from "@web/views/form/form_controller";
 import { patch } from "@web/core/utils/patch";
-import { useBus } from "@web/core/utils/hooks";
-import { useService } from "@web/core/utils/hooks";
+import { useBus, useService } from "@web/core/utils/hooks";
 import { onWillUnmount } from "@odoo/owl";
-
-const AGENT_MODELS = new Set([
-    "odoo.agent.execution",
-    "odoo.agent.agent",
-    "odoo.agent.runtime",
-    "odoo.agent.chat",
-]);
 
 const RELOAD_DEBOUNCE_MS = 400;
 
-function pickIds(record) {
-    if (!record || !record.resId) return null;
-    const data = record.data || {};
-    return {
+/** Many2one values are ``{ id, display_name }`` objects (or false). */
+function m2oId(value) {
+    return (value && value.id) || false;
+}
+
+/** Map a form record to the bus channel ids it should listen to. */
+const ID_EXTRACTORS = {
+    "odoo.agent.execution": (data) => ({
         executionId: data.id,
-        agentId: data.agent_id && data.agent_id[0],
-        projectTaskId: data.task_id && data.task_id[0],
-    };
-}
-
-function pickIdsForProjectTask(record) {
-    if (!record || !record.resId) return null;
-    const data = record.data || {};
-    return {
-        agentId: data.agent_id && data.agent_id[0],
+        agentId: m2oId(data.agent_id),
+        projectTaskId: m2oId(data.task_id),
+    }),
+    "odoo.agent": (data) => ({
+        agentId: data.id,
+    }),
+    "project.task": (data) => ({
+        agentId: m2oId(data.agent_id),
         projectTaskId: data.id,
-    };
-}
-
-export const AgentFormLiveUpdate = {
-    dependencies: [...FormController.dependencies, "agent_live_update"],
+    }),
 };
 
 patch(FormController.prototype, {
     setup() {
-        this._super(...arguments);
-        this.agentLiveUpdate = useService("agent_live_update");
-        this._reloadTimer = null;
-        this._watchedKey = null;
-
-        const model = this.props && this.props.resModel;
-        if (AGENT_MODELS.has(model) || model === "project.task") {
-            useBus(this.env.bus, this.agentLiveUpdate.EVENT, (ev) => {
-                this._onAgentNotification(ev.detail);
-            });
+        super.setup(...arguments);
+        const extractor = ID_EXTRACTORS[this.props.resModel];
+        if (!extractor) {
+            return;
         }
+        this.agentLiveUpdate = useService("agent_live_update");
+        this._agentExtractIds = extractor;
+        this._agentReloadTimer = null;
+        this._agentWatchedKey = null;
+
+        useBus(this.env.bus, this.agentLiveUpdate.EVENT, (ev) => {
+            this._onAgentNotification(ev.detail);
+        });
+        onWillUnmount(() => {
+            this._agentUnwatchCurrent();
+            if (this._agentReloadTimer) {
+                clearTimeout(this._agentReloadTimer);
+                this._agentReloadTimer = null;
+            }
+        });
     },
 
     /**
-     * Subscribe to the bus channels for the new record as soon as it is
-     * known which record the form is showing.
+     * Subscribe to the bus channels of the record once it is (re)loaded,
+     * e.g. on first display or when navigating with the pager.
      */
-    async onRecordChanged(record) {
-        await this._super(...arguments);
-        const ids = this._extractIds(record);
-        if (!ids) {
-            this._unwatchCurrent();
+    async onRootLoaded() {
+        await super.onRootLoaded(...arguments);
+        if (this._agentExtractIds) {
+            this._agentWatch(this.model.root);
+        }
+    },
+
+    _agentWatch(record) {
+        if (!record || !record.resId) {
+            this._agentUnwatchCurrent();
             return;
         }
+        const ids = this._agentExtractIds(record.data || {});
         const key = JSON.stringify(ids);
-        if (key === this._watchedKey) return;
-        this._unwatchCurrent();
-        this._watchedKey = key;
+        if (key === this._agentWatchedKey) {
+            return;
+        }
+        this._agentUnwatchCurrent();
+        this._agentWatchedKey = key;
         this.agentLiveUpdate.watchRecord(ids);
     },
 
-    onWillUnmount() {
-        this._unwatchCurrent();
-        if (this._reloadTimer) {
-            clearTimeout(this._reloadTimer);
-            this._reloadTimer = null;
+    _agentUnwatchCurrent() {
+        if (!this._agentWatchedKey) {
+            return;
         }
-        return this._super(...arguments);
-    },
-
-    _extractIds(record) {
-        const model = this.props && this.props.resModel;
-        if (AGENT_MODELS.has(model)) {
-            return pickIds(record);
-        }
-        if (model === "project.task") {
-            return pickIdsForProjectTask(record);
-        }
-        return null;
-    },
-
-    _unwatchCurrent() {
-        if (!this._watchedKey) return;
-        try {
-            const ids = JSON.parse(this._watchedKey);
-            this.agentLiveUpdate.unwatchRecord(ids);
-        } catch (_err) {
-            // _watchedKey is always JSON we produced; ignore parse errors.
-        }
-        this._watchedKey = null;
+        this.agentLiveUpdate.unwatchRecord(JSON.parse(this._agentWatchedKey));
+        this._agentWatchedKey = null;
     },
 
     _onAgentNotification(payload) {
-        const record = this.model && this.model.root;
-        if (!record || !record.resId) return;
-        if (!this._payloadTargetsCurrentRecord(payload, record)) return;
-        this._scheduleReload();
+        const record = this.model.root;
+        if (!record || !record.resId || !payload) {
+            return;
+        }
+        const ids = this._agentExtractIds(record.data || {});
+        const matches =
+            (payload.execution_id && payload.execution_id === ids.executionId) ||
+            (payload.agent_id && payload.agent_id === ids.agentId) ||
+            (payload.task_id && payload.task_id === ids.projectTaskId) ||
+            (payload.project_task_id && payload.project_task_id === ids.projectTaskId);
+        if (matches) {
+            this._scheduleAgentReload();
+        }
     },
 
-    _payloadTargetsCurrentRecord(payload, record) {
-        if (!payload) return false;
-        const data = record.data || {};
-        if (payload.execution_id && data.id === payload.execution_id) return true;
-        if (payload.agent_id) {
-            const agentId = data.agent_id && data.agent_id[0];
-            if (agentId === payload.agent_id) return true;
+    _scheduleAgentReload() {
+        if (this._agentReloadTimer) {
+            return;
         }
-        if (payload.task_id) {
-            const taskId = data.task_id && data.task_id[0];
-            if (taskId === payload.task_id) return true;
-        }
-        return false;
-    },
-
-    _scheduleReload() {
-        if (this._reloadTimer) return;
-        this._reloadTimer = setTimeout(() => {
-            this._reloadTimer = null;
-            const record = this.model && this.model.root;
-            if (record && typeof record.load === "function") {
-                record.load();
+        this._agentReloadTimer = setTimeout(async () => {
+            this._agentReloadTimer = null;
+            const record = this.model.root;
+            // Never clobber the user's unsaved edits.
+            if (record && !(await record.isDirty())) {
+                await record.load();
             }
         }, RELOAD_DEBOUNCE_MS);
     },

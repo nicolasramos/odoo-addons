@@ -1,5 +1,3 @@
-/** @odoo-module **/
-
 /**
  * Live update for the list view of odoo_agent models.
  *
@@ -9,61 +7,62 @@
  * on screen. Odoo's relational model will only re-read the records that
  * are actually being displayed, so the cost stays bounded.
  *
- * The patch is opt-in: only ``odoo.agent.execution`` and
- * ``odoo.agent.log`` are subscribed, because those are the lists where
- * live updates matter (you watch executions finish, you watch logs
- * stream in). Other models are skipped to keep the websocket quiet.
+ * The patch is opt-in: only the execution, log and chat message lists are
+ * covered, because those are the lists where live updates matter (you watch
+ * executions finish, you watch logs stream in). Other models are skipped to
+ * keep the websocket quiet.
+ *
+ * Note: notifications are only received for channels some other component
+ * (typically an open form) subscribed to through ``agent_live_update``.
  */
 
 import { ListController } from "@web/views/list/list_controller";
 import { patch } from "@web/core/utils/patch";
 import { useBus, useService } from "@web/core/utils/hooks";
+import { onWillUnmount } from "@odoo/owl";
 
 const AGENT_LIST_MODELS = new Set([
     "odoo.agent.execution",
     "odoo.agent.log",
-    "odoo.agent.chat",
+    "odoo.agent.chat.message",
 ]);
 
 const RELOAD_DEBOUNCE_MS = 800;
 
-export const AgentListLiveUpdate = {
-    dependencies: [...ListController.dependencies, "agent_live_update"],
-};
-
 patch(ListController.prototype, {
     setup() {
-        this._super(...arguments);
+        super.setup(...arguments);
+        if (!AGENT_LIST_MODELS.has(this.props.resModel)) {
+            return;
+        }
         this.agentLiveUpdate = useService("agent_live_update");
-        this._listReloadTimer = null;
-        const model = this.props && this.props.resModel;
-        if (AGENT_LIST_MODELS.has(model)) {
-            useBus(this.env.bus, this.agentLiveUpdate.EVENT, () => {
-                this._scheduleReload();
-            });
-        }
+        this._agentListReloadTimer = null;
+        useBus(this.env.bus, this.agentLiveUpdate.EVENT, () => {
+            this._scheduleAgentListReload();
+        });
+        onWillUnmount(() => {
+            if (this._agentListReloadTimer) {
+                clearTimeout(this._agentListReloadTimer);
+                this._agentListReloadTimer = null;
+            }
+        });
     },
 
-    onWillUnmount() {
-        if (this._listReloadTimer) {
-            clearTimeout(this._listReloadTimer);
-            this._listReloadTimer = null;
+    _scheduleAgentListReload() {
+        if (this._agentListReloadTimer) {
+            return;
         }
-        return this._super(...arguments);
-    },
-
-    _scheduleReload() {
-        if (this._listReloadTimer) return;
-        this._listReloadTimer = setTimeout(async () => {
-            this._listReloadTimer = null;
-            const root = this.model && this.model.root;
-            if (root && typeof root.load === "function") {
-                try {
-                    await root.load();
-                } catch (_err) {
-                    // If the load fails (e.g. user is editing a row) we just
-                    // skip this cycle and wait for the next notification.
-                }
+        this._agentListReloadTimer = setTimeout(async () => {
+            this._agentListReloadTimer = null;
+            const root = this.model.root;
+            // Skip the cycle while a row is being edited.
+            if (!root || root.editedRecord) {
+                return;
+            }
+            try {
+                await root.load();
+            } catch {
+                // Wait for the next notification.
             }
         }, RELOAD_DEBOUNCE_MS);
     },
