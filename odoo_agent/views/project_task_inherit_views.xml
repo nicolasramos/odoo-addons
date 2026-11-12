@@ -82,7 +82,7 @@
                                                         <field name="content"/>
                                                     </div>
                                                     <div class="o_agent_message_execution" t-if="record.execution_id.raw_value">
-                                                        <i class="oi" data-icon="flash_on"/>
+                                                        <i class="oi" data-icon="flash_on" title="Execution"/>
                                                         <field name="execution_id"/>
                                                     </div>
                                                 </div>
@@ -128,7 +128,7 @@
                 <filter name="ai_working" string="Agent Working" domain="[('latest_execution_status', 'in', ['queued', 'running', 'waiting_input', 'cancel_requested'])]"/>
                 <filter name="ai_failed" string="Agent Failed" domain="[('latest_execution_status', '=', 'failed')]"/>
                 <filter name="ai_done" string="Agent Done" domain="[('latest_execution_status', '=', 'completed')]"/>
-                <group expand="0" string="Agent">
+                <group>
                     <filter name="group_agent" string="Agent" context="{'group_by': 'agent_id'}"/>
                     <filter name="group_agent_status" string="Agent Status" context="{'group_by': 'latest_execution_status'}"/>
                 </group>
@@ -138,11 +138,11 @@
 
 
     <record id="view_project_task_kanban_inherit_agent" model="ir.ui.view">
-        <field name="name">project.task.kanban.inherit.agent</field>
+        <field name="name">project.task.card.inherit.agent</field>
         <field name="model">project.task</field>
-        <field name="inherit_id" ref="project.view_task_kanban"/>
+        <field name="inherit_id" ref="project.view_task_card"/>
         <field name="arch" type="xml">
-            <xpath expr="//kanban/field[@name='state']" position="after">
+            <xpath expr="//card/field[@name='state']" position="after">
                 <field name="agent_id"/>
                 <field name="latest_execution_status"/>
                 <field name="latest_execution_id"/>
@@ -172,7 +172,7 @@
                     </span>
                 </div>
             </xpath>
-            <xpath expr="//t[@t-name='card']//footer/div[1]" position="inside">
+            <xpath expr="//t[@t-name='card']//footer/field[@name='activity_ids']" position="after">
                 <span t-if="record.execution_count.raw_value" class="badge rounded-pill text-bg-secondary" title="Agent executions">
                     <i class="oi me-1" data-icon="flash_on" aria-label="Executions"/>
                     <field name="execution_count"/>

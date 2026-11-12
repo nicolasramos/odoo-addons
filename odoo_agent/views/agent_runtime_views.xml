@@ -100,7 +100,7 @@
                 <field name="machine_id"/>
                 <filter name="online" string="Online" domain="[('status', '=', 'online')]"/>
                 <filter name="offline" string="Offline" domain="[('status', '=', 'offline')]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
                 </group>
             </search>

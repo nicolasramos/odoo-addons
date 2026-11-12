@@ -65,7 +65,7 @@
                 <filter name="from_user" string="From Users" domain="[('author_type', '=', 'user')]"/>
                 <filter name="from_agent" string="From Agents" domain="[('author_type', '=', 'agent')]"/>
                 <filter name="queued" string="Queued" domain="[('delivery_state', '=', 'queued')]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_agent" string="Agent" context="{'group_by': 'agent_id'}"/>
                     <filter name="group_task" string="Project Task" context="{'group_by': 'project_task_id'}"/>
                     <filter name="group_execution" string="Execution" context="{'group_by': 'execution_id'}"/>

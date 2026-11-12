@@ -81,9 +81,6 @@ class AgentChatMessage(models.Model):
         index=True,
     )
 
-    def _auto_init(self):
-        return super()._auto_init()
-
     def init(self):
         self.env.cr.execute('''
             CREATE INDEX IF NOT EXISTS idx_agent_chat_message_agent_project_task

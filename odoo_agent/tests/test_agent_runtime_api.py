@@ -108,7 +108,7 @@ class TestAgentRuntimeApi(HttpCase):
     def test_heartbeat_strips_api_key_whitespace(self):
         status, payload = self._json_request(
             '/api/agent/runtime/heartbeat',
-            api_key=f'  {self.runtime.api_key}  ',
+            api_key=f'{self.runtime.api_key}  ',  # requests rejects leading spaces
         )
         self.assertEqual(status, 200)
         self.assertEqual(payload.get('status'), 'ok')

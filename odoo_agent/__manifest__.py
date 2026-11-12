@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'AI Agent System',
-    'version': '19.0.1.8.0',
+    'version': '20.0.1.0.0',
     'category': 'Productivity',
     'summary': 'AI Agent management: runtimes, agents, executions, logs, chat, MCP, and stage mapping',
     'description': """
@@ -27,11 +27,12 @@ Provides a native multi-agent execution architecture inside Odoo.
             'odoo_agent/static/src/js/agent_live_update_list_patch.js',
         ],
         'web.assets_unit_tests': [
-            'odoo_agent/static/tests/agent_live_update_service_tests.js',
+            'odoo_agent/static/tests/**/*.test.js',
         ],
     },
     'data': [
         'security/agent_security.xml',
+        'security/ir.access.csv',
         'views/actions_views.xml',
         'views/menu_views.xml',
         'views/agent_runtime_views.xml',
@@ -45,7 +46,6 @@ Provides a native multi-agent execution architecture inside Odoo.
         'views/agent_stage_map_views.xml',
         'views/project_task_inherit_views.xml',
         'data/agent_data.xml',
-        'security/ir.access.csv',
     ],
     'installable': True,
     'application': True,

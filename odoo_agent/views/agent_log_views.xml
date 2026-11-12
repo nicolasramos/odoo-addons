@@ -58,7 +58,7 @@
                 <field name="runtime_id"/>
                 <filter name="errors" string="Errors" domain="[('level', '=', 'error')]"/>
                 <filter name="warnings" string="Warnings" domain="[('level', '=', 'warn')]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_level" string="Level" context="{'group_by': 'level'}"/>
                     <filter name="group_execution" string="Execution" context="{'group_by': 'execution_id'}"/>
                 </group>

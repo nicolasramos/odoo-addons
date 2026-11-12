@@ -144,7 +144,7 @@
                 <filter name="waiting_input" string="Waiting for Input" domain="[('status', '=', 'waiting_input')]"/>
                 <filter name="failed" string="Failed" domain="[('status', '=', 'failed')]"/>
                 <filter name="chat" string="Chat" domain="[('source', '=', 'chat')]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
                     <filter name="group_source" string="Source" context="{'group_by': 'source'}"/>
                     <filter name="group_agent" string="Agent" context="{'group_by': 'agent_id'}"/>

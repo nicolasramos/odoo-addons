@@ -21,18 +21,11 @@
         <field name="model">odoo.agent</field>
         <field name="arch" type="xml">
             <kanban>
-                <field name="name"/>
-                <field name="status"/>
-                <field name="runtime_id"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_global_click">
-                            <div class="oe_kanban_details">
-                                <strong class="o_kanban_record_title"><field name="name"/></strong>
-                                <div><field name="status" widget="badge"/></div>
-                                <div>Runtime: <field name="runtime_id"/></div>
-                            </div>
-                        </div>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold fs-5"/>
+                        <field name="status" widget="badge"/>
+                        <div>Runtime: <field name="runtime_id"/></div>
                     </t>
                 </templates>
             </kanban>
@@ -132,7 +125,7 @@
                 <field name="engine"/>
                 <filter name="idle" string="Idle" domain="[('status', '=', 'idle')]"/>
                 <filter name="working" string="Working" domain="[('status', '=', 'working')]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
                     <filter name="group_runtime" string="Runtime" context="{'group_by': 'runtime_id'}"/>
                     <filter name="group_engine" string="Engine" context="{'group_by': 'engine'}"/>
