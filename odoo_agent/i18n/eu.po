@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: odoo_agent 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-08 20:41+0000\n"
+"POT-Creation-Date: 2026-11-12 12:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -16,962 +16,1946 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: odoo_agent/models/agent_execution.py:354
+#. module: odoo_agent
+#: model:ir.module.module,description:base.module_odoo_agent
+msgid ""
+"\n"
+"Provides a native multi-agent execution architecture inside Odoo.\n"
+"- Agent Runtimes: external machines (N100, Mac Mini, etc.) connected via API\n"
+"- AI Agents: configurable entities with instructions, skills, and runtime assignment\n"
+"- Agent Skills: reusable instruction packs\n"
+"- Agent Executions: repeatable runtime work units linked to project.task\n"
+"- Execution Logs: detailed command history with streaming support\n"
+"- Agent Chat: direct messaging between users and AI agents\n"
+"- Stage Mapping: configurable agent status to project stage mapping\n"
+"- REST API: bidirectional communication with external runtimes\n"
+"- Live updates: form and list views subscribe to odoo_agent bus.bus channels\n"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "%(parent)s → %(agent)s"
 msgstr "%(parent)s → %(agent)s"
 
-#: odoo_agent/models/agent_execution.py:370
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"check\" aria-label=\"Done\"/>\n"
+"                        Done"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
+msgid "<i class=\"oi me-1\" data-icon=\"flash_on\" aria-label=\"Executions\"/>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
+msgid "<i class=\"oi me-1\" data-icon=\"wand_stars\" aria-label=\"Agent\"/>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"warning\" aria-label=\"Failed\"/>\n"
+"                        Failed"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
+msgid "<i class=\"oi oi-filled me-1\" data-icon=\"forum\" aria-label=\"Agent messages\"/>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
+msgid ""
+"<i class=\"oi oi-filled me-1\" data-icon=\"play_circle\" aria-label=\"Working\"/>\n"
+"                        Working"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+msgid "<i class=\"oi\" data-icon=\"flash_on\" title=\"Execution\"/>"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "<p><b>%s</b> delegated work to: %s.</p>"
 msgstr "<p><b>%s</b> agenteak lana delegatu dio honi: %s.</p>"
 
-#: odoo_agent/models/agent_execution.py:241
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "<p>Agent <b>%s</b> completed execution <b>%s</b>.</p>"
 msgstr "<p><b>%s</b> agenteak <b>%s</b> exekuzioa osatu du.</p>"
 
-#: odoo_agent/models/agent_execution.py:256
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "<p>Agent <b>%s</b> failed execution <b>%s</b>.</p><p>%s</p>"
 msgstr "<p><b>%s</b> agenteak huts egin du <b>%s</b> exekuzioan.</p><p>%s</p>"
 
-#: odoo_agent/models/agent_execution.py:283
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "<p>Agent execution <b>%s</b> was cancelled.</p>"
 msgstr "<p><b>%s</b> agentearen exekuzioa ezeztatu da.</p>"
 
-#: odoo_agent/models/agent_execution.py:376
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "<p>Skipped mentioned agents without runtime: %s.</p>"
 msgstr "<p>Runtime gabeko aipatutako agenteak saltatu dira: %s.</p>"
 
-#: odoo_agent/models/project_task_inherit.py:11
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+msgid "<span class=\"o_agent_message_role\">Agent</span>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+msgid "<span class=\"o_agent_message_role\">User</span>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_form
+msgid "<span class=\"o_stat_text\">Logs</span>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+msgid "<span>Latest status</span>"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+msgid ""
+"<strong>Agent setup tip:</strong>\n"
+"                        Choose the runtime machine, then choose the engine/CLI that runtime can execute.\n"
+"                        Use Custom CLI when the runtime already knows how to call a proprietary agent."
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
+msgid ""
+"<strong>MCP server tip:</strong>\n"
+"                        MCP gives agents tools. Treat every server as operational access:\n"
+"                        configure the command or URL carefully and expose it only to agents that truly need it."
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
+msgid ""
+"<strong>Runtime tip:</strong>\n"
+"                        A runtime is the machine process that polls Odoo, starts executions,\n"
+"                        streams logs, and reports completion. Keep API keys scoped and rotate them when a host changes owner."
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_skill_form
+msgid ""
+"<strong>Skill tip:</strong>\n"
+"                        A skill should describe one concrete reusable capability, not a whole agent personality.\n"
+"                        Keep it short, testable, and specific so the runtime can compose several skills safely."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_id
 msgid "AI Agent"
 msgstr "IA agentea"
 
-#: odoo_agent/__manifest__.py:1
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_runtime
+msgid "AI Agent Runtime"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.module.module,shortdesc:base.module_odoo_agent
 msgid "AI Agent System"
 msgstr "IA agenteen sistema"
 
-#: odoo_agent/views/agent_dashboard_views.xml:1
-msgid "AI Agent System Dashboard — real-time status overview."
-msgstr "IA agenteen sistemaren panela — egoeraren denbora errealeko laburpena."
-
-#: odoo_agent/__manifest__.py:1
+#. module: odoo_agent
+#: model:ir.module.module,summary:base.module_odoo_agent
 msgid "AI Agent management: runtimes, agents, executions, logs, chat, MCP, and stage mapping"
 msgstr "IA agenteen kudeaketa: runtimeak, agenteak, exekuzioak, logak, txata, MCP eta etaparen mapaketa"
 
-#: odoo_agent/models/agent_runtime.py:34
+#. module: odoo_agent
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_root
+#: model:res.groups.privilege,name:odoo_agent.res_groups_privilege_agent
+msgid "AI Agents"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__api_key
 msgid "API Key"
 msgstr "API gakoa"
 
-#: odoo_agent/models/agent_runtime.py:34
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_runtime__api_key
 msgid "API key for runtime authentication"
 msgstr "Runtimea autentifikatzeko API gakoa"
 
-#: odoo_agent/models/agent.py:121
-#: odoo_agent/models/agent_skill.py:42
-#: odoo_agent/views/agent_mcp_server_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_needaction
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_needaction
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_needaction
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__active
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__active
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__active
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_search
 msgid "Active"
 msgstr "Aktibo"
 
-#: odoo_agent/models/agent_runtime.py:48
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__active_agent_count
 msgid "Active Agents"
 msgstr "Agente aktiboak"
 
-#: odoo_agent/models/agent.py:103
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__active_execution_count
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
 msgid "Active Executions"
 msgstr "Exekuzio aktiboak"
 
-#: odoo_agent/views/agent_dashboard_views.xml:1
-msgid "Active Tasks"
-msgstr "Aktibo Zereginak"
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_ids
+msgid "Activities"
+msgstr ""
 
-#: odoo_agent/models/agent_chat.py:15
-#: odoo_agent/models/agent_execution.py:20
-#: odoo_agent/models/agent_log.py:32
-#: odoo_agent/models/agent_task.py:17
-#: odoo_agent/models/project_task_inherit.py:121
-#: odoo_agent/views/agent_chat_views.xml:1
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_exception_decoration
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_exception_decoration
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_plans_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_plans_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_plans_ids
+msgid "Activity Plans"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_state
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_state
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_type_icon
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_type_icon
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__agent_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__agent_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__agent_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__agent_id
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_chat_message__author_type__agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_search_inherit_agent
 msgid "Agent"
 msgstr "Agentea"
 
-#: odoo_agent/models/agent_task.py:127
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_task.py:0
 msgid "Agent <b>%s</b> completed task: %s"
 msgstr "<b>%s</b> agenteak zeregina osatu du: %s"
 
-#: odoo_agent/models/agent_task.py:146
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_task.py:0
 msgid "Agent <b>%s</b> failed task: %s"
 msgstr "<b>%s</b> agenteak huts egin du zereginean: %s"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:res.groups,name:odoo_agent.group_agent_admin
+msgid "Agent Admin"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_search_inherit_agent
 msgid "Agent Assigned"
 msgstr "Agentea esleituta"
 
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_chat_message
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_form
 msgid "Agent Chat Message"
 msgstr "Agentea Chat Mezua"
 
-#: odoo_agent/models/project_task_inherit.py:57
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_chat_message
+msgid "Agent Chats"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_chat_message_count
 msgid "Agent Communication Count"
 msgstr "Agentea Communication Count"
 
-#: odoo_agent/models/project_task_inherit.py:52
-#: odoo_agent/models/project_task_inherit.py:179
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_chat_message_ids
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Agent Communications"
 msgstr "Agentea Communications"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_search_inherit_agent
 msgid "Agent Done"
 msgstr "Agentea osatuta"
 
-#: odoo_agent/models/project_task_inherit.py:36
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_execution
+msgid "Agent Execution"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__execution_count
 msgid "Agent Execution Count"
 msgstr "Agentearen exekuzio kopurua"
 
-#: odoo_agent/models/project_task_inherit.py:19
-#: odoo_agent/models/project_task_inherit.py:164
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_log
+msgid "Agent Execution Log"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__execution_ids
 msgid "Agent Executions"
 msgstr "Agentearen exekuzioak"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_search_inherit_agent
 msgid "Agent Failed"
 msgstr "Agenteak huts egin du"
 
-#: odoo_agent/models/project_task_inherit.py:153
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Agent Logs"
 msgstr "Agentearen logak"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_mcp_server
+msgid "Agent MCP Server"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Agent Messages"
 msgstr "Agentea Messages"
 
-#: odoo_agent/models/agent_stage_map.py:13
-#: odoo_agent/models/project_task_inherit.py:47
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_dashboard
+msgid "Agent Operations"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_skill
+msgid "Agent Skill"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__agent_status
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_status
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_search_inherit_agent
 msgid "Agent Status"
 msgstr "Agentearen egoera"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_stage_map
+msgid "Agent Status to Project Stage Mapping"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_odoo_agent_task
+msgid "Agent Task"
+msgstr ""
+
+#. module: odoo_agent
+#: model:res.groups,name:odoo_agent.group_agent_user
+msgid "Agent User"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_search_inherit_agent
 msgid "Agent Working"
 msgstr "Agentea lanean"
 
-#: odoo_agent/models/project_task_inherit.py:130
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
 msgid "Agent communication queued"
 msgstr "Agentea communication queued"
 
-#: odoo_agent/models/project_task_inherit.py:129
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
 msgid "Agent communication queued for %s."
 msgstr "Agentearen komunikazioa ilaran %s-entzat."
 
-#: odoo_agent/models/agent_execution.py:374
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "Agent delegation created"
 msgstr "Agentearen delegazioa sortu da"
 
-#: odoo_agent/models/agent_execution.py:379
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "Agent delegation skipped"
 msgstr "Agentearen delegazioa saltatu da"
 
-#: odoo_agent/models/agent_execution.py:402
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "Agent execution finished"
 msgstr "Agentearen exekuzioa amaitu da"
 
-#: odoo_agent/models/agent_execution.py:196
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "Agent execution queued"
 msgstr "Agentearen exekuzioa ilaran"
 
-#: odoo_agent/models/agent_execution.py:195
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "Agent execution queued for <b>%s</b>."
 msgstr "Agentearen exekuzioa ilaran jarri da <b>%s</b>rentzat."
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
 msgid "Agent executions"
 msgstr "Agentearen exekuzioak"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
 msgid "Agent is working on this task"
 msgstr "Agentea zeregin honetan lanean ari da"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
 msgid "Agent messages"
 msgstr "Agentea messages"
 
-#: odoo_agent/views/agent_views.xml:1
-msgid "Agent setup tip:"
-msgstr "Agentearen konfigurazio aholkua:"
-
-#: odoo_agent/models/project_task_inherit.py:61
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_project_task__agent_chat_composer_agent_id
 msgid "Agent that will receive the next task communication."
 msgstr "Zereginaren hurrengo komunikazioa jasoko duen agentea."
 
-#: odoo_agent/models/agent_mcp_server.py:30
-#: odoo_agent/models/agent_runtime.py:42
-#: odoo_agent/models/agent_skill.py:30
-#: odoo_agent/views/agent_mcp_server_views.xml:1
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__agent_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__agent_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__agent_ids
+#: model:ir.ui.menu,name:odoo_agent.menu_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Agents"
 msgstr "Agenteak"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Agents assigned here share this runtime's installed CLIs, MCP connectivity, and local permissions."
 msgstr "Hemen esleitutako agenteek runtime honen instalatutako CLIak, MCP konektibitatea eta baimen lokalak partekatzen dituzte."
 
-#: odoo_agent/models/agent_execution.py:75
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__mentioned_agent_ids
 msgid "Agents mentioned in the prompt with @handle."
 msgstr "Prompt-ean @identifikatzailearekin aipatutako agenteak."
 
-#: odoo_agent/models/agent_mcp_server.py:25
-#: odoo_agent/views/agent_mcp_server_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_skill__category__analysis
+msgid "Analysis"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__args
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
 msgid "Arguments"
 msgstr "Argumentuak"
 
-#: odoo_agent/models/project_task_inherit.py:92
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
 msgid "Assign an AI agent before sending the task."
 msgstr "Esleitu IA agente bat zeregina bidali aurretik."
 
-#: odoo_agent/models/project_task_inherit.py:11
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_project_task__agent_id
 msgid "Assign this task to an AI agent"
 msgstr "Esleitu zeregin hau IA agente bati"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Assign to AI agent..."
 msgstr "Esleitu IA agente bati..."
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
 msgid "Assigned agent"
 msgstr "Esleitutako agentea"
 
-#: odoo_agent/models/agent_execution.py:139
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_attachment_count
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_attachment_count
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_attachment_count
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__attempt
 msgid "Attempt"
 msgstr "Saiakera"
 
-#: odoo_agent/models/agent_chat.py:30
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__author_id
 msgid "Author"
 msgstr "Egilea"
 
-#: odoo_agent/models/agent_chat.py:36
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__author_type
 msgid "Author Type"
 msgstr "Egile mota"
 
-#: odoo_agent/models/agent.py:66
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__avatar
 msgid "Avatar"
 msgstr "Avatarra"
 
-#: odoo_agent/models/agent.py:48
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_runtime__status__busy
+msgid "Busy"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__cli_command
 msgid "CLI Command"
 msgstr "CLI Komandoa"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Cancel"
 msgstr "Ezeztatu"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Cancel Agent"
 msgstr "Ezeztatu Agentea"
 
-#: odoo_agent/models/agent_execution.py:135
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__cancel_requested
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__cancel_requested
+msgid "Cancel Requested"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__cancellation_reason
 msgid "Cancellation Reason"
 msgstr "Ezeztapen arrazoia"
 
-#: odoo_agent/models/agent_execution.py:268
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "Cancellation requested from Odoo."
 msgstr "Ezeztapena Odootik eskatu da."
 
-#: odoo_agent/models/agent_runtime.py:41
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__cancelled
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__cancelled
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_task__status__cancelled
+msgid "Cancelled"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__capabilities
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Capabilities"
 msgstr "Gaitasunak"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
-msgid "Capabilities are reported by the runtime: supported engines, installed CLIs, MCP support, OS details, and capacity. Use them to avoid assigning work to the wrong machine."
-msgstr "Gaitasunak runtimeak jakinarazten ditu: onartutako motorrak, instalatutako CLIak, MCP euskarria, sistema eragilearen xehetasunak eta edukiera. Erabili lana makina okerrari ez esleitzeko."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
+msgid ""
+"Capabilities are reported by the runtime: supported engines, installed CLIs,\n"
+"                                MCP support, OS details, and capacity. Use them to avoid assigning work to the wrong machine."
+msgstr ""
 
-#: odoo_agent/models/agent_skill.py:18
-#: odoo_agent/views/agent_skill_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__category
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_skill_search
 msgid "Category"
 msgstr "Kategoria"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__source__chat
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
 msgid "Chat"
 msgstr "Txata"
 
-#: odoo_agent/models/agent_execution.py:111
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__chat_message_ids
 msgid "Chat Messages"
 msgstr "Txat mezuak"
 
-#: odoo_agent/views/agent_execution_views.xml:1
-msgid "Chat executions keep the user request, runtime work, and agent replies traceable. Live notifications are published on the Odoo bus for this execution and agent."
-msgstr "Txat exekuzioek erabiltzailearen eskaera, runtimearen lana eta agentearen erantzunak trazagarri mantentzen dituzte. Zuzeneko jakinarazpenak Odoo busean argitaratzen dira exekuzio eta agente honentzat."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
+msgid ""
+"Chat executions keep the user request, runtime work, and agent replies traceable.\n"
+"                                Live notifications are published on the Odoo bus for this execution and agent."
+msgstr ""
 
-#: odoo_agent/models/project_task_inherit.py:120
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
 msgid "Chat message to %(agent)s"
 msgstr "Txat mezua %(agent)s agentearentzat"
 
-#: odoo_agent/models/agent_execution.py:66
+#. module: odoo_agent
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_chat_message
+msgid "Chats"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__child_ids
 msgid "Child Executions"
 msgstr "Child Exekuzioak"
 
-#: odoo_agent/models/agent_log.py:57
-#: odoo_agent/models/agent_mcp_server.py:24
-#: odoo_agent/views/agent_log_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__engine__claude
+msgid "Claude Code"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__engine__codex
+msgid "Codex"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__command
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__command
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_log_form
 msgid "Command"
 msgstr "Komandoa"
 
-#: odoo_agent/models/agent.py:48
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__cli_command
 msgid "Command executed by the runtime for this agent."
 msgstr "Runtimeak agente honentzat exekutatutako komandoa."
 
-#: odoo_agent/models/agent.py:114
-#: odoo_agent/models/agent_chat.py:76
-#: odoo_agent/models/agent_execution.py:154
-#: odoo_agent/models/agent_log.py:59
-#: odoo_agent/models/agent_mcp_server.py:37
-#: odoo_agent/models/agent_runtime.py:60
-#: odoo_agent/models/agent_skill.py:37
-#: odoo_agent/models/agent_stage_map.py:36
-#: odoo_agent/models/agent_task.py:70
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_skill__category__communication
+msgid "Communication"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__company_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__company_id
 msgid "Company"
 msgstr "Enpresa"
 
-#: odoo_agent/models/agent.py:86
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__max_concurrent_tasks
 msgid "Compatibility field. Use Max Concurrent Executions for new runtime dispatch."
 msgstr "Bateragarritasun eremua. Erabili gehieneko exekuzio paraleloak runtime bidalketa berrirako."
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Complete"
 msgstr "Osatu"
 
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__completed
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__completed
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_task__status__completed
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_search
 msgid "Completed"
 msgstr "Osatuta"
 
-#: odoo_agent/models/agent_execution.py:137
-#: odoo_agent/models/agent_task.py:53
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__completed_at
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__completed_at
 msgid "Completed At"
 msgstr "Osatuta At"
 
-#: odoo_agent/models/agent_runtime.py:39
+#. module: odoo_agent
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_config
+msgid "Configuration"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__create_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__create_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_skill__category__custom
+msgid "Custom"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__engine__custom
+msgid "Custom CLI"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_log__level__debug
+msgid "DEBUG"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_runtime__version
 msgid "Daemon/CLI version"
 msgstr "Daemon/CLI bertsioa"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Delegated"
 msgstr "Delegatua"
 
-#: odoo_agent/models/agent_execution.py:71
-#: odoo_agent/models/agent_execution.py:318
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__child_execution_count
 msgid "Delegated Executions"
 msgstr "Delegated Exekuzioak"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Delegations"
 msgstr "Delegazioak"
 
-#: odoo_agent/models/agent_chat.py:63
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_chat_message__delivery_state__delivered
+msgid "Delivered"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__delivery_state
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
 msgid "Delivery State"
 msgstr "Bidalketa egoera"
 
-#: odoo_agent/views/agent_mcp_server_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
 msgid "Describe what tools or data this server exposes and which business process it supports."
 msgstr "Deskribatu zer tresna edo datu eskaintzen dituen zerbitzari honek eta zer negozio-prozesu onartzen duen."
 
-#: odoo_agent/models/agent.py:22
-#: odoo_agent/models/agent_mcp_server.py:28
-#: odoo_agent/models/agent_skill.py:12
-#: odoo_agent/models/agent_task.py:16
-#: odoo_agent/views/agent_mcp_server_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__description
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__description
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__description
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__description
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_form
 msgid "Description"
 msgstr "Deskribapena"
 
-#: odoo_agent/models/agent_runtime.py:40
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_skill__category__devops
+msgid "DevOps"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_skill__category__development
+msgid "Development"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__device_info
 msgid "Device Info"
 msgstr "Gailuaren informazioa"
 
-#: odoo_agent/models/agent_stage_map.py:43
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__display_name
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__display_name
 msgid "Display Name"
 msgstr "Display Izena"
 
-#: odoo_agent/views/agent_views.xml:1
-msgid "Each execution is one auditable run against a Project task: queued, running, waiting for input, completed, failed, or cancelled."
-msgstr "Exekuzio bakoitza Proiektu zeregin baten aurkako exekuzio auditagarria da: ilaran, exekutatzen, sarreraren zain, osatuta, huts eginda edo ezeztatuta."
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_log__level__error
+msgid "ERROR"
+msgstr ""
 
-#: odoo_agent/models/agent.py:34
-#: odoo_agent/models/agent_execution.py:142
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.constraint,message:odoo_agent.constraint_odoo_agent_stage_map_agent_status_company_unique
+msgid "Each agent status can only have one mapping per company."
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+msgid ""
+"Each execution is one auditable run against a Project task: queued, running,\n"
+"                                waiting for input, completed, failed, or cancelled."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__engine
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__engine
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_search
 msgid "Engine"
 msgstr "Motorra"
 
-#: odoo_agent/models/agent_mcp_server.py:27
-#: odoo_agent/views/agent_mcp_server_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__environment
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
 msgid "Environment"
 msgstr "Ingurunea"
 
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__status__error
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_form
 msgid "Error"
 msgstr "Errorea"
 
-#: odoo_agent/models/agent_execution.py:134
-#: odoo_agent/models/agent_task.py:51
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__error_message
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__error_message
 msgid "Error Message"
 msgstr "Errorea Mezua"
 
-#: odoo_agent/views/agent_dashboard_views.xml:1
-#: odoo_agent/views/agent_log_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_log_search
 msgid "Errors"
 msgstr "Erroreak"
 
-#: odoo_agent/models/agent_chat.py:23
-#: odoo_agent/models/agent_log.py:13
-#: odoo_agent/views/agent_chat_views.xml:1
-#: odoo_agent/views/agent_log_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__execution_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__execution_id
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_log_search
 msgid "Execution"
 msgstr "Exekuzioa"
 
-#: odoo_agent/models/agent_execution.py:307
-#: odoo_agent/models/agent_task.py:63
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_log
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__log_ids
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_log
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_form
 msgid "Execution Logs"
 msgstr "Exekuzioa Logak"
 
-#: odoo_agent/models/agent.py:98
-#: odoo_agent/models/agent_runtime.py:45
-#: odoo_agent/views/agent_runtime_views.xml:1
-#: odoo_agent/views/agent_views.xml:1
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_execution
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__execution_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__execution_ids
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_execution
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Executions"
 msgstr "Exekuzioak"
 
-#: odoo_agent/models/agent_log.py:58
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__exit_code
 msgid "Exit Code"
 msgstr "Irteera kodea"
 
-#: odoo_agent/views/agent_skill_views.xml:1
-msgid "Explain when to use this skill, required inputs, expected output, and guardrails. These instructions are injected into the agent prompt at execution time."
-msgstr "Azaldu noiz erabili skill hau, beharrezko sarrerak, espero den irteera eta mugak. Argibide hauek agentearen prompt-ean txertatzen dira exekuzioan."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_skill_form
+msgid ""
+"Explain when to use this skill, required inputs, expected output, and guardrails.\n"
+"                            These instructions are injected into the agent prompt at execution time."
+msgstr ""
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Fail"
 msgstr "Markatu huts eginda"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_chat_message__delivery_state__failed
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__failed
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__failed
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_task__status__failed
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
 msgid "Failed"
 msgstr "Huts eginda"
 
-#: odoo_agent/views/agent_mcp_server_views.xml:1
-msgid "For stdio servers, add one argument per line or a JSON-style list understood by the runtime adapter. Avoid secrets here; use Environment for sensitive values."
-msgstr "Stdio zerbitzarietarako, gehitu argumentu bat lerro bakoitzeko edo runtime egokitzaileak ulertzen duen JSON estiloko zerrenda. Ez jarri sekreturik hemen; erabili Ingurunea balio sentikorretarako."
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_execution_failed
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_execution_failed
+msgid "Failed Executions"
+msgstr ""
 
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_follower_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_follower_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_follower_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_partner_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_partner_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_partner_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
+msgid ""
+"For stdio servers, add one argument per line or a JSON-style list understood by the runtime adapter.\n"
+"                                Avoid secrets here; use Environment for sensitive values."
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
 msgid "From Agents"
 msgstr "Agenteetatik"
 
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
 msgid "From Users"
 msgstr "Erabiltzaileetatik"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Generate API Key"
 msgstr "Sortu API gakoa"
 
-#: odoo_agent/views/agent_chat_views.xml:1
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_log_views.xml:1
-#: odoo_agent/views/agent_runtime_views.xml:1
-#: odoo_agent/views/agent_skill_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
-#: odoo_agent/views/agent_views.xml:1
-msgid "Group By"
-msgstr "Taldekatu honen arabera"
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_mcp_server__transport__http
+msgid "HTTP"
+msgstr ""
 
-#: odoo_agent/models/agent_runtime.py:21
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__has_message
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__has_message
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__has_message
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__engine__hermes
+msgid "Hermes"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__id
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__id
+msgid "ID"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_log__level__info
+msgid "INFO"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__ip_address
 msgid "IP Address"
 msgstr "IP helbidea"
 
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_exception_icon
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_exception_icon
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__activity_exception_icon
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__activity_exception_icon
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__status__idle
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_search
 msgid "Idle"
 msgstr "Inaktibo"
 
-#: odoo_agent/views/agent_dashboard_views.xml:1
-msgid "Idle Agents"
-msgstr "Agente inaktiboak"
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__message_needaction
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_chat_message__message_needaction
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__message_needaction
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr ""
 
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__message_has_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__message_has_sms_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_chat_message__message_has_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_chat_message__message_has_sms_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__message_has_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__message_has_sms_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__message_has_error
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_task__status__in_progress
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_search
 msgid "In Progress"
 msgstr "Abian"
 
-#: odoo_agent/models/agent.py:23
-#: odoo_agent/models/agent_skill.py:13
-#: odoo_agent/views/agent_skill_views.xml:1
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__instructions
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__instructions
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_skill_form
 msgid "Instructions"
 msgstr "Argibideak"
 
-#: odoo_agent/models/agent_chat.py:75
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_is_follower
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_is_follower
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_is_follower
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__is_read
 msgid "Is Read"
 msgstr "Irakurrita"
 
-#: odoo_agent/models/agent.py:53
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__model
 msgid "LLM model to use"
 msgstr "Erabili beharreko LLM eredua"
 
-#: odoo_agent/models/agent_execution.py:138
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__last_heartbeat_at
 msgid "Last Heartbeat"
 msgstr "Azken heartbeat-a"
 
-#: odoo_agent/models/agent_runtime.py:33
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__last_seen
 msgid "Last Seen"
 msgstr "Azken aldiz ikusita"
 
-#: odoo_agent/models/project_task_inherit.py:24
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__write_uid
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__write_date
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__latest_execution_id
 msgid "Latest Agent Execution"
 msgstr "Agentearen azken exekuzioa"
 
-#: odoo_agent/models/project_task_inherit.py:31
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__latest_execution_status
 msgid "Latest Agent Status"
 msgstr "Agentearen azken egoera"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
 msgid "Latest agent execution completed"
 msgstr "Agentearen azken exekuzioa osatuta"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_kanban_inherit_agent
 msgid "Latest agent execution failed"
 msgstr "Agentearen azken exekuzioak huts egin du"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
-msgid "Latest status"
-msgstr "Azken egoera"
-
-#: odoo_agent/models/agent.py:110
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__active_task_count
 msgid "Legacy Active Tasks"
 msgstr "Legacy Aktibo Zereginak"
 
-#: odoo_agent/models/agent_execution.py:84
-#: odoo_agent/models/agent_log.py:20
-#: odoo_agent/models/project_task_inherit.py:40
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__legacy_agent_task_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__agent_task_id
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_task_id
 msgid "Legacy Agent Task"
 msgstr "Agentearen legacy zeregina"
 
-#: odoo_agent/models/agent.py:86
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__in_progress
+msgid "Legacy In Progress"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__max_concurrent_tasks
 msgid "Legacy Max Concurrent Tasks"
 msgstr "Legacy zeregin paraleloen gehienekoa"
 
-#: odoo_agent/models/agent_chat.py:46
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__pending
+msgid "Legacy Pending"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__task_id
 msgid "Legacy Related Task"
 msgstr "Lotutako legacy zeregina"
 
-#: odoo_agent/models/agent.py:107
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_task
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__task_ids
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_task
 msgid "Legacy Tasks"
 msgstr "Legacy zereginak"
 
-#: odoo_agent/models/project_task_inherit.py:40
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_project_task__agent_task_id
 msgid "Legacy tracking field. New flows use Agent Executions."
 msgstr "Jarraipen eremu zaharra. Fluxu berriek Agentearen exekuzioak erabiltzen dituzte."
 
-#: odoo_agent/models/agent_log.py:44
-#: odoo_agent/views/agent_log_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__level
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_log_search
 msgid "Level"
 msgstr "Maila"
 
-#: odoo_agent/models/agent_task.py:30
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__task_id
 msgid "Link to an existing Odoo project task"
 msgstr "Lehendik dagoen Odoo proiektu zeregin batera esteka"
 
-#: odoo_agent/models/agent.py:93
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__user_id
 msgid "Linked User"
 msgstr "Lotutako erabiltzailea"
 
-#: odoo_agent/models/agent_execution.py:153
-#: odoo_agent/models/agent_task.py:66
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__log_count
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__log_count
 msgid "Log Count"
 msgstr "Log kopurua"
 
-#: odoo_agent/models/agent_execution.py:148
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__log_ids
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Logs"
 msgstr "Logak"
 
-#: odoo_agent/models/agent.py:74
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_mcp_server
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__mcp_server_ids
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_mcp_server
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
 msgid "MCP Servers"
 msgstr "MCP zerbitzariak"
 
-#: odoo_agent/views/agent_mcp_server_views.xml:1
-msgid "MCP server tip:"
-msgstr "MCP zerbitzariaren aholkua:"
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+msgid ""
+"MCP servers expose tools and data sources to the agent runtime.\n"
+"                                Assign only trusted servers and verify their commands, URLs, and environment variables on the runtime host."
+msgstr ""
 
-#: odoo_agent/views/agent_views.xml:1
-msgid "MCP servers expose tools and data sources to the agent runtime. Assign only trusted servers and verify their commands, URLs, and environment variables on the runtime host."
-msgstr "MCP zerbitzariek tresnak eta datu-iturburuak eskaintzen dizkiote agentearen runtimeari. Esleitu konfiantzazko zerbitzariak bakarrik eta egiaztatu komandoak, URLak eta ingurune-aldagaiak runtime hostean."
-
-#: odoo_agent/models/agent_runtime.py:15
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__machine_id
 msgid "Machine ID"
 msgstr "Makina IDa"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.constraint,message:odoo_agent.constraint_odoo_agent_runtime_machine_id_unique
+msgid "Machine ID must be unique per company."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__source__manual
+msgid "Manual"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Mark Offline"
 msgstr "Mark Lineaz kanpo"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Mark Online"
 msgstr "Mark Linean"
 
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_form
 msgid "Mark as Read"
 msgstr "Markatu irakurrita"
 
-#: odoo_agent/models/agent.py:81
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__activity_type_icon
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__activity_type_icon
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__max_concurrent_executions
 msgid "Max Concurrent Executions"
 msgstr "Gehieneko exekuzio paraleloak"
 
-#: odoo_agent/models/agent.py:16
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__mention_key
 msgid "Mention Handle"
 msgstr "Aipamen identifikatzailea"
 
-#: odoo_agent/views/agent_execution_views.xml:1
-msgid "Mention agents in the prompt with @handle to create child executions. Delegations are traceable through Parent Execution and this list."
-msgstr "Aipatu agenteak prompt-ean @identifikatzailearekin exekuzio semeak sortzeko. Delegazioak guraso exekuzioaren eta zerrenda honen bidez trazagarriak dira."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
+msgid ""
+"Mention agents in the prompt with @handle to create child executions.\n"
+"                                Delegations are traceable through Parent Execution and this list."
+msgstr ""
 
-#: odoo_agent/models/agent_execution.py:75
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__mentioned_agent_ids
 msgid "Mentioned Agents"
 msgstr "Aipatutako agenteak"
 
-#: odoo_agent/models/agent_chat.py:45
-#: odoo_agent/models/agent_log.py:56
-#: odoo_agent/models/project_task_inherit.py:67
-#: odoo_agent/views/agent_chat_views.xml:1
-#: odoo_agent/views/agent_log_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__content
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__message
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_chat_composer_body
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_log_form
 msgid "Message"
 msgstr "Mezua"
 
-#: odoo_agent/models/project_task_inherit.py:61
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_project_task__agent_chat_composer_agent_id
 msgid "Message Agent"
 msgstr "Mezua Agentea"
 
-#: odoo_agent/models/project_task_inherit.py:67
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_has_error
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_has_error
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_has_error
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_project_task__agent_chat_composer_body
 msgid "Message to send to the selected agent in this task context."
 msgstr "Zeregin honen testuinguruan hautatutako agenteari bidaltzeko mezua."
 
-#: odoo_agent/models/agent.py:53
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__model
 msgid "Model"
 msgstr "Eredua"
 
-#: odoo_agent/views/actions_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.actions.act_window,help:odoo_agent.action_agent_dashboard
 msgid "Monitor active and failed agent executions."
 msgstr "Monitorizatu agentearen exekuzio aktiboak eta huts egindakoak."
 
-#: odoo_agent/models/agent.py:15
-#: odoo_agent/models/agent_mcp_server.py:12
-#: odoo_agent/models/agent_runtime.py:14
-#: odoo_agent/models/agent_skill.py:11
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__my_activity_date_deadline
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__my_activity_date_deadline
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_skill__name
 msgid "Name"
 msgstr "Izena"
 
-#: odoo_agent/models/agent_runtime.py:40
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_date_deadline
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_date_deadline
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_summary
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_summary
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_type_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_type_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: odoo_agent
+#: model:res.groups.privilege,placeholder:odoo_agent.res_groups_privilege_agent
+msgid "No"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_needaction_counter
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_needaction_counter
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_needaction_counter
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_has_error_counter
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_has_error_counter
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_has_error_counter
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__message_needaction_counter
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_chat_message__message_needaction_counter
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__message_needaction_counter
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__message_has_error_counter
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_chat_message__message_has_error_counter
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__message_has_error_counter
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_runtime__device_info
 msgid "OS, hardware info"
 msgstr "SE eta hardware informazioa"
 
-#: odoo_agent/models/agent_task.py:30
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__task_id
 msgid "Odoo Task"
 msgstr "Odoo Zeregina"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_runtime__status__offline
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_search
 msgid "Offline"
 msgstr "Lineaz kanpo"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_runtime__status__online
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_search
 msgid "Online"
 msgstr "Linean"
 
-#: odoo_agent/models/agent.py:93
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__engine__openclaw
+msgid "OpenClaw"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__engine__opencode
+msgid "OpenCode"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_dashboard
+msgid "Operations"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__user_id
 msgid "Optional: link to an Odoo user for permissions"
 msgstr "Aukerakoa: lotu Odoo erabiltzaile batekin baimenetarako"
 
-#: odoo_agent/models/agent_execution.py:59
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__parent_id
 msgid "Parent Execution"
 msgstr "Parent Exekuzioa"
 
-#: odoo_agent/models/agent_task.py:54
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__parent_id
 msgid "Parent Task"
 msgstr "Parent Zeregina"
 
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_task__status__pending
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_search
 msgid "Pending"
 msgstr "Zain"
 
-#: odoo_agent/models/agent_execution.py:38
-#: odoo_agent/models/agent_task.py:25
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__project_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__project_id
 msgid "Project"
 msgstr "Proiektua"
 
-#: odoo_agent/models/agent_stage_map.py:29
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_stage_map__stage_id
 msgid "Project Stage"
 msgstr "Proiektua Stage"
 
-#: odoo_agent/models/agent_execution.py:45
-#: odoo_agent/models/project_task_inherit.py:96
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__task_id
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__source__task
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
 msgid "Project Task"
 msgstr "Proiektua Zeregina"
 
-#: odoo_agent/models/agent_execution.py:19
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__prompt
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Prompt"
 msgstr "Prompt-a"
 
-#: odoo_agent/__manifest__.py:1
-msgid "Provides a native multi-agent execution architecture inside Odoo. - Agent Runtimes: external machines (N100, Mac Mini, etc.) connected via API - AI Agents: configurable entities with instructions, skills, and runtime assignment - Agent Skills: reusable instruction packs - Agent Executions: repeatable runtime work units linked to project.task - Execution Logs: detailed command history with streaming support - Agent Chat: direct messaging between users and AI agents - Stage Mapping: configurable agent status to project stage mapping - REST API: bidirectional communication with external runtimes"
-msgstr "Odoo barruan multiagente exekuzio arkitektura natiboa eskaintzen du. - Agente runtimeak: API bidez konektatutako kanpoko makinak - IA agenteak: argibideak, skillak eta esleitutako runtimea dituzten entitate konfiguragarriak - Agentearen skillak: argibide-pakete berrerabilgarriak - Agentearen exekuzioak: project.task-i lotutako lan-unitate errepikagarriak - Exekuzio logak: streaming euskarria duen komando-historial xehea - Agentearen txata: erabiltzaileen eta IA agenteen arteko mezularitza zuzena - Etapa mapaketa: agentearen egoeratik proiektu etapara mapaketa konfiguragarria - REST APIa: kanpoko runtimeekin bi noranzkoko komunikazioa"
-
-#: odoo_agent/views/agent_chat_views.xml:1
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_chat_message__delivery_state__queued
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__queued
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__queued
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
 msgid "Queued"
 msgstr "Ilaran"
 
-#: odoo_agent/models/agent_runtime.py:52
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__queued_execution_count
 msgid "Queued Executions"
 msgstr "Ilarako exekuzioak"
 
-#: odoo_agent/models/agent_chat.py:51
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__rating_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__rating_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__rating_ids
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__rating_ids
+msgid "Ratings"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__project_task_id
 msgid "Related Project Task"
 msgstr "Lotutako proiektu zeregina"
 
-#: odoo_agent/models/agent_execution.py:52
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__requested_by_id
 msgid "Requested By"
 msgstr "Eskatzailea"
 
-#: odoo_agent/models/agent_execution.py:133
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__activity_user_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__activity_user_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__result
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_form
 msgid "Result"
 msgstr "Emaitza"
 
-#: odoo_agent/models/agent_task.py:50
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__result
 msgid "Result/Output"
 msgstr "Emaitza/Irteera"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
 msgid "Retry"
 msgstr "Saiatu berriro"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Retry Agent"
 msgstr "Saiatu berriro Agentea"
 
-#: odoo_agent/models/agent.py:92
-#: odoo_agent/models/agent_execution.py:141
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__retry_limit
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__retry_limit
 msgid "Retry Limit"
 msgstr "Berriro saiatzeko muga"
 
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__running
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__running
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Running"
 msgstr "Exekutatzen"
 
-#: odoo_agent/models/agent_runtime.py:56
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__running_execution_count
 msgid "Running Executions"
 msgstr "Martxan dauden exekuzioak"
 
-#: odoo_agent/models/agent.py:27
-#: odoo_agent/models/agent_execution.py:29
-#: odoo_agent/models/agent_log.py:26
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__runtime_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__runtime_id
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__runtime_id
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_search
 msgid "Runtime"
 msgstr "Runtime"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
-msgid "Runtime tip:"
-msgstr "Runtime aholkua:"
-
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_kanban
 msgid "Runtime:"
 msgstr "Runtimea:"
 
-#: odoo_agent/models/agent_chat.py:130
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_runtime
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_runtime
+msgid "Runtimes"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__message_has_sms_error
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__message_has_sms_error
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__message_has_sms_error
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_mcp_server__transport__sse
+msgid "SSE"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_chat.py:0
 msgid "Select an AI agent before sending a message."
 msgstr "Hautatu IA agente bat mezua bidali aurretik."
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Send"
 msgstr "Bidali"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
-msgid "Send follow-up instructions, receive agent replies, and keep every message linked to a traceable execution, logs, status, and final result."
-msgstr "Bidali jarraipen-argibideak, jaso agentearen erantzunak eta mantendu mezu bakoitza exekuzio trazagarri, log, egoera eta azken emaitzarekin lotuta."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+msgid ""
+"Send follow-up instructions, receive agent replies, and keep every message linked to\n"
+"                                    a traceable execution, logs, status, and final result."
+msgstr ""
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Send to Agent"
 msgstr "Bidali agenteari"
 
-#: odoo_agent/models/agent_mcp_server.py:13
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_chat_message__delivery_state__sent
+msgid "Sent"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__server_key
 msgid "Server Key"
 msgstr "Zerbitzari gakoa"
 
-#: odoo_agent/models/agent.py:16
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__mention_key
 msgid "Short handle used to mention this agent from prompts, for example @qa or @hermes."
 msgstr "Promptetatik agente hau aipatzeko identifikatzaile laburra, adibidez @qa edo @hermes."
 
-#: odoo_agent/views/agent_skill_views.xml:1
-msgid "Skill tip:"
-msgstr "Skill aholkua:"
-
-#: odoo_agent/models/agent.py:67
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_skill
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__skill_ids
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_skill
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
 msgid "Skills"
 msgstr "Skillak"
 
-#: odoo_agent/views/agent_views.xml:1
-msgid "Skills are reusable capability packs injected into the final prompt. Add only the skills this agent needs; too many skills make executions noisy and harder to audit."
-msgstr "Skillak azken prompt-ean txertatzen diren gaitasun-pakete berrerabilgarriak dira. Gehitu agente honek behar dituenak bakarrik; skill gehiegik exekuzioak zaratatsuago eta auditatzeko zailago bihurtzen dituzte."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+msgid ""
+"Skills are reusable capability packs injected into the final prompt.\n"
+"                                Add only the skills this agent needs; too many skills make executions noisy and harder to audit."
+msgstr ""
 
-#: odoo_agent/models/agent_execution.py:91
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__source
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
 msgid "Source"
 msgstr "Jatorria"
 
-#: odoo_agent/models/agent_execution.py:103
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__chat_message_id
 msgid "Source Chat Message"
 msgstr "Jatorrizko txat mezua"
 
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
+#. module: odoo_agent
+#: model:ir.actions.act_window,name:odoo_agent.action_agent_stage_map
+#: model:ir.ui.menu,name:odoo_agent.menu_agent_stage_map
+msgid "Stage Mapping"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_form
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_form
 msgid "Start"
 msgstr "Hasi"
 
-#: odoo_agent/models/agent_execution.py:136
-#: odoo_agent/models/agent_task.py:52
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__started_at
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__started_at
 msgid "Started At"
 msgstr "Hasiera data"
 
-#: odoo_agent/models/agent.py:54
-#: odoo_agent/models/agent_execution.py:116
-#: odoo_agent/models/agent_runtime.py:22
-#: odoo_agent/models/agent_task.py:36
-#: odoo_agent/views/agent_execution_views.xml:1
-#: odoo_agent/views/agent_runtime_views.xml:1
-#: odoo_agent/views/agent_task_views.xml:1
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__status
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__status
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__status
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__status
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_search
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_task_search
 msgid "Status"
 msgstr "Egoera"
 
-#: odoo_agent/views/agent_mcp_server_views.xml:1
-msgid "Store environment variables required by the MCP server. Prefer references to runtime-side secrets when possible instead of plain credentials."
-msgstr "Gorde MCP zerbitzariak behar dituen ingurune-aldagaiak. Ahal denean, erabili runtime aldeko sekretuen erreferentziak kredentzial arrunten ordez."
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__activity_state
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__activity_state
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
 
-#: odoo_agent/models/agent_task.py:60
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
+msgid ""
+"Store environment variables required by the MCP server.\n"
+"                                Prefer references to runtime-side secrets when possible instead of plain credentials."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__child_ids
 msgid "Subtasks"
 msgstr "Azpizereginak"
 
-#: odoo_agent/models/agent.py:23
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__instructions
 msgid "System prompt / instructions for the agent"
 msgstr "Sistemaren prompt-a / agentearentzako argibideak"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
+msgid "Talk with agents without leaving the task"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model,name:odoo_agent.model_project_task
+msgid "Task"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Task conversation"
 msgstr "Zeregina conversation"
 
-#: odoo_agent/models/agent_log.py:57
+#. module: odoo_agent
+#: model:ir.model.constraint,message:odoo_agent.constraint_odoo_agent_mcp_server_server_key_company_unique
+msgid "The MCP server key must be unique per company."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_log__command
 msgid "The command/action being executed"
 msgstr "Exekutatzen ari den komandoa/ekintza"
 
-#: odoo_agent/models/agent_chat.py:132
-#: odoo_agent/models/project_task_inherit.py:94
+#. module: odoo_agent
+#: model:ir.model.constraint,message:odoo_agent.constraint_odoo_agent_mention_key_company_unique
+msgid "The mention handle must be unique per company."
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_chat.py:0
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
 msgid "The selected AI agent must have a runtime."
 msgstr "Hautatutako IA agenteak runtime bat izan behar du."
 
-#: odoo_agent/models/agent_execution.py:186
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
 msgid "The selected agent must have a runtime before creating an execution."
 msgstr "Hautatutako agenteak runtime bat izan behar du exekuzioa sortu aurretik."
 
-#: odoo_agent/models/agent_skill.py:13
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_skill__instructions
 msgid "The skill instructions/prompt that will be injected into the agent"
 msgstr "Agenteari txertatuko zaizkion skill argibideak/prompt-a"
 
-#: odoo_agent/views/agent_mcp_server_views.xml:1
-msgid "These agents can use this MCP server during execution. Keep the list small to reduce accidental access to tools or data."
-msgstr "Agente hauek MCP zerbitzari hau erabil dezakete exekuzioan. Mantendu zerrenda txikia tresna edo datuetara ustekabeko sarbidea murrizteko."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_mcp_server_form
+msgid ""
+"These agents can use this MCP server during execution.\n"
+"                                Keep the list small to reduce accidental access to tools or data."
+msgstr ""
 
-#: odoo_agent/models/agent.py:91
-#: odoo_agent/models/agent_execution.py:140
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent__timeout_seconds
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__timeout_seconds
 msgid "Timeout (seconds)"
 msgstr "Timeouta (segundoak)"
 
-#: odoo_agent/models/agent_chat.py:57
-#: odoo_agent/models/agent_log.py:38
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_chat_message__timestamp
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_log__timestamp
 msgid "Timestamp"
 msgstr "Data eta ordua"
 
-#: odoo_agent/models/agent_execution.py:18
-#: odoo_agent/models/agent_task.py:15
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_execution__name
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_task__name
 msgid "Title"
 msgstr "Izenburua"
 
-#: odoo_agent/models/agent_mcp_server.py:14
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__transport
 msgid "Transport"
 msgstr "Garraioa"
 
-#: odoo_agent/models/agent_mcp_server.py:26
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent__activity_exception_decoration
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_execution__activity_exception_decoration
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_task__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_mcp_server__url
 msgid "URL"
 msgstr "URLa"
 
-#: odoo_agent/models/agent_runtime.py:15
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_odoo_agent_runtime__machine_id
 msgid "Unique machine identifier (hostname or UUID)"
 msgstr "Makina identifikatzaile bakarra (hostname edo UUID)"
 
-#: odoo_agent/views/agent_chat_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_chat_message_search
 msgid "Unread"
 msgstr "Irakurri gabe"
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Use assigned agent"
 msgstr "Erabili esleitutako agentea"
 
-#: odoo_agent/views/agent_runtime_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields,help:odoo_agent.field_project_task__display_name
+msgid ""
+"Use these keywords in the title to set new tasks:\n"
+"\n"
+"            #tags Set tags on the task\n"
+"            @user Assign the task to a user\n"
+"            ! Set the task a medium priority\n"
+"            !! Set the task a high priority\n"
+"            !!! Set the task a urgent priority\n"
+"\n"
+"            Make sure to use the right format and order e.g. Improve the configuration screen #feature #v16 @Mitchell !"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_runtime_form
 msgid "Use this tab to see what this runtime is currently running or has recently completed."
 msgstr "Erabili fitxa hau runtime honek une honetan zer exekutatzen duen edo berriki zer osatu duen ikusteko."
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_chat_message__author_type__user
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "User"
 msgstr "Erabiltzailea"
 
-#: odoo_agent/models/agent_runtime.py:39
+#. module: odoo_agent
+#: model:ir.model.fields,field_description:odoo_agent.field_odoo_agent_runtime__version
 msgid "Version"
 msgstr "Bertsioa"
 
-#: odoo_agent/views/agent_execution_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_log__level__warn
+msgid "WARNING"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_execution__status__waiting_input
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_stage_map__agent_status__waiting_input
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_execution_search
 msgid "Waiting for Input"
 msgstr "Sarreraren zain"
 
-#: odoo_agent/views/agent_log_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_log_search
 msgid "Warnings"
 msgstr "Abisuak"
 
-#: odoo_agent/views/agent_views.xml:1
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent__status__working
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_search
 msgid "Working"
 msgstr "Lanean"
 
-#: odoo_agent/views/agent_dashboard_views.xml:1
-msgid "Working Agents"
-msgstr "Lanean ari diren agenteak"
-
-#: odoo_agent/models/agent_chat.py:128
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_chat.py:0
 msgid "Write a message before sending it to the agent."
 msgstr "Idatzi mezu bat agenteari bidali aurretik."
 
-#: odoo_agent/views/project_task_inherit_views.xml:1
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_project_task_form_inherit_agent
 msgid "Write a reply or follow-up for the agent..."
 msgstr "Idatzi erantzun edo jarraipen bat agentearentzat..."
 
-#: odoo_agent/views/agent_views.xml:1
-msgid "Write the agent's operating rules here: role, boundaries, project context, expected output format, and what it must never do without human approval. Other agents can mention this agent with its @handle."
-msgstr "Idatzi hemen agentearen funtzionamendu-arauak: rola, mugak, proiektuaren testuingurua, espero den irteera formatua eta giza onarpenik gabe inoiz egin behar ez duena. Beste agenteek agente hau aipa dezakete bere @identifikatzailearekin."
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+msgid ""
+"Write the agent's operating rules here: role, boundaries, project context,\n"
+"                                expected output format, and what it must never do without human approval.\n"
+"                                Other agents can mention this agent with its @handle."
+msgstr ""
 
-#: odoo_agent/models/agent_execution.py:384
-msgid "You were mentioned from execution \"%(execution)s\" by agent \"%(agent)s\". Focus only on the part of the task that matches your role. Original prompt: %(prompt)s"
-msgstr "\"%(agent)s\" agenteak \"%(execution)s\" exekuziotik aipatu zaitu. Zure rolari dagokion zeregin zatian bakarrik jarri arreta. Jatorrizko prompt-a: %(prompt)s"
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
+msgid ""
+"You were mentioned from execution \"%(execution)s\" by agent \"%(agent)s\".\n"
+"\n"
+"Focus only on the part of the task that matches your role.\n"
+"\n"
+"Original prompt:\n"
+"%(prompt)s"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+msgid "execution_id"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/agent_execution.py:0
+msgid "parent_id"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+msgid "project_task_id"
+msgstr ""
+
+#. module: odoo_agent
+#: model_terms:ir.ui.view,arch_db:odoo_agent.view_agent_form
+msgid "qa-agent"
+msgstr ""
+
+#. module: odoo_agent
+#: model:ir.model.fields.selection,name:odoo_agent.selection__odoo_agent_mcp_server__transport__stdio
+msgid "stdio"
+msgstr ""
+
+#. module: odoo_agent
+#. odoo-python
+#: code:addons/odoo_agent/models/project_task_inherit.py:0
+msgid "task_id"
+msgstr ""

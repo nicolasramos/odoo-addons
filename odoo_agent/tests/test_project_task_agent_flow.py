@@ -81,7 +81,8 @@ class TestProjectTaskAgentFlow(AgentTestMixin):
     def test_task_agent_communication_creates_chat_execution(self):
         self.task.agent_chat_composer_body = 'Can you review the acceptance criteria?'
 
-        self.task.action_send_agent_chat_message()
+        # Explicit language: _() falls back to the user's language otherwise.
+        self.task.with_context(lang='en_US').action_send_agent_chat_message()
 
         message = self.task.agent_chat_message_ids[0]
         execution = message.execution_id
