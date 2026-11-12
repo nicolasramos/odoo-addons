@@ -1,2 +1,6 @@
 # macOS resource forks
 ._*
+
+# Python
+__pycache__/
+*.py[cod]
