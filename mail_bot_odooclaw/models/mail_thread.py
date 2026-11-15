@@ -101,6 +101,32 @@ class MailThread(models.AbstractModel):
                         )
                         body_text += f"\n[Adjunto: {att.name} (ID: {att.id})]\n"
 
+            # Declare every document attachment in the intake (NRA-5523 / T3).
+            # The row exists whether the flows are on or off: a disabled flow
+            # keeps the document traceable instead of losing it (fail-closed,
+            # design D7). A failure here must never break the user's message,
+            # so the whole block is contained (design risk R-D3).
+            if invoice_attachments:
+                try:
+                    intake_source = (
+                        "discuss" if message.model == "discuss.channel" else "chatter"
+                    )
+                    Intake = self.env["odooclaw.document.intake"]
+                    for att_map in invoice_attachments:
+                        att = self.env["ir.attachment"].browse(att_map["id"])
+                        Intake.create_for_attachment(
+                            att,
+                            source=intake_source,
+                            message=message,
+                            actor=message.author_id,
+                        )
+                except Exception:
+                    _logger.exception(
+                        "OdooClaw intake: could not declare document attachments "
+                        "for message %s",
+                        message.id,
+                    )
+
             # Send webhook asynchronously
             payload = {
                 "message_id": message.id,

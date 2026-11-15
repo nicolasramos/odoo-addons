@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_odooclaw_document_intake_list" model="ir.ui.view">
+        <field name="name">odooclaw.document.intake.list</field>
+        <field name="model">odooclaw.document.intake</field>
+        <field name="arch" type="xml">
+            <list string="Document Intake">
+                <field name="create_date" string="Received" />
+                <field name="filename" />
+                <field name="intake_type" />
+                <field name="source" optional="show" />
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-info="state == 'new'"
+                    decoration-warning="state in ('review', 'processing')"
+                    decoration-success="state == 'created'"
+                    decoration-danger="state in ('error', 'disabled')"
+                    decoration-muted="state == 'duplicate'"
+                />
+                <field name="reason" optional="hide" />
+                <field name="missing_fields" optional="hide" />
+                <field name="confidence" optional="show" />
+                <field name="created_model" optional="show" />
+                <field name="created_res_id" optional="show" />
+                <field name="actor_id" />
+                <field
+                    name="company_id"
+                    groups="base.group_multi_company"
+                    optional="hide"
+                />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_odooclaw_document_intake_form" model="ir.ui.view">
+        <field name="name">odooclaw.document.intake.form</field>
+        <field name="model">odooclaw.document.intake</field>
+        <field name="arch" type="xml">
+            <form string="Document Intake">
+                <header>
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="new,processing,created"
+                    />
+                </header>
+                <sheet>
+                    <div
+                        class="alert alert-warning"
+                        role="alert"
+                        invisible="not reason"
+                    >
+                        <field name="reason" />
+                    </div>
+                    <group>
+                        <group string="Document">
+                            <field name="filename" />
+                            <field name="attachment_id" />
+                            <field name="mimetype" />
+                            <field name="checksum" />
+                            <field name="intake_type" />
+                            <field name="source" />
+                        </group>
+                        <group string="Delivery">
+                            <field name="actor_id" />
+                            <field name="message_id" />
+                            <field
+                                name="company_id"
+                                groups="base.group_multi_company"
+                            />
+                            <field name="processed_by" />
+                        </group>
+                    </group>
+                    <group string="Result">
+                        <group>
+                            <field name="confidence" />
+                            <field name="missing_fields" />
+                            <field name="created_model" />
+                            <field name="created_res_id" />
+                            <field name="duplicate_of_id" />
+                        </group>
+                    </group>
+                    <group string="Pipeline notes">
+                        <field
+                            name="issues"
+                            nolabel="1"
+                            placeholder="Raw issues reported by the extraction pipeline"
+                        />
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" />
+                    <field name="message_ids" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_odooclaw_document_intake_search" model="ir.ui.view">
+        <field name="name">odooclaw.document.intake.search</field>
+        <field name="model">odooclaw.document.intake</field>
+        <field name="arch" type="xml">
+            <search string="Document Intake">
+                <field name="filename" />
+                <field name="checksum" />
+                <field name="actor_id" />
+                <field name="created_model" />
+                <filter string="Needs Review" name="filter_review" domain="[('state', '=', 'review')]" />
+                <filter string="New" name="filter_new" domain="[('state', '=', 'new')]" />
+                <filter string="Created" name="filter_created" domain="[('state', '=', 'created')]" />
+                <filter string="Disabled" name="filter_disabled" domain="[('state', '=', 'disabled')]" />
+                <separator />
+                <filter string="Invoices" name="filter_invoice" domain="[('intake_type', '=', 'invoice')]" />
+                <filter string="Expenses" name="filter_expense" domain="[('intake_type', '=', 'expense')]" />
+                <filter string="Contacts" name="filter_contact" domain="[('intake_type', '=', 'contact')]" />
+                <separator />
+                <filter string="Last 7 Days" name="filter_week" date="create_date" />
+                <group expand="0" string="Group By">
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}" />
+                    <filter string="Type" name="group_type" context="{'group_by': 'intake_type'}" />
+                    <filter string="Source" name="group_source" context="{'group_by': 'source'}" />
+                    <filter string="Received" name="group_received" context="{'group_by': 'create_date:day'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_odooclaw_document_intake" model="ir.actions.act_window">
+        <field name="name">Document Intake</field>
+        <field name="res_model">odooclaw.document.intake</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No documents have arrived yet</p>
+            <p>
+                Send a PDF or an image to the OdooClaw bot and it is declared
+                here. Even with every intake flow switched off, nothing is lost:
+                the document is kept with the reason nothing was created.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_odooclaw_root"
+        name="OdooClaw"
+        sequence="96"
+        groups="base.group_user"
+    />
+    <menuitem
+        id="menu_odooclaw_document_intake"
+        name="Document Intake"
+        parent="menu_odooclaw_root"
+        action="action_odooclaw_document_intake"
+        sequence="10"
+        groups="base.group_user"
+    />
+</odoo>

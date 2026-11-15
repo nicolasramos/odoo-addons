@@ -97,7 +97,7 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_res_partner
 msgid "Contact"
-msgstr ""
+msgstr "Contacto"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__create_uid
@@ -450,3 +450,232 @@ msgstr "no hay área funcional para esta pantalla"
 #: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
 msgid "unreadable response from the proactive engine"
 msgstr "respuesta ilegible del motor de proactividad"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_odooclaw_document_intake
+msgid "OdooClaw document intake"
+msgstr "Entrada de documentos de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__attachment_id
+msgid "Attachment"
+msgstr "Adjunto"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__message_id
+msgid "Source Message"
+msgstr "Mensaje de origen"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__actor_id
+msgid "Delivered By"
+msgstr "Entregado por"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__duplicate_of_id
+msgid "Duplicate Of"
+msgstr "Duplicado de"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__duplicate_ids
+msgid "Duplicates"
+msgstr "Duplicados"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__field_confidence
+msgid "Field Confidence"
+msgstr "Confianza por campo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_document_intake__missing_fields
+msgid "Missing Fields"
+msgstr "Campos no leídos"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__source__chatter
+msgid "Chatter"
+msgstr "Chatter"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__source__discuss
+msgid "Discuss"
+msgstr "Discuss"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__source__record
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Record"
+msgstr "Registro"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__source__mailbox
+msgid "Mailbox"
+msgstr "Buzón"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__intake_type__invoice
+msgid "Invoice"
+msgstr "Factura"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__intake_type__expense
+msgid "Expense"
+msgstr "Gasto"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__intake_type__unknown
+msgid "Unknown"
+msgstr "Desconocido"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__new
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "New"
+msgstr "Nuevo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__processing
+msgid "Processing"
+msgstr "Procesando"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__created
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Created"
+msgstr "Creado"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__review
+msgid "Review"
+msgstr "Revisión"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__duplicate
+msgid "Duplicate"
+msgstr "Duplicado"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__error
+msgid "Error"
+msgstr "Error"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__state__disabled
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Disabled"
+msgstr "Desactivado"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_document_intake__processed_by__standard
+msgid "Standard Odoo"
+msgstr "Odoo estándar"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+msgid "Document"
+msgstr "Documento"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+msgid "Delivery"
+msgstr "Entrega"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+msgid "Result"
+msgstr "Resultado"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+msgid "Pipeline notes"
+msgstr "Notas de la extracción"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+msgid "Raw issues reported by the extraction pipeline"
+msgstr "Incidencias tal y como las reportó la extracción"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_list
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Received"
+msgstr "Recibido"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Needs Review"
+msgstr "Requiere revisión"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Invoices"
+msgstr "Facturas"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Expenses"
+msgstr "Gastos"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Contacts"
+msgstr "Contactos"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Last 7 Days"
+msgstr "Últimos 7 días"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Group By"
+msgstr "Agrupar por"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "State"
+msgstr "Estado"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Type"
+msgstr "Tipo"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Source"
+msgstr "Origen"
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_odooclaw_document_intake
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_odooclaw_document_intake
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_list
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_search
+msgid "Document Intake"
+msgstr "Entrada de documentos"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.action_odooclaw_document_intake
+msgid "No documents have arrived yet"
+msgstr "Todavía no ha llegado ningún documento"
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "All document intake flows are disabled."
+msgstr "Todos los flujos de entrada de documentos están desactivados."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid ""
+"The mailbox intake flow is disabled (odooclaw.intake.mailbox.enabled)."
+msgstr ""
+"El flujo de entrada por buzón está desactivado (odooclaw.intake.mailbox.enabled)."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid ""
+"The %(flow)s intake flow is disabled (odooclaw.intake.%(flow)s.enabled)."
+msgstr ""
+"El flujo de entrada de %(flow)s está desactivado "
+"(odooclaw.intake.%(flow)s.enabled)."

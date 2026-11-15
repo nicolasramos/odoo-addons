@@ -2,6 +2,7 @@ from . import mail_thread
 from . import mail_odooclaw_reply_token
 from . import mail_odooclaw_area
 from . import mail_odooclaw_audience
+from . import odooclaw_document_intake
 from . import mail_message
 from . import res_partner
 from . import res_users

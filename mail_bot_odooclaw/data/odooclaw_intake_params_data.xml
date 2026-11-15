@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+    <!--
+        Document intake switches and thresholds (SDD document-intake, §3.8).
+
+        Fail-closed by design (D7): every flow ships disabled, and a malformed
+        value is read as disabled too. Turning a flow on is an explicit customer
+        action. noupdate="1" keeps the customer's choices across upgrades.
+    -->
+    <record id="param_intake_invoice_enabled" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.invoice.enabled</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_intake_contact_enabled" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.contact.enabled</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_intake_expense_enabled" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.expense.enabled</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_intake_mailbox_enabled" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.mailbox.enabled</field>
+        <field name="value">False</field>
+    </record>
+    <record id="param_intake_confidence_min" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.confidence_min</field>
+        <field name="value">0.75</field>
+    </record>
+    <record id="param_intake_hard_field_min" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.hard_field_min</field>
+        <field name="value">0.90</field>
+    </record>
+    <record id="param_intake_dedupe_days" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.dedupe_days</field>
+        <field name="value">30</field>
+    </record>
+    <record id="param_intake_max_per_hour" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.max_per_hour</field>
+        <field name="value">60</field>
+    </record>
+    <!-- Empty until the customer configures the dedicated mailbox (T9). -->
+    <record id="param_intake_mailbox_alias" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.mailbox_alias</field>
+        <field name="value"></field>
+    </record>
+    <!-- Empty means nobody; '*' means everyone, and that is explicit. -->
+    <record id="param_intake_sender_allowlist" model="ir.config_parameter">
+        <field name="key">odooclaw.intake.sender_allowlist</field>
+        <field name="value"></field>
+    </record>
+</odoo>
