@@ -4,3 +4,5 @@ access_mail_odooclaw_area_system,mail.odooclaw.area system,model_mail_odooclaw_a
 access_mail_odooclaw_area_user,mail.odooclaw.area user,model_mail_odooclaw_area,base.group_user,1,0,0,0
 access_mail_odooclaw_audience_system,mail.odooclaw.audience system,model_mail_odooclaw_audience,base.group_system,1,1,1,1
 access_mail_odooclaw_audience_user,mail.odooclaw.audience user,model_mail_odooclaw_audience,base.group_user,1,0,0,0
+access_odooclaw_document_intake_user,odooclaw.document.intake user,model_odooclaw_document_intake,base.group_user,1,1,1,0
+access_odooclaw_document_intake_system,odooclaw.document.intake system,model_odooclaw_document_intake,base.group_system,1,1,1,1
