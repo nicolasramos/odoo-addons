@@ -18,7 +18,7 @@
                     decoration-warning="state in ('review', 'processing')"
                     decoration-success="state == 'created'"
                     decoration-danger="state in ('error', 'disabled')"
-                    decoration-muted="state == 'duplicate'"
+                    decoration-muted="state in ('duplicate', 'superseded')"
                 />
                 <field name="reason" optional="hide" />
                 <field name="missing_fields" optional="hide" />
@@ -41,6 +41,13 @@
         <field name="arch" type="xml">
             <form string="Document Intake">
                 <header>
+                    <button
+                        name="action_dismiss_duplicate"
+                        type="object"
+                        string="Dismiss duplicate"
+                        invisible="state != 'duplicate'"
+                        confirm="Mark the original as superseded and process this document as a new delivery? Use this only for false positives: two legitimate deliveries of the same file."
+                    />
                     <field
                         name="state"
                         widget="statusbar"
@@ -112,6 +119,7 @@
                 <filter string="New" name="filter_new" domain="[('state', '=', 'new')]" />
                 <filter string="Created" name="filter_created" domain="[('state', '=', 'created')]" />
                 <filter string="Disabled" name="filter_disabled" domain="[('state', '=', 'disabled')]" />
+                <filter string="Duplicates" name="filter_duplicate" domain="[('state', '=', 'duplicate')]" />
                 <separator />
                 <filter string="Invoices" name="filter_invoice" domain="[('intake_type', '=', 'invoice')]" />
                 <filter string="Expenses" name="filter_expense" domain="[('intake_type', '=', 'expense')]" />
