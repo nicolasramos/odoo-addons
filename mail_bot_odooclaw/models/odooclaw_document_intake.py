@@ -24,11 +24,15 @@ Internal API contract for T6-T11 (stable):
 * ``create_for_attachment(attachment, *, intake_type, source, message, actor,
   company)`` — the single entry point for every trigger (chatter, Discuss,
   record, mailbox). Always returns a row. ``state == 'disabled'`` means: stop,
-  nothing may be created for this document. ``state == 'new'`` means: queue it.
+  nothing may be created for this document. ``state == 'duplicate'`` means:
+  stop, the same bytes were already declared inside the dedupe window and
+  ``duplicate_of_id`` points at the first delivery. ``state == 'new'`` means:
+  queue it.
 * ``flow_enabled(flow)`` — one of ``invoice`` / ``contact`` / ``expense`` /
   ``mailbox``.
-* ``_find_previous(checksum, intake_type)`` — dedupe lookup inside the
-  configured window; the checksum carries its own index because
+* ``_find_previous(checksum, intake_type=None)`` — dedupe lookup inside the
+  configured window; ``intake_type=None`` matches any type (the declaration
+  gate dedupes by bytes). The checksum carries its own index because
   ``ir.attachment.checksum`` does not (R-D7).
 * ``_is_rate_limited()`` — R10 vision budget; when true the caller queues and
   warns, it does not reject.
@@ -41,6 +45,7 @@ import logging
 from datetime import timedelta
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -121,6 +126,7 @@ class OdooclawDocumentIntake(models.Model):
             ("created", "Created"),
             ("review", "Review"),
             ("duplicate", "Duplicate"),
+            ("superseded", "Superseded"),
             ("error", "Error"),
             ("disabled", "Disabled"),
         ],
@@ -282,33 +288,69 @@ class OdooclawDocumentIntake(models.Model):
         gate_reason = self._gate_reason(intake_type, source)
         if gate_reason:
             vals.update({"state": "disabled", "reason": gate_reason})
+        else:
+            # R7 idempotency (T10): the same bytes delivered inside the
+            # window are the same document. The copy is declared as
+            # ``duplicate`` linked to the first, and the pipeline contract
+            # only processes ``new`` — so nothing is ever created twice.
+            # The false positive (two legitimate deliveries of the same
+            # file) is resolved by hand via ``action_dismiss_duplicate``;
+            # nothing is created automatically "just in case".
+            original = self._find_previous(vals["checksum"])
+            if original:
+                vals.update(
+                    {
+                        "state": "duplicate",
+                        "duplicate_of_id": original.id,
+                        "reason": _(
+                            "Duplicate of intake #%s: the same file was "
+                            "received within the last %s days. Nothing was "
+                            "created twice. Use \"Dismiss duplicate\" if "
+                            "this is a false positive (two legitimate "
+                            "deliveries of the same file).",
+                            original.id,
+                            self._param_int("dedupe_days", 30),
+                        ),
+                    }
+                )
         return self.sudo().create(vals)
 
     # -- Dedupe and budget helpers (policy lives in T10 / T9) -------------------
     @api.model
-    def _find_previous(self, checksum, intake_type, window_days=None):
-        """Most recent declared document with the same bytes and type.
+    def _find_previous(self, checksum, intake_type=None, window_days=None):
+        """Most recent declared document with the same bytes.
 
-        The dedupe key is ``(checksum, intake_type)`` inside the configured
-        window (``odooclaw.intake.dedupe_days``, default 30). Intakes that
-        declared nothing (``disabled``, ``error``) never shadow a later
-        delivery: there is no destination record to duplicate.
+        Inside the configured window (``odooclaw.intake.dedupe_days``,
+        default 30). ``intake_type=None`` matches any type: the declaration
+        gate dedupes by bytes — the same file is the same document whatever
+        type the pipeline later assigns. Pass a type to scope the lookup to
+        one destination (the pipeline's pre-create check, T6-T9).
+
+        Intakes that declared nothing (``disabled``, ``error``) never shadow
+        a later delivery: there is no destination record to duplicate.
+        ``duplicate`` never shadows either, so every copy links to the
+        original instead of chaining; ``superseded`` (a dismissed false
+        positive) stops shadowing for good. A window of ``0`` days
+        switches dedupe off entirely.
         """
         if not checksum:
             return self.browse()
         if window_days is None:
             window_days = max(self._param_int("dedupe_days", 30), 0)
+        if window_days <= 0:
+            # A zero (or negative) window means dedupe is switched off:
+            # every delivery is processed. Comparing against a same-second
+            # cutoff would still match, which is not "no window".
+            return self.browse()
         cutoff = fields.Datetime.now() - timedelta(days=window_days)
-        return self.sudo().search(
-            [
-                ("checksum", "=", checksum),
-                ("intake_type", "=", intake_type),
-                ("state", "not in", ("disabled", "error")),
-                ("create_date", ">=", cutoff),
-            ],
-            order="id desc",
-            limit=1,
-        )
+        domain = [
+            ("checksum", "=", checksum),
+            ("state", "not in", ("disabled", "error", "duplicate", "superseded")),
+            ("create_date", ">=", cutoff),
+        ]
+        if intake_type:
+            domain.append(("intake_type", "=", intake_type))
+        return self.sudo().search(domain, order="id desc", limit=1)
 
     @api.model
     def _is_rate_limited(self):
@@ -381,3 +423,39 @@ class OdooclawDocumentIntake(models.Model):
         self.ensure_one()
         self.write({"duplicate_of_id": original.id})
         self._set_state("duplicate")
+
+    def action_dismiss_duplicate(self):
+        """Resolve a false-positive duplicate by hand (design §3.7).
+
+        Two legitimate deliveries of the same bytes — two photos of the
+        same ticket, twin invoices — must both be able to exist. Nothing
+        is created automatically "just in case": this action only resets
+        the state contract. The dismissed copy goes back to ``new`` so the
+        pipeline processes it as a normal delivery, and the original is
+        marked ``superseded`` so it stops shadowing future copies.
+        Creation itself stays the pipeline's job (T6-T9).
+        """
+        self.ensure_one()
+        if self.state != "duplicate":
+            raise UserError(
+                _("Only a duplicate intake can be dismissed; this one is %s.",
+                  self.state)
+            )
+        original = self.duplicate_of_id
+        self.write({"duplicate_of_id": False, "reason": False})
+        self._set_state("new")
+        self.message_post(
+            body=_(
+                "Duplicate dismissed: this document will be processed as a "
+                "new delivery."
+            )
+        )
+        if original:
+            original._set_state("superseded")
+            original.message_post(
+                body=_(
+                    "Superseded: intake #%s carrying the same file was "
+                    "dismissed as a false positive and is processed instead.",
+                    self.id,
+                )
+            )
