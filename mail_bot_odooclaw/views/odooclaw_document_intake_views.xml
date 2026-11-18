@@ -42,6 +42,13 @@
             <form string="Document Intake">
                 <header>
                     <button
+                        name="action_view_created_record"
+                        type="object"
+                        string="Created record"
+                        icon="fa-external-link"
+                        invisible="not created_model or not created_res_id"
+                    />
+                    <button
                         name="action_dismiss_duplicate"
                         type="object"
                         string="Dismiss duplicate"

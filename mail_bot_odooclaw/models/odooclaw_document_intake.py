@@ -44,6 +44,8 @@ import json
 import logging
 from datetime import timedelta
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -396,27 +398,168 @@ class OdooclawDocumentIntake(models.Model):
 
     def mark_created(self, created_model, created_res_id, confidence=None,
                      field_confidence=None, issues=None):
-        """Record the destination created for this document (R8)."""
+        """Record the destination created for this document (R8).
+
+        The first mark also leaves the UI evidence (T11): a note on the
+        destination's chatter and one here. A retry repeating the same
+        outcome stays silent — the chatter must not fill with duplicates.
+        """
         self.ensure_one()
-        vals = {"created_model": created_model, "created_res_id": int(created_res_id)}
+        created_res_id = int(created_res_id)
+        repeat = (
+            self.state == "created"
+            and self.created_model == created_model
+            and self.created_res_id == created_res_id
+        )
+        vals = {"created_model": created_model, "created_res_id": created_res_id}
         self._apply_report(vals, confidence, field_confidence, issues)
         self._set_state("created")
+        if not repeat:
+            self._post_intake_created_trace()
+            self._post_destination_trace()
 
     def mark_review(self, reason, missing_fields=None, confidence=None,
                     field_confidence=None, issues=None):
-        """Nothing was created: the document waits in the review queue (R6)."""
+        """Nothing was created: the document waits in the review queue (R6).
+
+        The reason is also posted to the chatter (T11): the review queue
+        must tell why the document is there without opening the field.
+        """
         self.ensure_one()
+        repeat = self.state == "review" and self.reason == reason
         vals = {"reason": reason}
         if missing_fields:
             vals["missing_fields"] = missing_fields
         self._apply_report(vals, confidence, field_confidence, issues)
         self._set_state("review")
+        if not repeat:
+            self._post_intake_note(Markup(_("Sent to the review queue: %s")) % (reason or ""))
 
     def mark_error(self, reason):
         """Processing failed in a way the customer must see (not a silent log line)."""
         self.ensure_one()
+        repeat = self.state == "error" and self.reason == reason
         self.write({"reason": reason})
         self._set_state("error")
+        if not repeat:
+            self._post_intake_note(Markup(_("Processing failed: %s")) % (reason or ""))
+
+    # -- UI evidence (T11): the marks must be seen, not just stored ------------
+
+    def _bot_partner(self):
+        """The OdooClaw bot's partner, used as the author of every trace so
+        the chatter attribution is the system, not the pipeline session."""
+        bot = self.env.ref("mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False)
+        return bot.partner_id if bot else self.env["res.partner"]
+
+    def _created_record(self):
+        """The destination record, or ``None`` when it cannot be resolved.
+
+        ``created_model`` is free text written back by the pipeline: it may
+        name a model that is not installed, and the record may have been
+        deleted since. Evidence must never raise on top of that.
+        """
+        self.ensure_one()
+        Model = self.env.get(self.created_model or "")
+        if Model is None or not self.created_res_id:
+            return None
+        return Model.sudo().browse(self.created_res_id).exists() or None
+
+    def _intake_link(self):
+        return Markup(
+            '<a href="#" data-oe-model="odooclaw.document.intake" data-oe-id="%s">%s</a>'
+        ) % (self.id, _("intake #%s", self.id))
+
+    def _post_intake_note(self, body):
+        bot_partner = self._bot_partner()
+        self.message_post(
+            body=body,
+            author_id=bot_partner.id or None,
+            subtype_xmlid="mail.mt_note",
+        )
+
+    def _post_intake_created_trace(self):
+        self.ensure_one()
+        if self.confidence:
+            text = _(
+                "Created %(model)s #%(id)s from this document. "
+                "Confidence: %(conf)s.",
+                model=self.created_model,
+                id=self.created_res_id,
+                conf=f"{self.confidence * 100:.0f}%",
+            )
+        else:
+            text = _(
+                "Created %(model)s #%(id)s from this document.",
+                model=self.created_model,
+                id=self.created_res_id,
+            )
+        self._post_intake_note(Markup("%(text)s") % {"text": text})
+
+    def _post_destination_trace(self):
+        """Chatter note on the created record (T11).
+
+        This is the business user's evidence: opening the expense, bill or
+        contact shows that OdooClaw — not the standard mail flow — created
+        it, with the document, the sender and the confidence behind it.
+        Posted as the bot, as an internal note, and best-effort by
+        contract: a missing destination must never break the write-back
+        door (the Go side already treats this call as non-fatal).
+        """
+        self.ensure_one()
+        try:
+            record = self._created_record()
+            if record is None or not hasattr(record, "message_post"):
+                return
+            bot_partner = self._bot_partner()
+            line1 = Markup(_("Created by OdooClaw from the document %s.")) % (
+                Markup("<i>%s</i>") % (self.filename or "")
+            )
+            line2 = Markup(_("Delivered by %s.")) % (
+                Markup("<b>%s</b>") % (self.actor_id.display_name or _("unknown sender"))
+            )
+            line3 = (
+                Markup(_("Confidence: %s.")) % f"{self.confidence * 100:.0f}%"
+                if self.confidence
+                else Markup("")
+            )
+            line4 = Markup(_("Full report: %s.")) % self._intake_link()
+            record.message_post(
+                body=Markup("<p>%s</p><p>%s<br/>%s<br/>%s</p>") % (line1, line2, line3, line4),
+                author_id=bot_partner.id or None,
+                subtype_xmlid="mail.mt_note",
+            )
+        except Exception:
+            _logger.warning(
+                "OdooClaw intake #%s: could not post the creation trace on %s #%s",
+                self.id,
+                self.created_model,
+                self.created_res_id,
+                exc_info=True,
+            )
+
+    def action_view_created_record(self):
+        """Open the record this document produced (T11 navigation): the
+        review queue must reach its destination in one click."""
+        self.ensure_one()
+        record = self._created_record()
+        if record is None:
+            raise UserError(
+                _(
+                    "The record created from this document is no longer "
+                    "available (%(model)s #%(id)s).",
+                    model=self.created_model or _("none"),
+                    id=self.created_res_id or 0,
+                )
+            )
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": self.created_model,
+            "res_id": record.id,
+            "view_mode": "form",
+            "target": "current",
+            "name": record.display_name,
+        }
 
     def mark_duplicate(self, original):
         """Link this intake to the original it duplicates (R7, policy in T10)."""

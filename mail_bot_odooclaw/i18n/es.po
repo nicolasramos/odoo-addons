@@ -679,3 +679,74 @@ msgid ""
 msgstr ""
 "El flujo de entrada de %(flow)s está desactivado "
 "(odooclaw.intake.%(flow)s.enabled)."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Created by OdooClaw from the document %s."
+msgstr "Creado por OdooClaw a partir del documento %s."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Delivered by %s."
+msgstr "Entregado por %s."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "unknown sender"
+msgstr "remitente desconocido"
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Confidence: %s."
+msgstr "Confianza: %s."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Full report: %s."
+msgstr "Informe completo: %s."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "intake #%s"
+msgstr "entrada #%s"
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid ""
+"Created %(model)s #%(id)s from this document. Confidence: %(conf)s."
+msgstr ""
+"Se creó %(model)s #%(id)s a partir de este documento. Confianza: %(conf)s."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Created %(model)s #%(id)s from this document."
+msgstr "Se creó %(model)s #%(id)s a partir de este documento."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Sent to the review queue: %s"
+msgstr "Enviado a la cola de revisión: %s"
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "Processing failed: %s"
+msgstr "Error de procesamiento: %s"
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid ""
+"The record created from this document is no longer available "
+"(%(model)s #%(id)s)."
+msgstr ""
+"El registro creado a partir de este documento ya no está disponible "
+"(%(model)s #%(id)s)."
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/odooclaw_document_intake.py
+msgid "none"
+msgstr "ninguno"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_document_intake_form
+msgid "Created record"
+msgstr "Registro creado"
