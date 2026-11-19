@@ -4,5 +4,6 @@ from . import test_proactive
 from . import test_odooclaw_audience
 from . import test_reply_attachments
 from . import test_document_intake
+from . import test_mailbox_intake
 from . import test_intake_dedupe
 from . import test_intake_ui_trace

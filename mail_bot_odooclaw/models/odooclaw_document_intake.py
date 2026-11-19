@@ -42,8 +42,10 @@ Internal API contract for T6-T11 (stable):
 
 import json
 import logging
+import threading
 from datetime import timedelta
 
+import requests
 from markupsafe import Markup
 
 from odoo import _, api, fields, models
@@ -596,9 +598,237 @@ class OdooclawDocumentIntake(models.Model):
         if original:
             original._set_state("superseded")
             original.message_post(
-                body=_(
+                body=(
                     "Superseded: intake #%s carrying the same file was "
                     "dismissed as a false positive and is processed instead.",
                     self.id,
                 )
             )
+
+    # -- Dedicated mailbox (T9 / NRA-5531) ---------------------------------
+
+    def _mail_receive(self, msg, *args, **kwargs):
+        """Gateway hook: an email that lands on the dedicated alias is received
+        here, once the record exists and its message + attachments are on it.
+
+        Mailbox intakes are processed best-effort: a failure here must never
+        break the customer's incoming email (design risk R-D3). The dispatch to
+        OdooClaw runs in a thread so the email is acknowledged well inside the
+        5 s budget the mail sender waits on.
+        """
+        res = super()._mail_receive(msg, *args, **kwargs)
+        try:
+            self.filtered(
+                lambda i: i.source == "mailbox" and i.exists()
+            )._process_incoming_mailbox_email()
+        except Exception:
+            _logger.exception(
+                "OdooClaw mailbox: could not process incoming email for intake %s",
+                self.ids,
+            )
+        return res
+
+    def mailbox_sender_partner(self):
+        """The sender of the incoming email: the author of the latest email
+        message on this intake, or ``False`` when the from-address could not be
+        resolved to a partner."""
+        self.ensure_one()
+        email_messages = self.message_ids.filtered(lambda m: m.message_type == "email")
+        latest = email_messages.sorted("id", reverse=True)[:1]
+        return latest.author_id if latest else False
+
+    def mailbox_sender_email(self):
+        """The from-address of the incoming email, best effort."""
+        self.ensure_one()
+        partner = self.mailbox_sender_partner()
+        if partner and partner.email:
+            return partner.email
+        latest = self.message_ids.sorted("id", reverse=True)[:1]
+        return latest.email_from or ""
+
+    def _resolve_employee_for_partner(self, partner):
+        """D2: resolve a sender to an employee, read-only.
+
+        partner -> res.users (partner_id) -> hr.employee (user_id). A sender
+        that is not an Odoo user, or an Odoo user with no employee record,
+        resolves to nothing — and nothing is created for them ("de nadie" is
+        not an option: the employee is required on the expense).
+        """
+        if not partner:
+            return self.env["hr.employee"]
+        user = self.env["res.users"].sudo().search(
+            [("partner_id", "=", partner.id)], limit=1
+        )
+        if not user:
+            return self.env["hr.employee"]
+        return self.env["hr.employee"].sudo().search(
+            [("user_id", "=", user.id)], limit=1
+        )
+
+    def _mailbox_sender_allowed(self):
+        """The sender allowlist (D7 defence against the mailbox being an open
+        door).
+
+        ``odooclaw.intake.sender_allowlist``: empty means nobody (fail-closed,
+        the mailbox is not a door anyone can walk into), ``*`` means everyone,
+        otherwise a comma-separated allowlist of from-addresses.
+        """
+        raw = self._param("sender_allowlist")
+        tokens = [t.strip().lower() for t in raw.split(",") if t.strip()] if raw else []
+        if not tokens:
+            return False
+        if "*" in tokens:
+            return True
+        return (self.mailbox_sender_email() or "").lower() in tokens
+
+    def _process_incoming_mailbox_email(self):
+        """Process the mailbox intakes in ``self`` (T9).
+
+        Fail-closed (D7): with the mailbox flow off nothing is dispatched and
+        nothing is reviewed — the document stays declared and traceable. An
+        allowed sender is resolved to an employee (D2); if it does not resolve,
+        no expense is created and the intake goes to the review queue with the
+        reason. An allowed, recognised employee is dispatched to OdooClaw,
+        which creates the expense and writes the outcome back (T3 + T7).
+        """
+        mailbox = self.filtered(lambda i: i.source == "mailbox" and i.exists())
+        for intake in mailbox:
+            try:
+                if not intake.flow_enabled("mailbox"):
+                    continue
+                if not intake._mailbox_sender_allowed():
+                    intake.mark_review(
+                        _(
+                            "Sender %(email)s is not on the mailbox allowlist.",
+                            email=intake.mailbox_sender_email() or "?",
+                        )
+                    )
+                    continue
+                employee = intake._resolve_employee_for_partner(
+                    intake.mailbox_sender_partner()
+                )
+                if not employee:
+                    intake.mark_review(
+                        _(
+                            "Sender %(email)s is not a recognized employee. "
+                            "No expense was created.",
+                            email=intake.mailbox_sender_email() or "?",
+                        )
+                    )
+                    continue
+                intake._mailbox_dispatch_to_odooclaw(employee)
+            except Exception:
+                _logger.exception(
+                    "OdooClaw mailbox: could not process intake #%s", intake.id
+                )
+
+    def _mailbox_dispatch_to_odooclaw(self, employee):
+        """Hand the ticket to OdooClaw's intake endpoint (T7 creates the
+        expense from there).
+
+        The endpoint must answer in 5 s (OdooClaw's mail sender waits that long
+        or marks a bounce), so the HTTP call runs in a thread: the email is
+        acknowledged first and the document is processed after. The sender is
+        the employee's Odoo user id, which the skill maps back to the employee
+        (D2).
+        """
+        self.ensure_one()
+        sender_id = employee.user_id.id if employee.user_id else False
+        if not sender_id:
+            self.mark_review(
+                _("The sender has no Odoo user, so no expense can be created.")
+            )
+            return
+        attachment_id = self.attachment_id.id if self.attachment_id else False
+        if not attachment_id:
+            self.mark_review(_("No attachment was delivered with the email."))
+            return
+        partner = self.mailbox_sender_partner()
+        webhook_url = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.webhook_url", "http://odooclaw:18790/webhook/odoo")
+        )
+        webhook_token = self.env["ir.config_parameter"].sudo().get_param(
+            "odooclaw.webhook_token", ""
+        )
+
+        def send_webhook(url, data, token):
+            try:
+                headers = {"Content-Type": "application/json"}
+                if token:
+                    headers["X-OdooClaw-Token"] = token
+                requests.post(url, json=data, headers=headers, timeout=5)
+            except Exception:
+                _logger.error(
+                    "OdooClaw mailbox: failed to dispatch intake #%s to the endpoint",
+                    self.id,
+                    exc_info=True,
+                )
+
+        payload = {
+            "message_id": self.message_id.id if self.message_id else False,
+            "model": self._name,
+            "res_id": self.id,
+            "reply_model": self._name,
+            "reply_res_id": self.id,
+            "author_id": partner.id if partner else False,
+            "author_user_id": sender_id,
+            "author_name": partner.name if partner else "",
+            "body": "Ticket de gastos",
+            "is_dm": False,
+            "company_id": self.company_id.id,
+            "invoice_attachments": [
+                {
+                    "id": attachment_id,
+                    "name": self.filename or "",
+                    "mimetype": self.mimetype or "",
+                }
+            ],
+        }
+        # The OdooClaw chat webhook rejects any payload without a reply token,
+        # so mint one for this intake. It maps the intake to the email message
+        # (mirroring the chat-reply path in mail_thread.py): a reply lands in the
+        # intake chatter and @mentions the sender. The 5 s budget is preserved
+        # because the webhook answers 200 before the agent processes.
+        reply_token = self.env["mail.odooclaw.reply.token"].sudo()._generate(
+            model=self._name,
+            res_id=self.id,
+            message_id=self.message_id,
+        )
+        payload["reply_token"] = reply_token.token
+        threaded_call = threading.Thread(
+            target=send_webhook, args=(webhook_url, payload, webhook_token)
+        )
+        threaded_call.start()
+
+    def _sync_mailbox_alias(self):
+        """Keep the dedicated alias in step with the configured name (D1).
+
+        The alias is the module's own (never the standard expense alias, which
+        is ``noupdate`` and creates the expense from the subject). It points at
+        this model and delivers with ``source="mailbox"`` /
+        ``intake_type="expense"``.
+        """
+        Alias = self.env["mail.alias"].sudo()
+        model = self.env["ir.model"].search([("model", "=", "odooclaw.document.intake")], limit=1)
+        model_id = model.id
+        name = (self._param("mailbox_alias") or "").strip()
+        aliases = Alias.search([("alias_model_id", "=", model_id)], limit=1)
+        if not name:
+            # No name configured: leave the alias that ships with the module in
+            # place — the mailbox switch still gates processing (D7).
+            return aliases
+        if not aliases:
+            # ``alias_user_id`` no longer exists on ``mail.alias`` in Odoo 18;
+            # the mailbox switch still gates processing, so the owner is
+            # irrelevant here.
+            vals = {
+                "alias_name": name,
+                "alias_model_id": model_id,
+                "alias_defaults": '{"model": "odooclaw.document.intake", "source": "mailbox", "intake_type": "expense"}',
+            }
+            return Alias.create(vals)
+        if aliases.alias_name != name:
+            aliases.write({"alias_name": name})
+        return aliases

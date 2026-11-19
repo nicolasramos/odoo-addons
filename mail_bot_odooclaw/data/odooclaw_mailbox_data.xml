@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<!-- Dedicated expense mailbox (T9 / NRA-5531, design D1).
+
+    The alias is the module's OWN address, pointed at the intake model. It is
+    deliberately NOT the standard "expense by email" alias: that one is
+    ``noupdate`` and its flow creates the expense from the subject, which the
+    OdooClaw flow would have to undo. Here every email that lands on the alias
+    becomes an intake (source="mailbox", intake_type="expense") that OdooClaw
+    processes.
+
+    The alias ships with a default local part ("gastos"); the customer can
+    rename it through the ``odooclaw.intake.mailbox_alias`` parameter and the
+    daily cron keeps the alias in step. The mailbox switch
+    (odooclaw.intake.mailbox.enabled) still gates processing (D7): with it off
+    the mailbox receives but never creates.
+-->
+<odoo>
+    <record id="mail_alias_intake_mailbox" model="mail.alias">
+        <field name="alias_name">gastos</field>
+        <field name="alias_model_id" ref="model_odooclaw_document_intake" />
+        <!-- ``alias_on_delete`` and ``alias_user_id`` no longer exist on
+             ``mail.alias`` in Odoo 18; the ``alias_model_id`` cascade handles
+             the model-level link. -->
+        <field name="alias_defaults">{"model": "odooclaw.document.intake", "source": "mailbox", "intake_type": "expense"}</field>
+    </record>
+
+    <!-- Keep the dedicated alias's local part in step with the parameter. -->
+    <data noupdate="1">
+        <record id="cron_sync_mailbox_alias" model="ir.cron">
+            <field name="name">Sync OdooClaw mailbox alias</field>
+            <field name="model_id" ref="model_odooclaw_document_intake" />
+            <field name="state">code</field>
+            <field name="code">env["odooclaw.document.intake"]._sync_mailbox_alias()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <!-- ``numbercall`` and ``doall`` were removed in Odoo 18: cron jobs
+                 run infinitely and are toggled through ``active``. -->
+        </record>
+    </data>
+</odoo>
