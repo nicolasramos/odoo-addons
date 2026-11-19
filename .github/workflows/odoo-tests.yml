@@ -82,7 +82,10 @@ jobs:
             --db_user=odoo \
             --db_password=odoo \
             -d odoo_agent_ci \
-            -i odoo_agent,odoo_agent_sale,mail_bot_odooclaw \
+            # hr is installed because mail_bot_odooclaw's document-intake code
+            # and tests resolve the sender through hr.employee (the manifest
+            # does not declare it yet — see NRA-5552 delivery note).
+            -i odoo_agent,odoo_agent_sale,mail_bot_odooclaw,hr \
             --test-enable \
             --test-tags=/odoo_agent,/odoo_agent_sale,/mail_bot_odooclaw \
             --stop-after-init \
