@@ -72,6 +72,10 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r odoo-src/requirements.txt
 
+      # hr is installed because mail_bot_odooclaw's document-intake code and
+      # tests resolve the sender through hr.employee; the module manifest does
+      # not declare hr yet (escalated in NRA-5552). Keep this comment OUTSIDE
+      # the run block: a # inside the continued shell command swallows -i.
       - name: Install addons and run tests
         run: |
           set -o pipefail
@@ -82,9 +86,6 @@ jobs:
             --db_user=odoo \
             --db_password=odoo \
             -d odoo_agent_ci \
-            # hr is installed because mail_bot_odooclaw's document-intake code
-            # and tests resolve the sender through hr.employee (the manifest
-            # does not declare it yet — see NRA-5552 delivery note).
             -i odoo_agent,odoo_agent_sale,mail_bot_odooclaw,hr \
             --test-enable \
             --test-tags=/odoo_agent,/odoo_agent_sale,/mail_bot_odooclaw \
