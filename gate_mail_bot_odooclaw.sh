@@ -3,14 +3,18 @@
 # Gate: real install + tests of the mail_bot_odooclaw family on a clean
 # Odoo 18 base, with anti-"empty green" guards.
 #
-# Two guards, BOTH must hold for GREEN (exit 0):
+# Four guards, ALL must hold for GREEN (exit 0):
 #   Guard A (module loaded):   mail_bot_odooclaw is loaded during the run
 #                              (odoo log: "Module mail_bot_odooclaw loaded").
 #   Guard B (tests ran):       at least one test executes -> "of N tests", N > 0.
-# A module that never loaded, or a "0 failed ... of 0 tests" run, is RED (exit 1).
-# This is the point of the gate: the whole document-intake chain was mounted
-# on staging; a bare "0 failed" with zero tests executed would have looked green
-# while proving nothing. These two guards close that hole.
+#   Guard C (no failures):     failed == 0 AND error(s) == 0 in the summary.
+#   Guard D (odoo rc):         odoo exits 0 (--test-enable returns non-zero on a
+#                              failing battery).
+# A module that never loaded, a "0 failed ... of 0 tests" run, a run with any
+# failed/error test, or a non-zero odoo rc is RED (exit 1). This is the point of
+# the gate: the whole document-intake chain was mounted on staging; a bare
+# "0 failed" with zero tests executed (or hidden failures) would have looked
+# green while proving nothing. These four guards close that hole.
 #
 # Usage:
 #   ./gate_mail_bot_odooclaw.sh [DB] [INSTALL_FLAG] [TEST_FILTER] [MODULE]
@@ -41,12 +45,14 @@ ADDONS_PATH="${ADDONS_PATH:-$(cd "$(dirname "$0")" && pwd)}"
 WORKDIR="$(mktemp -d /tmp/gate.XXXXXX)"
 CONFIG="$WORKDIR/odoo.conf"
 LOG="$WORKDIR/odoo_run.log"
-PG_CONTAINER="gate_pg"
-NETWORK="gate_net"
+# Derive container/network names from the DB so concurrent gates on different
+# databases do not collide on fixed names (gate_pg/gate_net).
+PG_CONTAINER="pg_$(echo "$DB" | tr -c '[:alnum:]_' '_')"
+NETWORK="net_$(echo "$DB" | tr -c '[:alnum:]_' '_')"
 
 cat > "$CONFIG" <<EOF
 [options]
-db_host = gate_pg
+db_host = $PG_CONTAINER
 db_user = odoo
 db_password = odoo
 addons_path = /usr/lib/odoo/addons,/mnt/extra-addons
@@ -99,13 +105,24 @@ echo "Guard A -> module '$MODULE' loaded during run = ${MODULE_STATE:-<none>}"
 
 # Guard B: tests actually executed.
 TEST_SUMMARY="$(grep -oE "[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests" "$LOG" | tail -n 1)"
-TEST_COUNT="$(echo "$TEST_SUMMARY" | grep -oE "of [0-9]+ tests" | grep -oE "[0-9]+")"
-echo "Guard B -> test summary = '${TEST_SUMMARY:-<none>}' (N=${TEST_COUNT:-0})"
+FAILED_COUNT="$(echo "$TEST_SUMMARY" | grep -oE "^[0-9]+ failed" | grep -oE "[0-9]+" | head -n 1)"
+ERROR_COUNT="$(echo "$TEST_SUMMARY" | grep -oE "[0-9]+ error\(s\) of" | grep -oE "[0-9]+" | head -n 1)"
+TEST_COUNT="$(echo "$TEST_SUMMARY" | grep -oE "of [0-9]+ tests" | grep -oE "[0-9]+" | head -n 1)"
+echo "Guard B -> test summary = '${TEST_SUMMARY:-<none>}' (failed=${FAILED_COUNT:-?}, errors=${ERROR_COUNT:-?}, N=${TEST_COUNT:-0})"
 
 # Verdict.
 RED=0
 [ "$MODULE_STATE" = "loaded" ] || { echo "Guard A: FAIL (module not loaded)"; RED=1; }
 { [ -n "${TEST_COUNT:-}" ] && [ "$TEST_COUNT" -gt 0 ]; } 2>/dev/null || { echo "Guard B: FAIL (no tests executed)"; RED=1; }
+# Guard C: no failed tests and no errors. A summary like "2 failed, 0 error(s) of
+# 114 tests" passes Guard B (N>0) but must be RED.
+if [ -n "${FAILED_COUNT:-}" ] && [ "$FAILED_COUNT" -gt 0 ] 2>/dev/null; then
+  echo "Guard C: FAIL (${FAILED_COUNT} test(s) failed)"; RED=1
+elif [ -n "${ERROR_COUNT:-}" ] && [ "$ERROR_COUNT" -gt 0 ] 2>/dev/null; then
+  echo "Guard C: FAIL (${ERROR_COUNT} error(s) during tests)"; RED=1
+fi
+# Guard D: odoo exits non-zero when the failing battery runs.
+[ "$ODOO_RC" -eq 0 ] || { echo "Guard D: FAIL (odoo rc=$ODOO_RC)"; RED=1; }
 
 echo "------------------------------------------------------"
 if [ "$RED" -eq 0 ]; then
