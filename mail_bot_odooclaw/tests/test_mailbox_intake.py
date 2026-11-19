@@ -22,7 +22,9 @@ reads lives in i18n/es.po, and tests must not depend on the translation file.
 """
 
 from base64 import b64encode
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import threading
 
 from odoo.tests import TransactionCase, tagged
 
@@ -157,6 +159,38 @@ class TestMailboxIntake(TransactionCase):
         # Dispatched for THIS employee's Odoo user (the sender the skill maps
         # back to the employee).
         self.assertEqual(dispatch.call_args[0][0], self.employee)
+
+    def test_dispatch_mints_a_reply_token(self):
+        """Regression: the OdooClaw chat webhook rejects a payload without a
+        reply token, so the real dispatch must mint one and send it. The remote
+        call is patched; the token record and the payload are deterministic."""
+        intake = self._mailbox_intake()
+        self._email_message(intake, self.sender)
+        captured = {}
+        done = threading.Event()
+
+        def fake_post(url, json=None, headers=None, timeout=None):
+            captured["json"] = json
+            captured["url"] = url
+            done.set()
+            return MagicMock()
+
+        with patch("requests.post", side_effect=fake_post):
+            intake._mailbox_dispatch_to_odooclaw(self.employee)
+        # The token is minted synchronously, before the thread is started.
+        token = self.env["mail.odooclaw.reply.token"].sudo().search(
+            [("model", "=", "odooclaw.document.intake"), ("res_id", "=", intake.id)],
+            limit=1,
+        )
+        self.assertTrue(
+            token, "the dispatch must mint a reply token for the intake"
+        )
+        # The webhook thread posts within milliseconds; wait for it (bounded).
+        self.assertTrue(done.wait(timeout=10), "dispatch webhook thread never posted")
+        payload = captured["json"]
+        self.assertEqual(payload["reply_token"], token.token)
+        self.assertEqual(payload["reply_model"], "odooclaw.document.intake")
+        self.assertEqual(payload["reply_res_id"], intake.id)
 
     def test_star_allowlist_admits_everyone(self):
         intake = self._mailbox_intake()

@@ -733,7 +733,7 @@ class OdooclawDocumentIntake(models.Model):
         (D2).
         """
         self.ensure_one()
-        sender_id = employee.user_ids[:1].id if employee.user_ids else False
+        sender_id = employee.user_id.id if employee.user_id else False
         if not sender_id:
             self.mark_review(
                 _("The sender has no Odoo user, so no expense can be created.")
@@ -786,6 +786,17 @@ class OdooclawDocumentIntake(models.Model):
                 }
             ],
         }
+        # The OdooClaw chat webhook rejects any payload without a reply token,
+        # so mint one for this intake. It maps the intake to the email message
+        # (mirroring the chat-reply path in mail_thread.py): a reply lands in the
+        # intake chatter and @mentions the sender. The 5 s budget is preserved
+        # because the webhook answers 200 before the agent processes.
+        reply_token = self.env["mail.odooclaw.reply.token"].sudo()._generate(
+            model=self._name,
+            res_id=self.id,
+            message_id=self.message_id,
+        )
+        payload["reply_token"] = reply_token.token
         threaded_call = threading.Thread(
             target=send_webhook, args=(webhook_url, payload, webhook_token)
         )
