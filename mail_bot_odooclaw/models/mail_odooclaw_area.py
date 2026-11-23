@@ -26,6 +26,8 @@ the opposite flow, so it gets its own route and keeps the solicited one intact.
 import json
 import logging
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
@@ -250,7 +252,9 @@ def post_proactive_message(env, user_id, body, playbook_id, area):
         channel.with_user(bot_user)
         .sudo()
         .message_post(
-            body=markdown_to_safe_html(body),
+            # Markup, not the raw string: message_post escapes a plain str, which
+            # turned the rendered <p> into a literal &lt;p&gt; inside another <p>.
+            body=Markup(markdown_to_safe_html(body)),
             author_id=bot_user.partner_id.id,
             message_type="comment",
             subtype_xmlid="mail.mt_comment",
