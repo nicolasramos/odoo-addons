@@ -10,3 +10,4 @@ access_mail_odooclaw_pipeline_stage_system,mail.odooclaw.pipeline.stage system,m
 access_mail_odooclaw_pipeline_stage_user,mail.odooclaw.pipeline.stage user,model_mail_odooclaw_pipeline_stage,base.group_user,1,0,0,0
 access_mail_odooclaw_pipeline_run_system,mail.odooclaw.pipeline.run system,model_mail_odooclaw_pipeline_run,base.group_system,1,1,1,1
 access_mail_odooclaw_pipeline_run_user,mail.odooclaw.pipeline.run user,model_mail_odooclaw_pipeline_run,base.group_user,1,0,0,0
+access_odooclaw_artifact_user,odooclaw.artifact user,model_odooclaw_artifact,base.group_user,1,1,1,1

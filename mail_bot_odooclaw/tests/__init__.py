@@ -7,3 +7,4 @@ from . import test_reply_attachments
 from . import test_pipeline
 from . import test_pipeline_trigger
 from . import test_pipeline_finish
+from . import test_artifact
