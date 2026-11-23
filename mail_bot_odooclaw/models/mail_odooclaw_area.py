@@ -229,9 +229,15 @@ def post_proactive_message(env, user_id, body, playbook_id, area):
         raise ValueError("target user has no partner")
 
     # Reuse the exact private-channel resolution the solicited path uses, so
-    # proactive and reply messages land in the same conversation.
-    channel = env["mail.thread"].sudo()._resolve_private_reply_channel(
-        partner, bot_user.partner_id
+    # proactive and reply messages land in the same conversation. It must run as
+    # the target user, not as the superuser: discuss.channel.create always adds
+    # the CURRENT user as a member, and the superuser turns a two-person chat
+    # into a three-member one, which the chat constraint rejects.
+    channel = (
+        env["mail.thread"]
+        .with_user(user)
+        .sudo()
+        ._resolve_private_reply_channel(partner, bot_user.partner_id)
     )
     if not channel:
         raise ValueError("could not resolve the private channel")

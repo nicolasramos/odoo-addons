@@ -442,3 +442,11 @@ msgstr ""
 #: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
 msgid "unreadable response from the proactive engine"
 msgstr ""
+
+#. module: mail_bot_odooclaw
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+#, python-format
+msgid ""
+"Sugerencias activadas. Te avisaré cuando vea algo útil en la "
+"pantalla en la que estés."
+msgstr ""

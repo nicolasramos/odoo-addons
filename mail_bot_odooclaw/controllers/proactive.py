@@ -274,6 +274,12 @@ class OdooClawProactiveController(http.Controller):
         except ValueError as exc:
             return {"speak": False, "reason": str(exc), "area": area_rec.area}
 
+        # The message exists now, so the decision can be persisted. The engine
+        # burns the invitation (or records the area cooldown) only after this
+        # ack: an unacked invitation is asked again instead of being lost on a
+        # post that never happened.
+        self._ack_engine(engine_url, user_id, area_rec.area, decision)
+
         return {
             "speak": True,
             "reason": decision.get("reason", ""),
@@ -281,3 +287,36 @@ class OdooClawProactiveController(http.Controller):
             "area": area_rec.area,
             "message": decision.get("message", ""),
         }
+
+    def _ack_engine(self, engine_url, user_id, area, decision):
+        """Tell the engine the message was posted.
+
+        Deciding and recording are separate on purpose: the engine holds the
+        opt-in, the cooldown and the dedupe, and it must not burn any of them
+        for a message this host failed to deliver.
+        """
+        ack_url = engine_url.rsplit("/signal", 1)[0] + "/ack"
+        token = (
+            request.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.reply_token", "")
+        )
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-OdooClaw-Token"] = token
+        try:
+            import requests
+
+            requests.post(
+                ack_url,
+                json={
+                    "user_id": user_id,
+                    "area": area,
+                    "playbook_id": decision.get("playbook_id", ""),
+                    "invitation": bool(decision.get("invitation")),
+                },
+                headers=headers,
+                timeout=3,
+            )
+        except Exception:  # noqa: BLE001 - the ack is best effort, never a 500
+            _logger.warning("odooclaw: proactive ack failed at %s", ack_url, exc_info=True)

@@ -67,6 +67,14 @@ class MailThread(models.AbstractModel):
             # We must clean the text (remove html tags usually added by odoo)
             body_text = tools.html2plaintext(message.body)
 
+            # The answer to the proactive invitation. The engine asks once
+            # whether the user wants suggestions; a "sí" in the bot's private
+            # chat is that answer. It is handled here, before the webhook, so
+            # the conversational agent does not also reply to it.
+            if is_dm and self._odooclaw_is_optin_reply(body_text):
+                self._odooclaw_enable_optin(message)
+                return message
+
             # Process attachments - include voice messages and invoices info
             voice_attachments = []
             invoice_attachments = []
@@ -201,3 +209,92 @@ class MailThread(models.AbstractModel):
                     bot_member.sudo()._notify_typing(is_typing=True)
 
         return message
+
+    # The invitation asks one question. These are the answers that count as a
+    # yes; anything else leaves the user uninvited, which fails closed.
+    _ODOOCLAW_OPTIN_YES = {
+        "si",
+        "sí",
+        "yes",
+        "ok",
+        "vale",
+        "claro",
+        "activalo",
+        "actívalo",
+        "activa",
+        "activar",
+        "adelante",
+        "de acuerdo",
+        "por supuesto",
+        "si por favor",
+        "sí por favor",
+        "si, por favor",
+        "sí, por favor",
+        "venga",
+        "perfecto",
+    }
+
+    def _odooclaw_is_optin_reply(self, body_text):
+        text = (body_text or "").strip().lower()
+        text = text.strip(" .,!¡¿?")
+        return text in self._ODOOCLAW_OPTIN_YES
+
+    def _odooclaw_enable_optin(self, message):
+        """Report the acceptance to the proactive engine and confirm in chat.
+
+        The opt-in lives in the engine, not here: Odoo decides WHO may be
+        offered help, the engine decides WHEN and remembers the answer.
+        """
+        user = message.author_id.user_ids[:1]
+        if not user:
+            return
+        proactive_url = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.proactive_url", "")
+        )
+        if not proactive_url:
+            _logger.warning(
+                "odooclaw: opt-in received but odooclaw.proactive_url is not set"
+            )
+            return
+
+        base = proactive_url.rsplit("/signal", 1)[0]
+        token = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.reply_token", "")
+        )
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-OdooClaw-Token"] = token
+        try:
+            requests.post(
+                base + "/optin",
+                json={"user_id": user.id},
+                headers=headers,
+                timeout=5,
+            )
+        except Exception:  # noqa: BLE001 - the confirmation below is still useful
+            _logger.warning(
+                "odooclaw: opt-in call failed at %s", base + "/optin", exc_info=True
+            )
+
+        bot_user = self.env.ref(
+            "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False
+        )
+        if not bot_user:
+            return
+        # Posting as the bot re-enters this method with author == bot, which
+        # returns early: no webhook, no loop.
+        self.env["discuss.channel"].browse(message.res_id).with_user(
+            bot_user
+        ).sudo().message_post(
+            body=_(
+                "Sugerencias activadas. Te avisaré cuando vea algo útil en la "
+                "pantalla en la que estés."
+            ),
+            author_id=bot_user.partner_id.id,
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+        )
