@@ -20,8 +20,12 @@ Every field carries ``help``: a configuration field without an explanation is a
 trap for whoever administers it six months later.
 """
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+from ..utils.markdown_html import markdown_to_safe_html
 
 MODE_SELECTION = [
     ("observe", "Observe only"),
@@ -280,3 +284,56 @@ class MailOdooClawPipelineRun(models.Model):
                     _("The record id must be positive, got %(value)s.")
                     % {"value": run.res_id}
                 )
+
+    def apply_result(self, state, body="", decision="", error="", escalate=False):
+        """Write the outcome of a run and apply its effect on the record.
+
+        ``drafted`` becomes an internal note with the proposed reply, so a
+        person reads it in the chatter before anyone outside sees it. ``sent``
+        becomes a comment visible to the customer, written as the bot.
+        ``observed``, ``failed`` and ``skipped`` only land in the log. An
+        escalation adds a mail activity for the pipeline's escalation user.
+        """
+        self.ensure_one()
+        self.write(
+            {
+                "state": state,
+                "decision": decision or self.decision,
+                "error": error or "",
+            }
+        )
+        record = self.env[self.model_name].sudo().browse(self.res_id)
+        if not record.exists():
+            return self
+        bot = self.env.ref(
+            "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False
+        )
+        if body and state in ("drafted", "sent") and bot:
+            subtype = "mail.mt_note" if state == "drafted" else "mail.mt_comment"
+            record.with_user(bot).sudo().message_post(
+                body=Markup(markdown_to_safe_html(body)),
+                author_id=bot.partner_id.id,
+                message_type="comment",
+                subtype_xmlid=subtype,
+            )
+        if escalate and self.pipeline_id.escalate_user_id:
+            activity_type = (
+                self.env["mail.activity.type"].sudo().search([], limit=1)
+            )
+            model = (
+                self.env["ir.model"]
+                .sudo()
+                .search([("model", "=", self.model_name)], limit=1)
+            )
+            self.env["mail.activity"].sudo().create(
+                {
+                    "res_model": self.model_name,
+                    "res_model_id": model.id,
+                    "res_id": self.res_id,
+                    "user_id": self.pipeline_id.escalate_user_id.id,
+                    "activity_type_id": activity_type.id,
+                    "summary": _("OdooClaw: needs a person"),
+                    "note": decision or "",
+                }
+            )
+        return self
