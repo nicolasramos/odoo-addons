@@ -262,6 +262,7 @@ absent simply stays silent.
 | `mail_bot_odooclaw_account` | `+ account` | Accounting |
 | `mail_bot_odooclaw_sale` | `+ sale_management` | Sales |
 | `mail_bot_odooclaw_crm` | `+ crm` | CRM |
+| `mail_bot_odooclaw_helpdesk` | `+ helpdesk_mgmt` | Helpdesk |
 | `mail_bot_odooclaw_purchase` | `+ purchase` | Purchase |
 | `mail_bot_odooclaw_stock` | `+ stock` | Inventory |
 | `mail_bot_odooclaw_hr` | `+ hr_holidays` | Human resources |
