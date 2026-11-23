@@ -1,6 +1,6 @@
 # Copyright 2026 Nicolás Ramos
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-"""Knowledge search over the OCA document pages.
+"""Knowledge search over the document pages.
 
 The bot answers from what the company wrote down, and says which page it used:
 a citation turns an answer into something a person can check.

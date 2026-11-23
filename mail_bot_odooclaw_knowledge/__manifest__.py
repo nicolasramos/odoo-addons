@@ -1,8 +1,8 @@
 {
-    "name": "OdooClaw Knowledge (OCA document_page)",
+    "name": "OdooClaw Knowledge (document_page)",
     "version": "18.0.1.0.0",
     "category": "Discuss",
-    "summary": "Let OdooClaw answer from the OCA knowledge base, with the page it used",
+    "summary": "Let OdooClaw answer from the knowledge document pages, with the page it used",
     "author": "Nicolás Ramos",
     "license": "AGPL-3",
     "depends": ["mail_bot_odooclaw", "document_page"],

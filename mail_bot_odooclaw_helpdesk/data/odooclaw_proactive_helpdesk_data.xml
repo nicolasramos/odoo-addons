@@ -16,7 +16,8 @@
           language-independent. Matching the stage NAME would break the moment
           someone renames a stage.
         * "new, not attended yet" is [["stage_id.unattended", "=", true]], the
-          flag helpdesk_mgmt ships on the New stage. It is the OCA's own meaning
+          flag helpdesk_mgmt ships on the New stage. It is helpdesk_mgmt's own
+          meaning
           and it does not depend on how the stage is named or on whether a
           creator was auto-assigned to the ticket.
         * activity_date_deadline is store=False BUT searchable: it is computed
