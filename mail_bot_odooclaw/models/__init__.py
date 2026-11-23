@@ -7,3 +7,5 @@ from . import res_partner
 from . import res_users
 from . import ir_config_parameter
 from . import ir_module
+from . import mail_odooclaw_pipeline
+from . import res_config_settings

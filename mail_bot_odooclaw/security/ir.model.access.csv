@@ -4,3 +4,9 @@ access_mail_odooclaw_area_system,mail.odooclaw.area system,model_mail_odooclaw_a
 access_mail_odooclaw_area_user,mail.odooclaw.area user,model_mail_odooclaw_area,base.group_user,1,0,0,0
 access_mail_odooclaw_audience_system,mail.odooclaw.audience system,model_mail_odooclaw_audience,base.group_system,1,1,1,1
 access_mail_odooclaw_audience_user,mail.odooclaw.audience user,model_mail_odooclaw_audience,base.group_user,1,0,0,0
+access_mail_odooclaw_pipeline_system,mail.odooclaw.pipeline system,model_mail_odooclaw_pipeline,base.group_system,1,1,1,1
+access_mail_odooclaw_pipeline_user,mail.odooclaw.pipeline user,model_mail_odooclaw_pipeline,base.group_user,1,0,0,0
+access_mail_odooclaw_pipeline_stage_system,mail.odooclaw.pipeline.stage system,model_mail_odooclaw_pipeline_stage,base.group_system,1,1,1,1
+access_mail_odooclaw_pipeline_stage_user,mail.odooclaw.pipeline.stage user,model_mail_odooclaw_pipeline_stage,base.group_user,1,0,0,0
+access_mail_odooclaw_pipeline_run_system,mail.odooclaw.pipeline.run system,model_mail_odooclaw_pipeline_run,base.group_system,1,1,1,1
+access_mail_odooclaw_pipeline_run_user,mail.odooclaw.pipeline.run user,model_mail_odooclaw_pipeline_run,base.group_user,1,0,0,0
