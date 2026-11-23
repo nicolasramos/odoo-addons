@@ -208,7 +208,122 @@ class MailThread(models.AbstractModel):
                 if bot_member:
                     bot_member.sudo()._notify_typing(is_typing=True)
 
+        # Operational pipeline: any comment from someone other than the bot on a
+        # record whose model has a pipeline is work for the engine. Notes are
+        # internal and never leave the instance; discuss messages took the
+        # branch above and are not business records.
+        if message.author_id != odooclaw_user.partner_id:
+            self._odooclaw_trigger_pipeline(message, odooclaw_user)
+
         return message
+
+    def _odooclaw_trigger_pipeline(self, message, bot_user):
+        """Queue a customer message for the area's pipeline in the engine.
+
+        The run row is written *before* the network call on purpose: if the
+        engine is down, the decision is still on record with its reason, and the
+        run stays ``queued`` instead of vanishing.
+        """
+        if not message.model or message.model.startswith(("mail.", "discuss.")):
+            return
+        comment = self.env.ref("mail.mt_comment", raise_if_not_found=False)
+        if not comment or message.subtype_id != comment:
+            return
+        pipeline = (
+            self.env["mail.odooclaw.pipeline"]
+            .sudo()
+            .search(
+                [
+                    ("model_name", "=", message.model),
+                    ("enabled", "=", True),
+                    ("active", "=", True),
+                ],
+                limit=1,
+            )
+        )
+        if not pipeline:
+            return
+        record = self.env[message.model].sudo().browse(message.res_id)
+        if not record.exists():
+            return
+        stage = record.stage_id if "stage_id" in record._fields else record.browse()
+        stage_id = stage.id if stage else 0
+        stage_name = stage.name if stage else ""
+        mode = pipeline.mode_for_stage(stage_id)
+        escalate = pipeline.escalate_for_stage(stage_id)
+        rule = pipeline.stage_rule_ids.filtered(
+            lambda r: r.active and r.stage_id == stage_id
+        )[:1]
+        template = (rule.template_id if rule else False) or pipeline.template_id
+        run = (
+            self.env["mail.odooclaw.pipeline.run"]
+            .sudo()
+            .create(
+                {
+                    "pipeline_id": pipeline.id,
+                    "model_name": message.model,
+                    "res_id": message.res_id,
+                    "res_name": record.display_name,
+                    "message_id": message.id,
+                    "stage_id": stage_id,
+                    "stage_name": stage_name,
+                    "mode": mode,
+                    "state": "queued",
+                    "decision": _(
+                        "Message from %(author)s received; mode %(mode)s.",
+                        author=message.author_id.name or _("unknown"),
+                        mode=mode,
+                    ),
+                }
+            )
+        )
+        icp = self.env["ir.config_parameter"].sudo()
+        job_url = icp.get_param(
+            "odooclaw.pipeline_url", "http://odooclaw:18790/odooclaw/job"
+        )
+        token = icp.get_param("odooclaw.reply_token", "")
+        payload = {
+            "run_id": run.id,
+            "pipeline_id": pipeline.id,
+            "area": pipeline.area_id.area,
+            "model": message.model,
+            "res_id": message.res_id,
+            "res_name": record.display_name,
+            "message_id": message.id,
+            "message_body": tools.html2plaintext(message.body or "")[:4000],
+            "author_id": message.author_id.id,
+            "author_name": message.author_id.name,
+            "stage_id": stage_id,
+            "stage_name": stage_name,
+            "mode": mode,
+            "escalate": escalate,
+            "escalate_user_id": pipeline.escalate_user_id.id or 0,
+            "escalate_after": pipeline.escalate_after,
+            "template_id": template.id if template else 0,
+            "bot_user_id": bot_user.id,
+        }
+
+        def send_job(url, data, headers, run_id):
+            try:
+                response = requests.post(url, json=data, headers=headers, timeout=5)
+                if response.status_code >= 400:
+                    _logger.warning(
+                        "odooclaw: pipeline job rejected (%s) for run %s",
+                        response.status_code,
+                        run_id,
+                    )
+            except Exception:
+                _logger.warning(
+                    "odooclaw: pipeline job failed for run %s", run_id, exc_info=True
+                )
+
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-OdooClaw-Token"] = token
+        threading.Thread(
+            target=send_job, args=(job_url, payload, headers, run.id), daemon=True
+        ).start()
+        return run
 
     # The invitation asks one question. These are the answers that count as a
     # yes; anything else leaves the user uninvited, which fails closed.
