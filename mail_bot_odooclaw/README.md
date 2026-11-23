@@ -352,6 +352,23 @@ mounted as an empty directory.
 > Odoo's loader reads `test_case_class.__dict__`, so inherited test methods are
 > invisible without it — the whole suite then reports `0 tests, 0 failed`.
 
+## Knowledge — answers from the document pages
+
+`mail_bot_odooclaw_knowledge` is a companion module, not a proactive area: it
+adds no `mail.odooclaw.area` row. It exposes `POST /odooclaw/knowledge/search`,
+which looks the query up in the `document_page` knowledge base and returns the
+matching pages with a snippet and a backend link, so an answer can cite the page
+it came from instead of inventing one.
+
+| Module | Depends on | Ships |
+|--------|-----------|-------|
+| `mail_bot_odooclaw_knowledge` | `+ document_page` | Knowledge search endpoint for the bot |
+
+The search is deliberately plain — name or content contains the words, newest
+first — so whatever a person finds in the page list, the bot can find too. The
+endpoint is authorized through the same shared webhook security as the rest of
+the bot's routes (`mail_bot_odooclaw.controllers.security`).
+
 ## Security
 
 ### Threat Model

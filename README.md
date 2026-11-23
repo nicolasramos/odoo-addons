@@ -20,6 +20,7 @@ This repository contains installable Odoo addons intended to be consumed through
 | `mail_bot_odooclaw_expense` | 18.0 | Proactive assistance: Expenses areas. | ↑ |
 | `mail_bot_odooclaw_project` | 18.0 | Proactive assistance: Projects areas. | ↑ |
 | `mail_bot_odooclaw_fleet` | 18.0 | Proactive assistance: Fleet areas. | ↑ |
+| `mail_bot_odooclaw_knowledge` | 18.0 | OdooClaw answers from the `document_page` knowledge base, citing the page it used. Requires `mail_bot_odooclaw` and `document_page`. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md#knowledge-answers-from-the-document-pages) |
 
 ## Repository strategy
 
