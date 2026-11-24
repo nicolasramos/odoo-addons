@@ -364,8 +364,10 @@ it came from instead of inventing one.
 |--------|-----------|-------|
 | `mail_bot_odooclaw_knowledge` | `+ document_page` | Knowledge search endpoint for the bot |
 
-The search is deliberately plain — name or content contains the words, newest
-first — so whatever a person finds in the page list, the bot can find too. The
+The search is deliberately plain — every word of the query is looked up on its
+own in name or content, and the pages carrying more of them come first, newest
+first to break a tie — so whatever a person finds in the page list, the bot can
+find too. The
 quoted snippet is centred on the words that matched and the link is absolute,
 so the citation can be checked from wherever the answer was read. The endpoint
 is authorized through the same shared webhook security as the rest of the bot's

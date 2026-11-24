@@ -85,3 +85,24 @@ class TestKnowledgeSearch(TransactionCase):
             )
         self.assertEqual(len(search_pages(self.env, "politica", limit=2)), 2)
         self.assertEqual(len(search_pages(self.env, "politica", limit=999)), 3)
+
+    def test_paraphrased_query_matches_words(self):
+        """People search with their own words, not with the page's wording.
+
+        Measured in staging: the agent asked for
+        "estado pedido cliente espera incidencia productos faltantes helpdesk"
+        and got nothing, because the whole phrase has to appear as one string.
+        """
+        page = self.env["document.page"].create(
+            {
+                "name": "Estado de pedidos",
+                "content": "<p>Para saber el estado de un pedido, pide el numero de pedido.</p>",
+            }
+        )
+        results = search_pages(self.env, "estado del pedido del cliente")
+        ids = [row["id"] for row in results]
+        self.assertIn(page.id, ids)
+
+    def test_query_of_only_stopwords_returns_nothing(self):
+        """A query that carries no content word must not return the whole wiki."""
+        self.assertEqual(search_pages(self.env, "de la el"), [])

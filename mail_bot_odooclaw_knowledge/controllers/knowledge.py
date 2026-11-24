@@ -7,16 +7,19 @@ a citation turns an answer into something a person can check. To keep that
 promise the quoted snippet is centred on the words that matched, and the link
 is absolute, so it can be opened from wherever the answer was read.
 
-The search is deliberately plain (name or content contains the words, newest
-first). It is the same query a person would type in the page list, so whatever
-they find there, the bot can find too.
+People search with their own words, not with the wording of the page, so the
+query is matched word by word and the pages are ranked by how many of those
+words they carry. Matching the whole query as one string only works for robots:
+"estado del pedido" has to find "Como consultar el estado de un pedido".
 """
 
 import json
 import logging
+import re
 
 from odoo import http
 from odoo.http import request
+from odoo.osv import expression
 from odoo.tools import html2plaintext
 from werkzeug.exceptions import HTTPException
 
@@ -31,8 +34,27 @@ _logger = logging.getLogger(__name__)
 # enough that a chat message stays a message.
 SNIPPET_CHARS = 300
 
+# Words that carry no topic of their own. They appear in every page, so matching
+# on them turns a search into "give me everything" and drowns the pages that
+# actually answer the question.
+_STOPWORDS = {
+    "de", "del", "la", "el", "los", "las", "un", "una", "unos", "unas", "y", "o",
+    "que", "en", "con", "por", "para", "al", "se", "su", "sus", "mi", "me", "nos",
+    "lo", "es", "son", "como", "cuando", "donde", "algo", "sobre", "este", "esta",
+    "the", "and", "for", "with", "from", "this", "that",
+}
 
-def _snippet(content, query):
+
+def _query_words(query):
+    """Return the content words of a search, in the order they were written."""
+    return [
+        word
+        for word in re.findall(r"[0-9A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+", query or "")
+        if len(word) > 2 and word.lower() not in _STOPWORDS
+    ]
+
+
+def _snippet(content, words):
     """Return the window of the page around the words that matched.
 
     Cutting the first N characters quotes the opening of the page whatever the
@@ -43,7 +65,11 @@ def _snippet(content, query):
     text = html2plaintext(content or "").strip()
     if not text:
         return ""
-    position = text.lower().find(query.lower())
+    lowered = text.lower()
+    position = min(
+        (found for found in (lowered.find(word.lower()) for word in words) if found >= 0),
+        default=-1,
+    )
     if position < 0:
         return text[:SNIPPET_CHARS]
     start = max(0, position - SNIPPET_CHARS // 3)
@@ -67,30 +93,48 @@ def _citation_url(env, page_id):
 
 
 def search_pages(env, query, limit=5):
-    """Search document pages and return JSON-ready rows with their link."""
-    query = (query or "").strip()
-    if not query:
+    """Search document pages word by word and return JSON-ready rows.
+
+    Every content word is looked up on its own and the pages are ranked by how
+    many of them they contain, so a paraphrase reaches the page that answers
+    it. Recency breaks the ties: a stale page that repeats a word is not better
+    than the current one.
+    """
+    words = _query_words(query)
+    if not words:
         return []
     try:
         limit = max(1, min(int(limit), 20))
     except (TypeError, ValueError):
         limit = 5
+    # Over-fetch before ranking: the best page is often not among the newest few.
     pages = (
         env["document.page"]
         .sudo()
         .search(
-            ["|", ("name", "ilike", query), ("content", "ilike", query)],
-            limit=limit,
+            expression.OR(
+                ["|", ("name", "ilike", word), ("content", "ilike", word)]
+                for word in words
+            ),
+            limit=limit * 4,
             order="write_date desc, id desc",
         )
     )
-    results = []
+    lowered = [word.lower() for word in words]
+    scored = []
     for page in pages:
+        haystack = ((page.name or "") + " " + (page.content or "")).lower()
+        score = sum(1 for word in lowered if word in haystack)
+        when = page.write_date or page.create_date
+        scored.append((score, when.isoformat() if when else "", page))
+    scored.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    results = []
+    for _score, _when, page in scored[:limit]:
         results.append(
             {
                 "id": page.id,
                 "name": page.name,
-                "snippet": _snippet(page.content, query),
+                "snippet": _snippet(page.content, words),
                 "backend_url": _citation_url(env, page.id),
                 "updated": page.write_date.isoformat() if page.write_date else "",
             }
