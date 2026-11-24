@@ -51,3 +51,17 @@ class TestKnowledgeSearch(TransactionCase):
             )
         self.assertEqual(len(search_pages(self.env, "politica", limit=2)), 2)
         self.assertEqual(len(search_pages(self.env, "politica", limit=999)), 3)
+
+    def test_paraphrased_query_matches_words(self):
+        page = self.env["document.page"].create(
+            {
+                "name": "Estado de pedidos",
+                "content": "<p>Para saber el estado de un pedido, pide el numero de pedido.</p>",
+            }
+        )
+        results = search_pages(self.env, "estado del pedido del cliente")
+        ids = [r["id"] for r in results]
+        self.assertIn(page.id, ids)
+
+    def test_query_of_only_stopwords_returns_nothing(self):
+        self.assertEqual(search_pages(self.env, "de la el"), [])

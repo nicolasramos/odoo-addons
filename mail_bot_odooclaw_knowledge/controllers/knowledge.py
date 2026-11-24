@@ -12,9 +12,11 @@ they find there, the bot can find too.
 
 import json
 import logging
+import re
 
 from odoo import http
 from odoo.http import request
+from odoo.osv import expression
 from odoo.tools import html2plaintext
 from werkzeug.exceptions import HTTPException
 
@@ -25,27 +27,54 @@ except ImportError:  # pragma: no cover - the dependency guarantees it
 
 _logger = logging.getLogger(__name__)
 
+_STOPWORDS = {
+    "de", "del", "la", "el", "los", "las", "un", "una", "unos", "unas", "y", "o",
+    "que", "en", "con", "por", "para", "al", "se", "su", "sus", "mi", "me", "nos",
+    "lo", "es", "son", "como", "cuando", "donde", "algo", "sobre", "este", "esta",
+    "the", "and", "for", "with", "from", "this", "that",
+}
+
 
 def search_pages(env, query, limit=5):
-    """Search document pages and return JSON-ready rows with their link."""
-    query = (query or "").strip()
-    if not query:
+    """Search document pages word by word and return JSON-ready rows.
+
+    The query is split into words because people do not search with the exact
+    page wording: "estado del pedido" must find "Como consultar el estado de un
+    pedido". Matching on the whole phrase only works for robots.
+    """
+    words = [
+        word
+        for word in re.findall(r"[0-9A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+", query or "")
+        if len(word) > 2 and word.lower() not in _STOPWORDS
+    ]
+    if not words:
         return []
     try:
         limit = max(1, min(int(limit), 20))
     except (TypeError, ValueError):
         limit = 5
+    conditions = [
+        ["|", ("name", "ilike", word), ("content", "ilike", word)]
+        for word in words
+    ]
     pages = (
         env["document.page"]
         .sudo()
         .search(
-            ["|", ("name", "ilike", query), ("content", "ilike", query)],
-            limit=limit,
+            expression.OR(conditions),
+            limit=limit * 4,
             order="write_date desc, id desc",
         )
     )
-    results = []
+    lowered = [word.lower() for word in words]
+    scored = []
     for page in pages:
+        haystack = ((page.name or "") + " " + (page.content or "")).lower()
+        score = sum(1 for word in lowered if word in haystack)
+        scored.append((score, page.write_date or page.create_date, page))
+    scored.sort(key=lambda item: (item[0], item[1] or ""), reverse=True)
+    results = []
+    for _score, _date, page in scored[:limit]:
         results.append(
             {
                 "id": page.id,
