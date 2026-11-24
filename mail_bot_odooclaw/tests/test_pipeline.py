@@ -24,6 +24,7 @@ class TestPipeline(TransactionCase):
             {
                 "area_id": cls.area.id,
                 "mode": "draft",
+                "instructions": "Never quote prices or delivery dates.",
             }
         )
         cls.stage_auto = cls.env["mail.odooclaw.pipeline.stage"].create(
@@ -40,6 +41,7 @@ class TestPipeline(TransactionCase):
                 "stage_id": 20,
                 "stage_name": "Closed",
                 "escalate": True,
+                "instructions": "Ask for the order number first.",
             }
         )
 
@@ -85,6 +87,36 @@ class TestPipeline(TransactionCase):
         )
         self.assertIn(run, self.pipeline.run_ids)
         self.assertEqual(self.pipeline.run_count, 1)
+
+
+    def test_stage_instructions_are_only_the_stage_ones(self):
+        self.assertEqual(
+            self.pipeline.stage_instructions(20), "Ask for the order number first."
+        )
+        self.assertEqual(self.pipeline.stage_instructions(99), "")
+        self.assertEqual(self.pipeline.stage_instructions(0), "")
+
+    def test_area_instructions_survive_the_stage_rule(self):
+        self.assertIn("Never quote prices", self.pipeline.instructions)
+        self.assertEqual(self.pipeline.mode_for_stage(20), "draft")
+
+    def test_use_knowledge_is_off_by_default(self):
+        other = self.env["mail.odooclaw.area"].create(
+            {"name": "Other", "area": "other", "model_name": "res.partner"}
+        )
+        pipeline = self.env["mail.odooclaw.pipeline"].create({"area_id": other.id})
+        self.assertFalse(pipeline.use_knowledge)
+
+    def test_use_knowledge_with_the_module_installed(self):
+        module = (
+            self.env["ir.module.module"]
+            .sudo()
+            .search([("name", "=", "mail_bot_odooclaw_knowledge")], limit=1)
+        )
+        if not module or module.state != "installed":
+            self.skipTest("the knowledge module is not installed here")
+        self.pipeline.use_knowledge = True
+        self.assertTrue(self.pipeline.use_knowledge)
 
 
 @tagged("post_install", "-at_install")

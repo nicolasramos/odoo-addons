@@ -88,6 +88,18 @@ class MailOdooClawPipeline(models.Model):
         help="Optional template the agent starts from instead of composing from "
         "scratch.",
     )
+    instructions = fields.Text(
+        help="How the bot must act in this area: tone, what to ask, what never to "
+        "promise, when to escalate. Written as rules a person would follow, short "
+        "and concrete. Stage rules can add to it.",
+    )
+    use_knowledge = fields.Boolean(
+        string="Use the knowledge base",
+        default=False,
+        help="When checked, the bot searches the OCA knowledge pages before "
+        "answering and cites the page it used. Requires the "
+        "mail_bot_odooclaw_knowledge module.",
+    )
     escalate_user_id = fields.Many2one(
         "res.users",
         help="Who receives the work when the pipeline escalates: the bot cannot "
@@ -153,6 +165,33 @@ class MailOdooClawPipeline(models.Model):
         )[:1]
         return bool(rule.escalate)
 
+    def stage_instructions(self, stage_id):
+        """Extra rules written for the stage, if any."""
+        self.ensure_one()
+        rule = self.stage_rule_ids.filtered(
+            lambda r: r.active and r.stage_id == int(stage_id or 0)
+        )[:1]
+        return rule.instructions or ""
+
+    @api.constrains("use_knowledge")
+    def _check_knowledge_module(self):
+        module = (
+            self.env["ir.module.module"]
+            .sudo()
+            .search([("name", "=", "mail_bot_odooclaw_knowledge")], limit=1)
+        )
+        installed = bool(module and module.state == "installed")
+        for pipeline in self:
+            if pipeline.use_knowledge and not installed:
+                raise ValidationError(
+                    _(
+                        "The knowledge base is on for %(area)s but the module "
+                        "mail_bot_odooclaw_knowledge is not installed. Install it "
+                        "or uncheck 'Use the knowledge base'.",
+                        area=pipeline.area_id.name or pipeline.name,
+                    )
+                )
+
 
 class MailOdooClawPipelineStage(models.Model):
     """Behaviour override for one stage of the pipeline's area."""
@@ -194,6 +233,10 @@ class MailOdooClawPipelineStage(models.Model):
     template_id = fields.Many2one(
         "mail.template",
         help="Template for this stage. Overrides the pipeline's template.",
+    )
+    instructions = fields.Text(
+        help="Extra rules for this stage only. They are added after the area's "
+        "instructions, so a stage can refine them without repeating them.",
     )
     escalate = fields.Boolean(
         help="Send the work to the pipeline's escalation user when the record is "

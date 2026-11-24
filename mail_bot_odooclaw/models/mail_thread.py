@@ -255,6 +255,19 @@ class MailThread(models.AbstractModel):
             lambda r: r.active and r.stage_id == stage_id
         )[:1]
         template = (rule.template_id if rule else False) or pipeline.template_id
+        template_body = ""
+        if template:
+            # The template is a starting point, not a contract: render it with
+            # this record when possible and fall back to its raw text. The agent
+            # reads it as a structure, not as a literal reply.
+            try:
+                rendered = template._render_field("body_html", [record.id])[record.id]
+                template_body = tools.html2plaintext(rendered or "")
+            except Exception:  # noqa: BLE001
+                template_body = tools.html2plaintext(
+                    getattr(template, "body_html", "") or ""
+                )
+            template_body = template_body[:4000]
         run = (
             self.env["mail.odooclaw.pipeline.run"]
             .sudo()
@@ -300,6 +313,10 @@ class MailThread(models.AbstractModel):
             "escalate_user_id": pipeline.escalate_user_id.id or 0,
             "escalate_after": pipeline.escalate_after,
             "template_id": template.id if template else 0,
+            "template_body": template_body,
+            "instructions": pipeline.instructions or "",
+            "stage_instructions": pipeline.stage_instructions(stage_id),
+            "use_knowledge": bool(pipeline.use_knowledge),
             "bot_user_id": bot_user.id,
         }
 

@@ -125,3 +125,20 @@ class TestPipelineTrigger(TransactionCase):
                 [("message_id", "=", message.id)]
             )
             self.assertEqual(run.mode, "draft")
+
+    def test_payload_carries_the_area_rules(self):
+        self.pipeline.instructions = "Never promise dates. Always ask for the order number."
+        self.pipeline.use_knowledge = True
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            message = self._post()
+            self.assertTrue(self._wait_for(lambda: post.called))
+            payload = post.call_args.kwargs["json"]
+            self.assertEqual(
+                payload["instructions"],
+                "Never promise dates. Always ask for the order number.",
+            )
+            self.assertEqual(payload["stage_instructions"], "")
+            self.assertTrue(payload["use_knowledge"])
+            self.assertEqual(payload["template_body"], "")
