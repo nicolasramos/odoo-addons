@@ -4,6 +4,7 @@
 import time
 from unittest.mock import patch
 
+from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase, tagged
 
 
@@ -45,6 +46,33 @@ class TestPipelineTrigger(TransactionCase):
                 return True
             time.sleep(0.02)
         return predicate()
+
+    def _install_knowledge_module(self):
+        """Pretend the optional knowledge module is installed.
+
+        The knowledge addon is a separate module a deployment may not ship, and
+        the pipeline refuses the flag without it, so a test that turns the flag
+        on has to say so instead of depending on what the base database happens
+        to have.
+        """
+        module = (
+            self.env["ir.module.module"]
+            .sudo()
+            .search([("name", "=", "mail_bot_odooclaw_knowledge")], limit=1)
+        )
+        if not module:
+            module = (
+                self.env["ir.module.module"]
+                .sudo()
+                .create({"name": "mail_bot_odooclaw_knowledge"})
+            )
+        module.write({"state": "installed"})
+        return module
+
+    def test_knowledge_toggle_is_refused_without_the_module(self):
+        """The flag cannot be turned on where nothing would answer from it."""
+        with self.assertRaises(ValidationError):
+            self.pipeline.use_knowledge = True
 
     def test_comment_creates_a_queued_run_and_one_job(self):
         with patch(
@@ -127,6 +155,7 @@ class TestPipelineTrigger(TransactionCase):
             self.assertEqual(run.mode, "draft")
 
     def test_payload_carries_the_area_rules(self):
+        self._install_knowledge_module()
         self.pipeline.instructions = "Never promise dates. Always ask for the order number."
         self.pipeline.use_knowledge = True
         with patch(
