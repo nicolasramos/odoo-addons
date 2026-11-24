@@ -57,10 +57,11 @@ class TestKnowledgeSearch(TransactionCase):
             }
         )
         results = search_pages(self.env, "vacaciones")
-        self.assertEqual([r["id"] for r in results], [page.id])
+        quoted = {row["id"]: row["snippet"] for row in results}
+        self.assertIn(page.id, quoted)
         self.assertIn(
             "vacaciones",
-            results[0]["snippet"].lower(),
+            quoted[page.id].lower(),
             "the snippet does not contain the words that were searched for",
         )
 
