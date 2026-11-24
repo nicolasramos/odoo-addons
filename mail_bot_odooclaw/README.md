@@ -366,8 +366,10 @@ it came from instead of inventing one.
 
 The search is deliberately plain — name or content contains the words, newest
 first — so whatever a person finds in the page list, the bot can find too. The
-endpoint is authorized through the same shared webhook security as the rest of
-the bot's routes (`mail_bot_odooclaw.controllers.security`).
+quoted snippet is centred on the words that matched and the link is absolute,
+so the citation can be checked from wherever the answer was read. The endpoint
+is authorized through the same shared webhook security as the rest of the bot's
+routes (`mail_bot_odooclaw.controllers.security`).
 
 ## Security
 

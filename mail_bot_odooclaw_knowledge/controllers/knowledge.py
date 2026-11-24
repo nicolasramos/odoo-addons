@@ -3,7 +3,9 @@
 """Knowledge search over the document pages.
 
 The bot answers from what the company wrote down, and says which page it used:
-a citation turns an answer into something a person can check.
+a citation turns an answer into something a person can check. To keep that
+promise the quoted snippet is centred on the words that matched, and the link
+is absolute, so it can be opened from wherever the answer was read.
 
 The search is deliberately plain (name or content contains the words, newest
 first). It is the same query a person would type in the page list, so whatever
@@ -24,6 +26,44 @@ except ImportError:  # pragma: no cover - the dependency guarantees it
     security = None
 
 _logger = logging.getLogger(__name__)
+
+# How much of the page is quoted back. Long enough to read as an answer, short
+# enough that a chat message stays a message.
+SNIPPET_CHARS = 300
+
+
+def _snippet(content, query):
+    """Return the window of the page around the words that matched.
+
+    Cutting the first N characters quotes the opening of the page whatever the
+    search actually matched, so the reader cannot check the answer against the
+    page it came from. When the words are only in the title, the opening is the
+    only thing there to show, and that is what is returned.
+    """
+    text = html2plaintext(content or "").strip()
+    if not text:
+        return ""
+    position = text.lower().find(query.lower())
+    if position < 0:
+        return text[:SNIPPET_CHARS]
+    start = max(0, position - SNIPPET_CHARS // 3)
+    end = min(len(text), start + SNIPPET_CHARS)
+    return "%s%s%s" % (
+        "…" if start else "",
+        text[start:end].strip(),
+        "…" if end < len(text) else "",
+    )
+
+
+def _citation_url(env, page_id):
+    """Build an absolute link to the page.
+
+    The bot quotes a page to a person inside a chat message, so a relative
+    backend path is not something they can open.
+    """
+    path = "/web#id=%d&model=document.page&view_type=form" % page_id
+    base = env["ir.config_parameter"].sudo().get_param("web.base.url", "").rstrip("/")
+    return "%s%s" % (base, path) if base else path
 
 
 def search_pages(env, query, limit=5):
@@ -50,9 +90,8 @@ def search_pages(env, query, limit=5):
             {
                 "id": page.id,
                 "name": page.name,
-                "snippet": html2plaintext(page.content or "")[:400],
-                "backend_url": "/web#id=%d&model=document.page&view_type=form"
-                % page.id,
+                "snippet": _snippet(page.content, query),
+                "backend_url": _citation_url(env, page.id),
                 "updated": page.write_date.isoformat() if page.write_date else "",
             }
         )
