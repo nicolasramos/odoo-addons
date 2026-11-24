@@ -44,6 +44,39 @@ class TestKnowledgeSearch(TransactionCase):
         self.assertEqual(search_pages(self.env, ""), [])
         self.assertEqual(search_pages(self.env, "   "), [])
 
+    def test_snippet_shows_the_words_that_matched(self):
+        """A citation you cannot check is not a citation.
+
+        The page answers long after its opening, so a snippet cut from the
+        start would quote something that has nothing to do with the query.
+        """
+        page = self.env["document.page"].create(
+            {
+                "name": "Convenio largo",
+                "content": "<p>%s</p>" % (("Relleno de convenio. " * 40) + "Las vacaciones se piden por el portal."),
+            }
+        )
+        results = search_pages(self.env, "vacaciones")
+        self.assertEqual([r["id"] for r in results], [page.id])
+        self.assertIn(
+            "vacaciones",
+            results[0]["snippet"].lower(),
+            "the snippet does not contain the words that were searched for",
+        )
+
+    def test_citation_is_a_url_a_person_can_open(self):
+        """The bot quotes a page to a human, so the link has to be absolute."""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "web.base.url", "https://erp.example.com"
+        )
+        results = search_pages(self.env, "vacaciones")
+        url = results[0]["backend_url"]
+        self.assertTrue(
+            url.startswith("https://erp.example.com/"),
+            "citation is a relative path, not a link: %s" % url,
+        )
+        self.assertIn("document.page", url)
+
     def test_limit_is_bounded(self):
         for index in range(3):
             self.env["document.page"].create(
