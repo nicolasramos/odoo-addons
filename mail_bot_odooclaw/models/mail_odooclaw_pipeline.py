@@ -96,8 +96,8 @@ class MailOdooClawPipeline(models.Model):
     use_knowledge = fields.Boolean(
         string="Use the knowledge base",
         default=False,
-        help="When checked, the bot searches the OCA knowledge pages before "
-        "answering and cites the page it used. Requires the "
+        help="When checked, the bot searches the knowledge document pages "
+        "before answering and cites the page it used. Requires the "
         "mail_bot_odooclaw_knowledge module.",
     )
     escalate_user_id = fields.Many2one(
