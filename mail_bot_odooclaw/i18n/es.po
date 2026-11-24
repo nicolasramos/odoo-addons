@@ -131,6 +131,14 @@ msgid "Email Thread"
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"Example: always answer in the customer's language, never quote delivery "
+"dates or prices, ask for the order number before answering anything about an"
+" order, escalate if the customer asks for a refund."
+msgstr "Ejemplo: responde siempre en el idioma del cliente, nunca des fechas de entrega ni precios, pide el número de pedido antes de responder nada sobre un pedido, y escala si el cliente pide un reembolso."
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__excluded_group_ids
 msgid "Exclude these groups"
 msgstr "Excluir a estos grupos"
@@ -139,6 +147,13 @@ msgstr "Excluir a estos grupos"
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__expiry
 msgid "Expiry"
 msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__instructions
+msgid ""
+"Extra rules for this stage only. They are added after the area's "
+"instructions, so a stage can refine them without repeating them."
+msgstr "Reglas extra solo para esta etapa. Se añaden después de las del área, así una etapa puede precisarlas sin repetirlas."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__area
@@ -152,6 +167,23 @@ msgstr ""
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_message__odooclaw_area
 msgid "Functional area the suggestion belongs to."
 msgstr "Área funcional a la que pertenece la sugerencia."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"How the bot must act in this area. Written as rules a\n"
+"                                person would follow: tone, what to ask, what never to\n"
+"                                promise, when to hand over. The stage rules below can\n"
+"                                add to this text without repeating it."
+msgstr "Cómo debe actuar el bot en esta área. Escrito como reglas que seguiría una persona: tono, qué preguntar, qué no prometer nunca, cuándo entregar el caso. Las reglas de etapa de abajo pueden añadir a este texto sin repetirlo."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__instructions
+msgid ""
+"How the bot must act in this area: tone, what to ask, what never to promise,"
+" when to escalate. Written as rules a person would follow, short and "
+"concrete. Stage rules can add to it."
+msgstr "Cómo debe actuar el bot en esta área: tono, qué preguntar, qué no prometer nunca, cuándo escalar. Escrito como reglas cortas y concretas que seguiría una persona. Las reglas de etapa pueden añadir a este texto."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__id
@@ -170,6 +202,13 @@ msgstr "Identificador del playbook que produjo esta sugerencia."
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
 msgid "Include deactivated users"
 msgstr "Incluir usuarios desactivados"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__instructions
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__instructions
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid "Instructions"
+msgstr "Instrucciones"
 
 #. module: mail_bot_odooclaw
 #. odoo-python
@@ -355,9 +394,23 @@ msgid "The area key must be lowercase and without spaces: %s"
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid ""
+"The knowledge base is on for %(area)s but the module "
+"mail_bot_odooclaw_knowledge is not installed. Install it or uncheck 'Use the"
+" knowledge base'."
+msgstr "La base de conocimiento está activada para %(area)s, pero el módulo mail_bot_odooclaw_knowledge no está instalado. Instálalo o desmarca «Usar la base de conocimiento»."
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__token
 msgid "Token"
 msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
+msgid "Use the knowledge base"
+msgstr "Usar la base de conocimiento"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__used
@@ -378,6 +431,14 @@ msgstr ""
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__view_ids
 msgid "Views that belong to this area. Optional: the model is usually enough."
 msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
+msgid ""
+"When checked, the bot searches the knowledge document pages before answering"
+" and cites the page it used. Requires the mail_bot_odooclaw_knowledge "
+"module."
+msgstr "Si se marca, el bot busca en las páginas de conocimiento antes de responder y cita la página que usó. Requiere el módulo mail_bot_odooclaw_knowledge."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__enabled
@@ -460,3 +521,4 @@ msgid ""
 msgstr ""
 "Sugerencias activadas. Te avisaré cuando vea algo útil en la "
 "pantalla en la que estés."
+

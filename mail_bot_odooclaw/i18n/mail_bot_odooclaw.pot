@@ -124,6 +124,14 @@ msgid "Email Thread"
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"Example: always answer in the customer's language, never quote delivery "
+"dates or prices, ask for the order number before answering anything about an"
+" order, escalate if the customer asks for a refund."
+msgstr ""
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__excluded_group_ids
 msgid "Exclude these groups"
 msgstr ""
@@ -131,6 +139,13 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__expiry
 msgid "Expiry"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__instructions
+msgid ""
+"Extra rules for this stage only. They are added after the area's "
+"instructions, so a stage can refine them without repeating them."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -144,6 +159,23 @@ msgstr ""
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_area
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_message__odooclaw_area
 msgid "Functional area the suggestion belongs to."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"How the bot must act in this area. Written as rules a\n"
+"                                person would follow: tone, what to ask, what never to\n"
+"                                promise, when to hand over. The stage rules below can\n"
+"                                add to this text without repeating it."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__instructions
+msgid ""
+"How the bot must act in this area: tone, what to ask, what never to promise,"
+" when to escalate. Written as rules a person would follow, short and "
+"concrete. Stage rules can add to it."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -162,6 +194,13 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
 msgid "Include deactivated users"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__instructions
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__instructions
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid "Instructions"
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -348,8 +387,22 @@ msgid "The area key must be lowercase and without spaces: %s"
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid ""
+"The knowledge base is on for %(area)s but the module "
+"mail_bot_odooclaw_knowledge is not installed. Install it or uncheck 'Use the"
+" knowledge base'."
+msgstr ""
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__token
 msgid "Token"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
+msgid "Use the knowledge base"
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -370,6 +423,14 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__view_ids
 msgid "Views that belong to this area. Optional: the model is usually enough."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
+msgid ""
+"When checked, the bot searches the knowledge document pages before answering"
+" and cites the page it used. Requires the mail_bot_odooclaw_knowledge "
+"module."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -450,3 +511,4 @@ msgid ""
 "Sugerencias activadas. Te avisaré cuando vea algo útil en la "
 "pantalla en la que estés."
 msgstr ""
+
