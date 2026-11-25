@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 15:24+0000\n"
-"PO-Revision-Date: 2026-11-25 15:24+0000\n"
+"POT-Creation-Date: 2026-11-25 15:58+0000\n"
+"PO-Revision-Date: 2026-11-25 15:58+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -118,6 +118,11 @@ msgid ""
 "the public user are left out: they are not company staff and the counters "
 "quoted in the offer are business figures."
 msgstr "Solo se ofrece ayuda a usuarios internos (empleados). Los usuarios de portal y el usuario público quedan fuera: no son personal de la empresa y los contadores son cifras de negocio."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__attachment_text
+msgid "Attachment Text"
+msgstr "Texto de los adjuntos"
 
 #. module: mail_bot_odooclaw
 #: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_audience
@@ -1222,6 +1227,13 @@ msgid "What the artifact is, in the words of whoever asked for it."
 msgstr "Qué es el artefacto, en palabras de quien lo pidió."
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__attachment_text
+msgid ""
+"What the multimodal model read from the images and voice notes of the "
+"message: text for a person to check, not a customer field."
+msgstr "Lo que el modelo multimodal leyó de las imágenes y notas de voz del mensaje: texto para que una persona lo compruebe, no un campo para el cliente."
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__state
 msgid "What the run ended up doing."
 msgstr "Qué acabó haciendo el run."
@@ -1242,9 +1254,10 @@ msgstr "Cuando un cliente escribe en un registro de un área con pipeline, el bo
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
 msgid ""
-"When checked, the bot searches the OCA knowledge pages before answering and "
-"cites the page it used. Requires the mail_bot_odooclaw_knowledge module."
-msgstr "Si está marcado, el bot busca en las páginas de conocimiento de la OCA antes de responder y cita la página que usó. Requiere el módulo mail_bot_odooclaw_knowledge."
+"When checked, the bot searches the knowledge document pages before answering"
+" and cites the page it used. Requires the mail_bot_odooclaw_knowledge "
+"module."
+msgstr "Si se marca, el bot busca en las páginas de conocimiento antes de responder y cita la página que usó. Requiere el módulo mail_bot_odooclaw_knowledge."
 
 #. module: mail_bot_odooclaw
 #: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_odooclaw_artifact

@@ -315,6 +315,11 @@ class MailOdooClawPipelineRun(models.Model):
     decision = fields.Text(
         help="Why the pipeline took this decision, in plain words.",
     )
+    attachment_text = fields.Text(
+        string="Attachment Text",
+        readonly=True,
+        help="What the multimodal model read from the images and voice notes of the message: text for a person to check, not a customer field.",
+    )
     error = fields.Text(
         help="Failure detail when the run ended in error.",
     )
@@ -328,7 +333,10 @@ class MailOdooClawPipelineRun(models.Model):
                     % {"value": run.res_id}
                 )
 
-    def apply_result(self, state, body="", decision="", error="", escalate=False):
+    def apply_result(
+        self, state, body="", decision="", error="", escalate=False,
+        attachment_text="",
+    ):
         """Write the outcome of a run and apply its effect on the record.
 
         ``drafted`` becomes an internal note with the proposed reply, so a
@@ -338,13 +346,14 @@ class MailOdooClawPipelineRun(models.Model):
         escalation adds a mail activity for the pipeline's escalation user.
         """
         self.ensure_one()
-        self.write(
-            {
-                "state": state,
-                "decision": decision or self.decision,
-                "error": error or "",
-            }
-        )
+        values = {
+            "state": state,
+            "decision": decision or self.decision,
+            "error": error or "",
+        }
+        if attachment_text:
+            values["attachment_text"] = attachment_text
+        self.write(values)
         record = self.env[self.model_name].sudo().browse(self.res_id)
         if not record.exists():
             return self

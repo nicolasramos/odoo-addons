@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 15:24+0000\n"
-"PO-Revision-Date: 2026-11-25 15:24+0000\n"
+"POT-Creation-Date: 2026-11-25 15:58+0000\n"
+"PO-Revision-Date: 2026-11-25 15:58+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -117,6 +117,11 @@ msgid ""
 "Assistance is offered to internal users (employees) only. Portal users and "
 "the public user are left out: they are not company staff and the counters "
 "quoted in the offer are business figures."
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__attachment_text
+msgid "Attachment Text"
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -1222,6 +1227,13 @@ msgid "What the artifact is, in the words of whoever asked for it."
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__attachment_text
+msgid ""
+"What the multimodal model read from the images and voice notes of the "
+"message: text for a person to check, not a customer field."
+msgstr ""
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__state
 msgid "What the run ended up doing."
 msgstr ""
@@ -1242,8 +1254,9 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
 msgid ""
-"When checked, the bot searches the OCA knowledge pages before answering and "
-"cites the page it used. Requires the mail_bot_odooclaw_knowledge module."
+"When checked, the bot searches the knowledge document pages before answering"
+" and cites the page it used. Requires the mail_bot_odooclaw_knowledge "
+"module."
 msgstr ""
 
 #. module: mail_bot_odooclaw

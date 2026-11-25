@@ -83,6 +83,7 @@
                                     <field name="state" />
                                     <field name="mode" />
                                     <field name="decision" />
+                                    <field name="attachment_text" />
                                 </list>
                             </field>
                         </page>

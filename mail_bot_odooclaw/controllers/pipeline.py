@@ -59,6 +59,7 @@ class OdooClawPipelineController(http.Controller):
                 decision=payload.get("decision") or "",
                 error=payload.get("error") or "",
                 escalate=bool(payload.get("escalate")),
+                attachment_text=payload.get("attachment_text") or "",
             )
             return request.make_json_response(
                 {"ok": True, "run_id": run.id, "state": run.state}
