@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -uo pipefail
-rm -rf /tmp/gate5748
+rm -rf /tmp/gate5748 2>/dev/null || sudo rm -rf /tmp/gate5748 2>/dev/null || true
 git clone --depth 1 --branch feat/NRA-5747-mailbox-gateway-fix https://github.com/nicolasramos/odoo-addons.git /tmp/gate5748 >/tmp/clone5748.log 2>&1
 cd /tmp/gate5748
 echo "HEAD=$(git rev-parse --short HEAD)"

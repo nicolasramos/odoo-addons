@@ -35,7 +35,6 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from threading import Event
-from time import monotonic, sleep
 from uuid import uuid4
 
 from unittest.mock import patch
@@ -107,20 +106,6 @@ class TestMailboxGateway(TransactionCase):
             [("source", "=", "mailbox")]
         )
 
-    def _wait_state(self, intake, state, timeout=5.0):
-        """Block until the async processor reaches ``state`` (or time out).
-
-        The gateway processes the email off a thread; waiting for it to finish
-        keeps that thread from leaking into the next test on another cursor.
-        """
-        deadline = monotonic() + timeout
-        while monotonic() < deadline:
-            intake.invalidate_recordset(["state"])
-            if intake.state == state:
-                return True
-            sleep(0.02)
-        return intake.state == state
-
     # -- CRITICAL 2a: invalid alias defaults are dropped -------------------
 
     def test_message_new_drops_invalid_alias_defaults(self):
@@ -152,38 +137,43 @@ class TestMailboxGateway(TransactionCase):
     def test_employee_email_gateway_creates_intake(self):
         """A raw email from a recognised employee, with a PDF, injected through
         the real gateway (message_process): it declares exactly one intake with
-        the attachment linked and its checksum filled (2c), reaches the OdooClaw
-        dispatch (2b) instead of bouncing or staying stuck (no ValueError from
-        2a), and progresses past ``new``."""
+        the attachment linked and its checksum filled (2c), and no ValueError
+        bounces the email (2a). The processor then reaches the OdooClaw
+        dispatch (2b) instead of staying stuck.
+
+        ``message_new`` posts the source message only after it returns, so the
+        processor runs after the gateway acks -- in production that is the async
+        thread (R-D3); here it is driven synchronously, exactly as the existing
+        mailbox tests do, on this test's cursor (no thread/cursor race)."""
         self._icp().set_param("odooclaw.intake.mailbox.enabled", "True")
         self._icp().set_param("odooclaw.intake.sender_allowlist", "*")
         raw = self._raw_email(
             self.sender.email, self._mailbox_to(), "Purchase ticket", "Expense ticket"
         )
         dispatched = Event()
-
-        def fake_dispatch(employee):
-            # OdooClaw picks the ticket up: mark it processing, exactly as the
-            # reply-back path does. Records that the gateway reached dispatch.
-            dispatched.set()
-            intake = self._mailbox_intakes()[:1]
-            intake.mark_processing()
-
-        with patch.object(
-            type(self.env["odooclaw.document.intake"]),
-            "_mailbox_dispatch_to_odooclaw",
-            side_effect=fake_dispatch,
-        ):
+        Model = type(self.env["odooclaw.document.intake"])
+        with patch.object(Model, "_process_mailbox_async") as processing, patch.object(
+            Model, "_mailbox_dispatch_to_odooclaw",
+            side_effect=lambda employee: (
+                dispatched.set(),
+                self._mailbox_intakes()[:1].mark_processing(),
+            ),
+        ) as dispatch:
             # Any exception here (e.g. ValueError from an invalid alias default)
             # fails the test: the email must not bounce.
             self.env["mail.thread"].sudo().message_process(
                 "odooclaw.document.intake", raw
             )
-            self.assertTrue(
-                dispatched.wait(timeout=5),
-                "the gateway must process the email and dispatch to OdooClaw",
-            )
+            # message_new wired the async dispatch (2b), just deferred.
+            processing.assert_called_once()
+            intake = self._mailbox_intakes()[:1]
+            # The source message is posted by the gateway now; process it.
+            intake._process_incoming_mailbox_email()
 
+        self.assertTrue(
+            dispatched.wait(timeout=5),
+            "the gateway must process the email and dispatch to OdooClaw",
+        )
         intakes = self._mailbox_intakes()
         self.assertEqual(len(intakes), 1, "one email declares exactly one intake")
         intake = intakes[:1]
@@ -215,15 +205,15 @@ class TestMailboxGateway(TransactionCase):
             self.sender.email, self._mailbox_to(), "No attachment", "No attachment",
             attach_pdf=False,
         )
-        # No patch: the real dispatch runs and reviews for the missing document.
-        self.env["mail.thread"].sudo().message_process(
-            "odooclaw.document.intake", raw
-        )
+        Model = type(self.env["odooclaw.document.intake"])
+        with patch.object(Model, "_process_mailbox_async"):
+            # No patch of the dispatch: the real method runs and reviews for the
+            # missing document.
+            self.env["mail.thread"].sudo().message_process(
+                "odooclaw.document.intake", raw
+            )
         intake = self._mailbox_intakes()[:1]
-        self.assertTrue(
-            self._wait_state(intake, "review"),
-            "the intake must reach the review queue for a missing attachment",
-        )
+        intake._process_incoming_mailbox_email()
         self.assertEqual(len(self._mailbox_intakes()), 1)
         self.assertFalse(intake.attachment_id)
         self.assertEqual(intake.state, "review")
