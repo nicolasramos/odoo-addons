@@ -23,7 +23,11 @@
         <!-- ``alias_on_delete`` and ``alias_user_id`` no longer exist on
              ``mail.alias`` in Odoo 18; the ``alias_model_id`` cascade handles
              the model-level link. -->
-        <field name="alias_defaults">{"model": "odooclaw.document.intake", "source": "mailbox", "intake_type": "expense"}</field>
+        <!-- ``model`` is NOT a field of the intake model: Odoo 18's gateway runs
+             ``ast.literal_eval(alias_defaults)`` and feeds the result to create(),
+             so a stray "model" key bounces the email with
+             "Invalid field 'model'" (CRITICAL 2, NRA-5747). Only real fields go here. -->
+        <field name="alias_defaults">{"source": "mailbox", "intake_type": "expense"}</field>
     </record>
 
     <!-- Keep the dedicated alias's local part in step with the parameter. -->

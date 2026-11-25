@@ -23,11 +23,17 @@ Internal API contract for T6-T11 (stable):
 
 * ``create_for_attachment(attachment, *, intake_type, source, message, actor,
   company)`` — the single entry point for every trigger (chatter, Discuss,
-  record, mailbox). Always returns a row. ``state == 'disabled'`` means: stop,
+  record). Always returns a row. ``state == 'disabled'`` means: stop,
   nothing may be created for this document. ``state == 'duplicate'`` means:
   stop, the same bytes were already declared inside the dedupe window and
   ``duplicate_of_id`` points at the first delivery. ``state == 'new'`` means:
   queue it.
+* ``message_new(msg_dict, custom_values)`` — the Odoo 18 email gateway entry
+  point for the dedicated mailbox (the pre-18 ``_mail_receive`` hook no longer
+  exists in Odoo 18). It declares the intake row, links the email attachment
+  (with its checksum) so dispatch never sees a missing document, and hands the
+  email to ``_process_incoming_mailbox_email`` in a thread so the gateway is
+  acknowledged inside its 5 s budget. Internal API.
 * ``flow_enabled(flow)`` — one of ``invoice`` / ``contact`` / ``expense`` /
   ``mailbox``.
 * ``_find_previous(checksum, intake_type=None)`` — dedupe lookup inside the
@@ -43,6 +49,8 @@ Internal API contract for T6-T11 (stable):
 import json
 import logging
 import threading
+import time
+from base64 import b64encode
 from datetime import timedelta
 
 import requests
@@ -607,26 +615,134 @@ class OdooclawDocumentIntake(models.Model):
 
     # -- Dedicated mailbox (T9 / NRA-5531) ---------------------------------
 
-    def _mail_receive(self, msg, *args, **kwargs):
-        """Gateway hook: an email that lands on the dedicated alias is received
-        here, once the record exists and its message + attachments are on it.
+    @api.model
+    def message_new(self, msg_dict, custom_values=None):
+        """Declare the intake for an email that lands on the dedicated alias.
 
-        Mailbox intakes are processed best-effort: a failure here must never
-        break the customer's incoming email (design risk R-D3). The dispatch to
-        OdooClaw runs in a thread so the email is acknowledged well inside the
-        5 s budget the mail sender waits on.
+        This is the real entry point for the mailbox. Odoo 18 has no
+        ``_mail_receive`` hook (grep over the whole ``odoo`` package returns
+        zero matches): even if the old one existed, nothing would run it and
+        the intake would stay ``new`` forever (CRITICAL 2b). The gateway that
+        used to call it now routes through this method, so the three mailbox
+        defects are fixed here:
+
+        * **Invalid alias defaults (CRITICAL 2a).** Odoo runs
+          ``ast.literal_eval(alias.alias_defaults)`` and passes the result as
+          ``custom_values`` before calling this. Any key that is not a real
+          field — the old ``"model"`` entry — made :meth:`create` raise
+          ``ValueError: Invalid field 'model'`` and bounce the email. Only real
+          fields are kept here (the data file already dropped ``"model"``; this
+          is defence in depth).
+        * **Attachment never linked (CRITICAL 2c).** The email attachment is
+          created and linked to the intake (with its checksum) before anything
+          dispatches, so the dispatch never reviews "No attachment was delivered
+          with the email." for a document that did carry one.
+        * **Nothing processed (CRITICAL 2b).** The email is handed to
+          :meth:`_process_incoming_mailbox_email` in a thread so the gateway is
+          acknowledged inside its 5 s budget.
+
+        Returns the declared intake record, exactly as the base method does, so
+        the gateway can post the source message on it.
         """
-        res = super()._mail_receive(msg, *args, **kwargs)
-        try:
-            self.filtered(
-                lambda i: i.source == "mailbox" and i.exists()
-            )._process_incoming_mailbox_email()
-        except Exception:
-            _logger.exception(
-                "OdooClaw mailbox: could not process incoming email for intake %s",
-                self.ids,
-            )
-        return res
+        valid_fields = self.fields_get()
+        values = {}
+        if isinstance(custom_values, dict):
+            for key, value in custom_values.items():
+                if key in valid_fields:
+                    values[key] = value
+
+        # Link the email attachment to the intake (CRITICAL 2c) and drop it from
+        # msg_dict so the message posted right after does not create a second,
+        # orphan copy on the mail message.
+        attachment = self._extract_mail_attachment(msg_dict)
+
+        intake_type = values.get("intake_type") or "expense"
+        vals = {"source": "mailbox", "intake_type": intake_type}
+        if attachment:
+            vals["attachment_id"] = attachment.id
+            vals["filename"] = attachment.name or ""
+            vals["mimetype"] = attachment.mimetype or ""
+            vals["checksum"] = attachment.checksum or False
+
+        intake = self.create(vals)
+
+        # Best-effort processing (R-D3): a failure here must never break the
+        # customer's incoming email. The dispatch runs in a thread so the email
+        # is acknowledged well inside the 5 s budget the mail sender waits on.
+        self._process_mailbox_async(intake)
+        return intake
+
+    def _extract_mail_attachment(self, msg_dict):
+        """Create one ``ir.attachment`` from the raw email parts (CRITICAL 2c)
+        and return it, or an empty recordset when the email carried none.
+
+        ``msg_dict['attachments']`` is the list of ``(name, content)`` tuples
+        Odoo parsed from the RFC-2822 body (``content`` is raw bytes, not
+        base64). The attachment lives on the intake so both the review queue and
+        the OdooClaw dispatch see it; ``checksum`` is computed by
+        ``ir.attachment`` on create.
+        """
+        parts = msg_dict.pop("attachments", None) or []
+        if not parts:
+            return self.env["ir.attachment"].browse()
+        item = parts[0]
+        if isinstance(item, (list, tuple)):
+            name = item[0] if item else ""
+            content = item[1] if len(item) > 1 else b""
+        else:
+            name = item or ""
+            content = b""
+        if content is None:
+            content = b""
+        if isinstance(content, str):
+            content = content.encode("utf-8")
+        return self.env["ir.attachment"].sudo().create(
+            {
+                "name": name or "",
+                "datas": b64encode(content),
+            }
+        )
+
+    def _process_mailbox_async(self, intake):
+        """Run :meth:`_process_incoming_mailbox_email` off the gateway thread.
+
+        The email is acknowledged first; the dispatch to OdooClaw runs after,
+        inside the 5 s budget the mail sender waits on. Contained so a failure
+        never breaks the customer's incoming email (R-D3).
+        """
+        intake.ensure_one()
+
+        def run():
+            try:
+                intake._process_incoming_mailbox_email()
+            except Exception:
+                _logger.exception(
+                    "OdooClaw mailbox: could not process incoming email for intake %s",
+                    intake.ids,
+                )
+
+        threading.Thread(target=run).start()
+
+    def _wait_for_source_message(self, timeout=2.0):
+        """Wait (bounded) for the source email message to be posted on this
+        intake before resolving sender or attachment.
+
+        The gateway posts that message right after declaring the record (in
+        :meth:`message_post`, which runs after :meth:`message_new` returns), so
+        the async processor — which resolves the sender and attachment from the
+        message — must not run before it exists. The email is acknowledged
+        synchronously, so a few hundred milliseconds of waiting is free.
+        """
+        deadline = fields.Datetime.now() + timedelta(seconds=timeout)
+        while fields.Datetime.now() < deadline:
+            if self.search_count(
+                [
+                    ("id", "=", self.id),
+                    ("message_ids.message_type", "=", "email"),
+                ]
+            ):
+                return
+            time.sleep(0.02)
 
     def mailbox_sender_partner(self):
         """The sender of the incoming email: the author of the latest email
@@ -694,6 +810,9 @@ class OdooclawDocumentIntake(models.Model):
         mailbox = self.filtered(lambda i: i.source == "mailbox" and i.exists())
         for intake in mailbox:
             try:
+                # The email message is posted by the gateway after the record
+                # is declared; resolve sender and attachment only once it exists.
+                intake._wait_for_source_message()
                 if not intake.flow_enabled("mailbox"):
                     continue
                 if not intake._mailbox_sender_allowed():
@@ -775,7 +894,7 @@ class OdooclawDocumentIntake(models.Model):
             "author_id": partner.id if partner else False,
             "author_user_id": sender_id,
             "author_name": partner.name if partner else "",
-            "body": "Ticket de gastos",
+            "body": "Expense ticket",
             "is_dm": False,
             "company_id": self.company_id.id,
             "invoice_attachments": [
@@ -826,7 +945,9 @@ class OdooclawDocumentIntake(models.Model):
             vals = {
                 "alias_name": name,
                 "alias_model_id": model_id,
-                "alias_defaults": '{"model": "odooclaw.document.intake", "source": "mailbox", "intake_type": "expense"}',
+                # ``model`` is not a field of the intake model and bounces the
+                # email in Odoo 18 (see mailbox_data.xml); only real fields here.
+                "alias_defaults": '{"source": "mailbox", "intake_type": "expense"}',
             }
             return Alias.create(vals)
         if aliases.alias_name != name:

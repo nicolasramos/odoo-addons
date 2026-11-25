@@ -7,3 +7,4 @@ from . import test_document_intake
 from . import test_mailbox_intake
 from . import test_intake_dedupe
 from . import test_intake_ui_trace
+from . import test_mailbox_gateway
