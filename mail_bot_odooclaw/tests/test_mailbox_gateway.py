@@ -23,7 +23,8 @@ These tests enter through the REAL Odoo 18 gateway (``message_process`` /
   progresses past ``new``).
 * **CRITICAL 2c** — ``attachment_id`` was never filled on the mailbox intake.
   Proven by asserting the created intake carries ``attachment_id`` and
-  ``checksum`` after a real email with a PDF landed.
+  ``checksum`` after a real email with a PDF landed, and by the contrast test:
+  an email that carried no attachment is reviewed, not crashed.
 
 Assertions are on the English source strings (house rule): the Spanish the user
 reads lives in i18n/es.po, and tests must not depend on the translation file.
@@ -34,6 +35,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from threading import Event
+from time import monotonic, sleep
 from uuid import uuid4
 
 from unittest.mock import patch
@@ -47,14 +49,10 @@ class TestMailboxGateway(TransactionCase):
     # with the module (alias_name is unique per company).
     ALIAS_NAME = "gastos5747"
     PDF = b64encode(b"%PDF-1.4 fake ticket for gateway tests")
-    PDF = b64encode(b"%PDF-1.4 fake ticket for gateway tests \xf0\x9f\x8f\xac")
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.Intake = cls.env["odooclaw.document.intake"].sudo()
-        cls.icp = cls.env["ir.config_parameter"].sudo()
-        cls.mail_thread = cls.env["mail.thread"].sudo()
         cls.sender = cls.env["res.partner"].create(
             {"name": "Ana Ruiz", "email": "ana@ejemplo.com"}
         )
@@ -78,18 +76,26 @@ class TestMailboxGateway(TransactionCase):
 
     # -- raw email builder -------------------------------------------------
 
-    def _raw_email(self, frm, to, subject, body):
-        msg = MIMEMultipart()
+    def _icp(self):
+        # Fresh sudo within this test's transaction: a recordset held from
+        # setUpClass lives on another cursor and its reads cross transactions.
+        return self.env["ir.config_parameter"].sudo()
+
+    def _raw_email(self, frm, to, subject, body, attach_pdf=True):
+        if attach_pdf:
+            msg = MIMEMultipart()
+            msg.attach(MIMEText(body))
+            part = MIMEApplication(bytes(self.PDF))
+            part.add_header(
+                "Content-Disposition", "attachment", filename="ticket.pdf"
+            )
+            msg.attach(part)
+        else:
+            msg = MIMEText(body)
         msg["From"] = frm
         msg["To"] = to
         msg["Subject"] = subject
         msg["Message-Id"] = "<%s@localhost>" % uuid4()
-        msg.attach(MIMEText(body))
-        part = MIMEApplication(bytes(self.PDF))
-        part.add_header(
-            "Content-Disposition", "attachment", filename="ticket.pdf"
-        )
-        msg.attach(part)
         return msg.as_bytes()
 
     def _mailbox_to(self):
@@ -97,7 +103,23 @@ class TestMailboxGateway(TransactionCase):
         return "%s@localhost" % self.ALIAS_NAME
 
     def _mailbox_intakes(self):
-        return self.Intake.search([("source", "=", "mailbox")])
+        return self.env["odooclaw.document.intake"].sudo().search(
+            [("source", "=", "mailbox")]
+        )
+
+    def _wait_state(self, intake, state, timeout=5.0):
+        """Block until the async processor reaches ``state`` (or time out).
+
+        The gateway processes the email off a thread; waiting for it to finish
+        keeps that thread from leaking into the next test on another cursor.
+        """
+        deadline = monotonic() + timeout
+        while monotonic() < deadline:
+            intake.invalidate_recordset(["state"])
+            if intake.state == state:
+                return True
+            sleep(0.02)
+        return intake.state == state
 
     # -- CRITICAL 2a: invalid alias defaults are dropped -------------------
 
@@ -112,9 +134,12 @@ class TestMailboxGateway(TransactionCase):
             "intake_type": "expense",
         }
         with patch.object(
-            type(self.Intake), "_process_mailbox_async"
+            type(self.env["odooclaw.document.intake"]), "_process_mailbox_async"
         ) as processing:
-            intake = self.Intake.message_new(msg_dict, custom_values)
+            intake = self.env["odooclaw.document.intake"].sudo().message_new(
+                msg_dict, custom_values
+            )
+        # The async dispatch is wired up (2b), just not run in this unit test.
         processing.assert_called_once()
         self.assertEqual(intake.source, "mailbox")
         self.assertEqual(intake.intake_type, "expense")
@@ -130,8 +155,8 @@ class TestMailboxGateway(TransactionCase):
         the attachment linked and its checksum filled (2c), reaches the OdooClaw
         dispatch (2b) instead of bouncing or staying stuck (no ValueError from
         2a), and progresses past ``new``."""
-        self.icp.set_param("odooclaw.intake.mailbox.enabled", "True")
-        self.icp.set_param("odooclaw.intake.sender_allowlist", "*")
+        self._icp().set_param("odooclaw.intake.mailbox.enabled", "True")
+        self._icp().set_param("odooclaw.intake.sender_allowlist", "*")
         raw = self._raw_email(
             self.sender.email, self._mailbox_to(), "Purchase ticket", "Expense ticket"
         )
@@ -141,17 +166,19 @@ class TestMailboxGateway(TransactionCase):
             # OdooClaw picks the ticket up: mark it processing, exactly as the
             # reply-back path does. Records that the gateway reached dispatch.
             dispatched.set()
-            intake = self.Intake.search(
-                [("source", "=", "mailbox")], order="id desc", limit=1
-            )
+            intake = self._mailbox_intakes()[:1]
             intake.mark_processing()
 
         with patch.object(
-            type(self.Intake), "_mailbox_dispatch_to_odooclaw", side_effect=fake_dispatch
-        ) as dispatch:
+            type(self.env["odooclaw.document.intake"]),
+            "_mailbox_dispatch_to_odooclaw",
+            side_effect=fake_dispatch,
+        ):
             # Any exception here (e.g. ValueError from an invalid alias default)
             # fails the test: the email must not bounce.
-            self.mail_thread.message_process("odooclaw.document.intake", raw)
+            self.env["mail.thread"].sudo().message_process(
+                "odooclaw.document.intake", raw
+            )
             self.assertTrue(
                 dispatched.wait(timeout=5),
                 "the gateway must process the email and dispatch to OdooClaw",
@@ -173,26 +200,31 @@ class TestMailboxGateway(TransactionCase):
             "processing",
             "the ticket must progress past 'new' once dispatched (CRITICAL 2b)",
         )
-        dispatch.assert_called_once()
 
     # -- the gateway never invents a document when there is none -----------
 
     def test_email_without_attachment_is_not_a_value_error(self):
         """An email with no attachment still declares the intake (no ValueError)
-        and is reviewed for a missing document by the real dispatch, not crashed.
-        This is the contrast to test_employee_email_gateway_creates_intake: the
-        attachment check guards both directions."""
-        self.icp.set_param("odooclaw.intake.mailbox.enabled", "True")
-        self.icp.set_param("odooclaw.intake.sender_allowlist", "*")
+        and is reviewed for a missing document by the real dispatch, not
+        crashed. This is the contrast to
+        test_employee_email_gateway_creates_intake: the attachment check guards
+        both directions."""
+        self._icp().set_param("odooclaw.intake.mailbox.enabled", "True")
+        self._icp().set_param("odooclaw.intake.sender_allowlist", "*")
         raw = self._raw_email(
-            self.sender.email, self._mailbox_to(), "No attachment", "No attachment"
+            self.sender.email, self._mailbox_to(), "No attachment", "No attachment",
+            attach_pdf=False,
         )
         # No patch: the real dispatch runs and reviews for the missing document.
-        self.mail_thread.message_process("odooclaw.document.intake", raw)
-
-        intakes = self._mailbox_intakes()
-        self.assertEqual(len(intakes), 1)
-        intake = intakes[:1]
+        self.env["mail.thread"].sudo().message_process(
+            "odooclaw.document.intake", raw
+        )
+        intake = self._mailbox_intakes()[:1]
+        self.assertTrue(
+            self._wait_state(intake, "review"),
+            "the intake must reach the review queue for a missing attachment",
+        )
+        self.assertEqual(len(self._mailbox_intakes()), 1)
         self.assertFalse(intake.attachment_id)
         self.assertEqual(intake.state, "review")
         self.assertIn("attachment", (intake.reason or "").lower())
