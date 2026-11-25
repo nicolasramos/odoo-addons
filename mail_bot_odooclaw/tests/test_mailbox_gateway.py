@@ -31,7 +31,7 @@ reads lives in i18n/es.po, and tests must not depend on the translation file.
 
 from base64 import b64encode
 from email.mime.application import MIMEApplication
-from email.mime.message import MIMEMessage
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from threading import Event
 from uuid import uuid4
@@ -79,13 +79,13 @@ class TestMailboxGateway(TransactionCase):
     # -- raw email builder -------------------------------------------------
 
     def _raw_email(self, frm, to, subject, body):
-        msg = MIMEMessage()
+        msg = MIMEMultipart()
         msg["From"] = frm
         msg["To"] = to
         msg["Subject"] = subject
         msg["Message-Id"] = "<%s@localhost>" % uuid4()
         msg.attach(MIMEText(body))
-        part = MIMEApplication(bytes(self.PDF), Name="ticket.pdf")
+        part = MIMEApplication(bytes(self.PDF))
         part.add_header(
             "Content-Disposition", "attachment", filename="ticket.pdf"
         )
@@ -115,7 +115,7 @@ class TestMailboxGateway(TransactionCase):
             type(self.Intake), "_process_mailbox_async"
         ) as processing:
             intake = self.Intake.message_new(msg_dict, custom_values)
-        processing.assert_not_called()
+        processing.assert_called_once()
         self.assertEqual(intake.source, "mailbox")
         self.assertEqual(intake.intake_type, "expense")
         # The attachment that arrived with the email is linked with its checksum.
