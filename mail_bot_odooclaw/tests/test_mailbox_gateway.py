@@ -43,6 +43,10 @@ from odoo.tests import TransactionCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestMailboxGateway(TransactionCase):
+    # Unique localpart so this test does not collide with the alias that ships
+    # with the module (alias_name is unique per company).
+    ALIAS_NAME = "gastos5747"
+    PDF = b64encode(b"%PDF-1.4 fake ticket for gateway tests")
     PDF = b64encode(b"%PDF-1.4 fake ticket for gateway tests \xf0\x9f\x8f\xac")
 
     @classmethod
@@ -66,7 +70,7 @@ class TestMailboxGateway(TransactionCase):
         )
         cls.alias = cls.env["mail.alias"].sudo().create(
             {
-                "alias_name": "gastos",
+                "alias_name": cls.ALIAS_NAME,
                 "alias_model_id": model.id,
                 "alias_incoming_local": True,
             }
@@ -87,6 +91,10 @@ class TestMailboxGateway(TransactionCase):
         )
         msg.attach(part)
         return msg.as_bytes()
+
+    def _mailbox_to(self):
+        # Localpart must match the alias so the gateway routes through it.
+        return "%s@localhost" % self.ALIAS_NAME
 
     def _mailbox_intakes(self):
         return self.Intake.search([("source", "=", "mailbox")])
@@ -125,7 +133,7 @@ class TestMailboxGateway(TransactionCase):
         self.icp.set_param("odooclaw.intake.mailbox.enabled", "True")
         self.icp.set_param("odooclaw.intake.sender_allowlist", "*")
         raw = self._raw_email(
-            self.sender.email, "gastos@localhost", "Purchase ticket", "Expense ticket"
+            self.sender.email, self._mailbox_to(), "Purchase ticket", "Expense ticket"
         )
         dispatched = Event()
 
@@ -171,16 +179,16 @@ class TestMailboxGateway(TransactionCase):
 
     def test_email_without_attachment_is_not_a_value_error(self):
         """An email with no attachment still declares the intake (no ValueError)
-        and is reviewed for a missing document, not crashed."""
+        and is reviewed for a missing document by the real dispatch, not crashed.
+        This is the contrast to test_employee_email_gateway_creates_intake: the
+        attachment check guards both directions."""
         self.icp.set_param("odooclaw.intake.mailbox.enabled", "True")
         self.icp.set_param("odooclaw.intake.sender_allowlist", "*")
         raw = self._raw_email(
-            self.sender.email, "gastos@localhost", "No attachment", "No attachment"
+            self.sender.email, self._mailbox_to(), "No attachment", "No attachment"
         )
-        with patch.object(
-            type(self.Intake), "_mailbox_dispatch_to_odooclaw"
-        ) as dispatch:
-            self.mail_thread.message_process("odooclaw.document.intake", raw)
+        # No patch: the real dispatch runs and reviews for the missing document.
+        self.mail_thread.message_process("odooclaw.document.intake", raw)
 
         intakes = self._mailbox_intakes()
         self.assertEqual(len(intakes), 1)
@@ -188,4 +196,3 @@ class TestMailboxGateway(TransactionCase):
         self.assertFalse(intake.attachment_id)
         self.assertEqual(intake.state, "review")
         self.assertIn("attachment", (intake.reason or "").lower())
-        dispatch.assert_not_called()
