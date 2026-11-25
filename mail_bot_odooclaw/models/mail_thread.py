@@ -1,8 +1,16 @@
+import base64
 import logging
 import requests
 import json
 import threading
 from odoo import models, api, tools, _
+
+# What the engine can read on its own. Anything else is left out on purpose:
+# a spreadsheet is not a document the model can look at.
+_ODOOCLAW_ATTACHMENT_TYPES = ("image/", "audio/")
+_ODOOCLAW_ATTACHMENT_MAX = 3
+_ODOOCLAW_ATTACHMENT_MAX_BYTES = 6 * 1024 * 1024
+_ODOOCLAW_ATTACHMENT_MAX_TOTAL = 12 * 1024 * 1024
 
 _logger = logging.getLogger(__name__)
 
@@ -318,6 +326,7 @@ class MailThread(models.AbstractModel):
             "stage_instructions": pipeline.stage_instructions(stage_id),
             "use_knowledge": bool(pipeline.use_knowledge),
             "bot_user_id": bot_user.id,
+            "attachments": self._odooclaw_message_attachments(message),
         }
 
         def send_job(url, data, headers, run_id):
@@ -341,6 +350,38 @@ class MailThread(models.AbstractModel):
             target=send_job, args=(job_url, payload, headers, run.id), daemon=True
         ).start()
         return run
+
+    def _odooclaw_message_attachments(self, message):
+        """The image and voice attachments of a message, base64 encoded.
+
+        The engine turns them into text before the agent answers: a picture is
+        read by the multimodal model, a voice note is transcribed. The cap is
+        deliberate; a huge file would sit in the queue for minutes.
+        """
+        result = []
+        total = 0
+        for attachment in message.attachment_ids:
+            mimetype = (attachment.mimetype or "").lower()
+            if not mimetype.startswith(_ODOOCLAW_ATTACHMENT_TYPES):
+                continue
+            if not attachment.raw:
+                continue
+            if attachment.file_size and attachment.file_size > _ODOOCLAW_ATTACHMENT_MAX_BYTES:
+                continue
+            if len(result) >= _ODOOCLAW_ATTACHMENT_MAX:
+                break
+            data = base64.b64encode(attachment.raw).decode()
+            total += len(data)
+            if total > _ODOOCLAW_ATTACHMENT_MAX_TOTAL:
+                break
+            result.append(
+                {
+                    "name": attachment.name or "adjunto",
+                    "mimetype": mimetype,
+                    "data": data,
+                }
+            )
+        return result
 
     # The invitation asks one question. These are the answers that count as a
     # yes; anything else leaves the user uninvited, which fails closed.

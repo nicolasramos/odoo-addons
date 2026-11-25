@@ -171,3 +171,53 @@ class TestPipelineTrigger(TransactionCase):
             self.assertEqual(payload["stage_instructions"], "")
             self.assertTrue(payload["use_knowledge"])
             self.assertEqual(payload["template_body"], "")
+
+    def test_image_attachment_travels_with_the_job(self):
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "factura.png",
+                "raw": b"\x89PNG\r\n\x1a\nfake",
+                "mimetype": "image/png",
+                "res_model": "res.partner",
+                "res_id": self.partner.id,
+            }
+        )
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            self.partner.message_post(
+                body="Adjunto la factura.",
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
+                author_id=self.env.user.partner_id.id,
+                attachment_ids=[attachment.id],
+            )
+            self.assertTrue(self._wait_for(lambda: post.called))
+            payload = post.call_args.kwargs["json"]
+            self.assertEqual(len(payload["attachments"]), 1)
+            self.assertEqual(payload["attachments"][0]["mimetype"], "image/png")
+            self.assertTrue(payload["attachments"][0]["data"])
+
+    def test_a_pdf_is_not_sent_to_the_model(self):
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "contrato.pdf",
+                "raw": b"%PDF-1.4 fake",
+                "mimetype": "application/pdf",
+                "res_model": "res.partner",
+                "res_id": self.partner.id,
+            }
+        )
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            self.partner.message_post(
+                body="Te paso el contrato.",
+                message_type="comment",
+                subtype_xmlid="mail.mt_comment",
+                author_id=self.env.user.partner_id.id,
+                attachment_ids=[attachment.id],
+            )
+            self.assertTrue(self._wait_for(lambda: post.called))
+            payload = post.call_args.kwargs["json"]
+            self.assertEqual(payload["attachments"], [])
