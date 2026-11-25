@@ -71,8 +71,21 @@ class TestPipelineTrigger(TransactionCase):
 
     def test_knowledge_toggle_is_refused_without_the_module(self):
         """The flag cannot be turned on where nothing would answer from it."""
-        with self.assertRaises(ValidationError):
-            self.pipeline.use_knowledge = True
+        module = self.env["ir.module.module"].search(
+            [("name", "=", "mail_bot_odooclaw_knowledge")], limit=1
+        )
+        # The test database may have the module installed; the gate is about the
+        # module's state, so pin it for the length of the check and let the
+        # transaction put it back.
+        previous = module.state if module else False
+        if module:
+            module.write({"state": "uninstalled"})
+        try:
+            with self.assertRaises(ValidationError):
+                self.pipeline.use_knowledge = True
+        finally:
+            if module:
+                module.write({"state": previous})
 
     def test_comment_creates_a_queued_run_and_one_job(self):
         with patch(
