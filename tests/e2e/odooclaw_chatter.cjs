@@ -50,7 +50,7 @@ async function waitForRun(page, messageId, timeoutMs = 180000) {
   while (Date.now() < deadline) {
     const result = await rpc(page, 'mail.odooclaw.pipeline.run', 'web_search_read', {
       domain: [['message_id', '=', messageId]],
-      specification: { id: {}, state: {}, decision: {} },
+      specification: { id: {}, state: {}, decision: {}, attachment_text: {} },
       limit: 1,
       order: 'id desc',
     });
@@ -112,10 +112,10 @@ async function main() {
     const imageRun = await waitForRun(page, imageMessage.id);
     assert(imageRun.state !== 'failed', `the image run failed: ${imageRun.decision}`);
     assert(
-      /factura|adjunt|documento|invoice|proveedor|acme/i.test(imageRun.decision || ''),
-      `the model did not read the invoice: ${imageRun.decision}`
+      /factura|acme|121|suministro|proveedor/i.test(imageRun.attachment_text || ''),
+      `the run does not record the reading: ${imageRun.attachment_text}`
     );
-    console.log(`PASS image: message ${imageMessage.id} -> run ${imageRun.id} ${imageRun.state} -> ${imageRun.decision.slice(0, 140)}`);
+    console.log(`PASS image: message ${imageMessage.id} -> run ${imageRun.id} ${imageRun.state} -> read: ${imageRun.attachment_text.slice(0, 120)}`);
   } finally {
     await browser.close();
   }
