@@ -232,6 +232,19 @@ class MailThread(models.AbstractModel):
         engine is down, the decision is still on record with its reason, and the
         run stays ``queued`` instead of vanishing.
         """
+        icp = self.env["ir.config_parameter"].sudo()
+        # The settings block sells ``odooclaw.pipeline.enabled`` as the switch
+        # that stops processing incoming messages, so it has to stop this
+        # before anything is queued or sent. An instance that never saved the
+        # settings has no parameter at all: only an explicit "False" switches
+        # the bot off, otherwise wiring the switch would disable every running
+        # deployment the moment this code ships.
+        if icp.get_param("odooclaw.pipeline.enabled", "True").strip().lower() in (
+            "false",
+            "0",
+        ):
+            _logger.debug("odooclaw: pipeline switched off in the settings")
+            return
         if not message.model or message.model.startswith(("mail.", "discuss.")):
             return
         comment = self.env.ref("mail.mt_comment", raise_if_not_found=False)
@@ -298,11 +311,21 @@ class MailThread(models.AbstractModel):
                 }
             )
         )
-        icp = self.env["ir.config_parameter"].sudo()
         job_url = icp.get_param(
             "odooclaw.pipeline_url", "http://odooclaw:18790/odooclaw/job"
         )
         token = icp.get_param("odooclaw.reply_token", "")
+        # The settings block calls its escalation user the default person who
+        # receives work the bot cannot finish. A pipeline names its own when it
+        # has one; without this fallback that control would do nothing.
+        escalate_user_id = pipeline.escalate_user_id.id or 0
+        if not escalate_user_id:
+            default_escalation = icp.get_param(
+                "odooclaw.pipeline.escalate_user_id", "0"
+            )
+            fallback = int(default_escalation or 0)
+            if fallback and self.env["res.users"].sudo().browse(fallback).exists():
+                escalate_user_id = fallback
         payload = {
             "run_id": run.id,
             "pipeline_id": pipeline.id,
@@ -318,7 +341,7 @@ class MailThread(models.AbstractModel):
             "stage_name": stage_name,
             "mode": mode,
             "escalate": escalate,
-            "escalate_user_id": pipeline.escalate_user_id.id or 0,
+            "escalate_user_id": escalate_user_id,
             "escalate_after": pipeline.escalate_after,
             "template_id": template.id if template else 0,
             "template_body": template_body,
@@ -416,7 +439,11 @@ class MailThread(models.AbstractModel):
         """Report the acceptance to the proactive engine and confirm in chat.
 
         The opt-in lives in the engine, not here: Odoo decides WHO may be
-        offered help, the engine decides WHEN and remembers the answer.
+        offered help, the engine decides WHEN and remembers the answer. The
+        confirmation is a promise about what the engine will do from now on, so
+        it is only posted when the engine actually took the answer. Saying
+        "suggestions are on" after a rejection leaves the user waiting for help
+        nobody will send.
         """
         user = message.author_id.user_ids[:1]
         if not user:
@@ -442,16 +469,25 @@ class MailThread(models.AbstractModel):
         if token:
             headers["X-OdooClaw-Token"] = token
         try:
-            requests.post(
+            response = requests.post(
                 base + "/optin",
                 json={"user_id": user.id},
                 headers=headers,
                 timeout=5,
             )
-        except Exception:  # noqa: BLE001 - the confirmation below is still useful
+        except Exception:  # noqa: BLE001 - nothing was activated, so say nothing
             _logger.warning(
                 "odooclaw: opt-in call failed at %s", base + "/optin", exc_info=True
             )
+            return
+        if response.status_code >= 400:
+            _logger.warning(
+                "odooclaw: opt-in rejected (%s) at %s for user %s",
+                response.status_code,
+                base + "/optin",
+                user.id,
+            )
+            return
 
         bot_user = self.env.ref(
             "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False

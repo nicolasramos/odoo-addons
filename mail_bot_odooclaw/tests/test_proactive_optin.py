@@ -49,6 +49,11 @@ class TestProactiveOptIn(TransactionCase):
             )
         )
 
+    def _confirmations(self):
+        return self.channel.message_ids.filtered(
+            lambda m: m.body and "Sugerencias activadas" in m.body
+        )
+
     def test_affirmative_reply_reports_the_optin(self):
         with patch(
             "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
@@ -76,6 +81,38 @@ class TestProactiveOptIn(TransactionCase):
             confirmation.author_id,
             self.bot.partner_id,
             "the confirmation was not posted as the bot",
+        )
+
+    def test_a_rejected_optin_is_not_confirmed(self):
+        """The engine said no, so the bot must not promise suggestions.
+
+        The confirmation is a promise about the engine's behaviour. Posting it
+        after a rejection tells the user something is on that is not, and the
+        user has no way to find out.
+        """
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            post.return_value.status_code = 502
+            self._post_as_user("sí")
+
+        post.assert_called_once()
+        self.assertFalse(
+            self._confirmations(),
+            "the bot confirmed an opt-in the engine rejected",
+        )
+
+    def test_an_unreachable_engine_is_not_confirmed(self):
+        """Same promise, same rule when the call does not come back at all."""
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            post.side_effect = ConnectionError("engine down")
+            self._post_as_user("sí")
+
+        self.assertFalse(
+            self._confirmations(),
+            "the bot confirmed an opt-in the engine never received",
         )
 
     def test_other_replies_do_not_report_the_optin(self):
