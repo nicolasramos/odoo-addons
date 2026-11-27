@@ -1,6 +1,9 @@
 # Copyright 2026 Nicolás Ramos
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import os
+import re
+
 from psycopg2 import IntegrityError
 
 from odoo.exceptions import ValidationError
@@ -121,26 +124,86 @@ class TestPipeline(TransactionCase):
 
 @tagged("post_install", "-at_install")
 class TestSettings(TransactionCase):
+    """The OdooClaw block offers only what the code actually reads.
+
+    A control that writes a parameter nobody reads promises the administrator an
+    effect that does not exist, and a token stored for a push nothing performs
+    is a secret kept for nothing. The block is kept to the keys with a reader,
+    and the test below fails if a new key ever arrives without one.
+    """
+
+    #: every key the block writes; each one must have a reader
+    WIRED_KEYS = {
+        "odooclaw.pipeline.enabled",
+        "odooclaw.pipeline.escalate_user_id",
+    }
+    RETIRED_FIELDS = (
+        "odooclaw_pipeline_mode",
+        "odooclaw_require_field_help",
+        "odooclaw_repo_url",
+        "odooclaw_repo_branch",
+        "odooclaw_repo_token",
+        "odooclaw_repo_author",
+    )
+
     def test_settings_roundtrip(self):
         settings = self.env["res.config.settings"].create(
             {
                 "odooclaw_pipeline_enabled": True,
-                "odooclaw_pipeline_mode": "observe",
-                "odooclaw_require_field_help": True,
+                "odooclaw_pipeline_escalate_user_id": self.env.user.id,
             }
         )
         settings.execute()
         icp = self.env["ir.config_parameter"].sudo()
         self.assertEqual(icp.get_param("odooclaw.pipeline.enabled"), "True")
-        self.assertEqual(icp.get_param("odooclaw.pipeline.mode"), "observe")
-        self.assertEqual(icp.get_param("odooclaw.require_field_help"), "True")
+        self.assertEqual(
+            icp.get_param("odooclaw.pipeline.escalate_user_id"),
+            str(self.env.user.id),
+        )
 
-    def test_repo_url_without_token_is_refused(self):
-        with self.assertRaises(ValidationError):
-            self.env["res.config.settings"].create(
-                {
-                    "odooclaw_repo_url": "git@example.com:bot.git",
-                }
+    def test_the_retired_controls_are_gone(self):
+        """The six controls are out of the model and out of the block."""
+        for name in self.RETIRED_FIELDS:
+            self.assertNotIn(
+                name,
+                self.env["res.config.settings"]._fields,
+                "%s is still a setting" % name,
+            )
+        arch = self.env.ref(
+            "mail_bot_odooclaw.res_config_settings_view_form"
+        ).arch_db
+        for name in self.RETIRED_FIELDS:
+            self.assertNotIn(name, arch, "%s is still offered in the block" % name)
+        self.assertIn("odooclaw_pipeline_enabled", arch)
+        self.assertIn("odooclaw_pipeline_escalate_user_id", arch)
+
+    def test_every_key_the_block_writes_has_a_reader(self):
+        """No key leaves the settings block unread.
+
+        This is the guard against the whole class of defect: the block may grow,
+        but not with a control that does nothing.
+        """
+        module_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with open(
+            os.path.join(module_dir, "models", "res_config_settings.py"),
+            encoding="utf-8",
+        ) as handle:
+            source = handle.read()
+        written = set(re.findall(r'config_parameter="([^"]+)"', source))
+        self.assertEqual(written, self.WIRED_KEYS)
+
+        readers = {}
+        for folder in ("models", "controllers"):
+            base = os.path.join(module_dir, folder)
+            for name in sorted(os.listdir(base)):
+                if not name.endswith(".py") or name == "res_config_settings.py":
+                    continue
+                with open(os.path.join(base, name), encoding="utf-8") as handle:
+                    readers[name] = handle.read()
+        for key in sorted(written):
+            found = [name for name, src in readers.items() if key in src]
+            self.assertTrue(
+                found, "%s is written by the block and read by nothing" % key
             )
 
     def test_pipeline_on_for_a_missing_module_is_refused(self):

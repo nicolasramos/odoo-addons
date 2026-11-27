@@ -16,14 +16,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: mail_bot_odooclaw
-#. odoo-python
-#: code:addons/mail_bot_odooclaw/models/res_config_settings.py:0
-msgid ""
-"A bot repository URL without a token cannot be pushed to. Add the token or "
-"clear the URL."
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
 msgid ""
 "A stage rule wins over the area mode. Use it to answer\n"
@@ -61,7 +53,6 @@ msgstr ""
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline__mode__auto
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__mode__auto
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_stage__mode__auto
-#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__res_config_settings__odooclaw_pipeline_mode__auto
 msgid "Answer directly"
 msgstr ""
 
@@ -133,38 +124,6 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_list
 msgid "Audiences"
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_url
-msgid "Bot repository URL"
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_author
-msgid "Bot repository author"
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_branch
-msgid "Bot repository branch"
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_token
-msgid "Bot repository token"
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_branch
-msgid ""
-"Branch the bot commits to, for example odooclaw/generated. Leave empty to "
-"use the repository default."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
-msgid "Branch the bot commits to. Empty uses the repository default."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -263,11 +222,6 @@ msgid "Decision"
 msgstr ""
 
 #. module: mail_bot_odooclaw
-#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_mode
-msgid "Default mode"
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_escalate_user_id
 msgid ""
 "Default person who receives work the bot cannot finish: no answer, ambiguous"
@@ -311,7 +265,6 @@ msgstr ""
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline__mode__draft
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__mode__draft
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_stage__mode__draft
-#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__res_config_settings__odooclaw_pipeline_mode__draft
 msgid "Draft for a human"
 msgstr ""
 
@@ -419,14 +372,6 @@ msgstr ""
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_area
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_message__odooclaw_area
 msgid "Functional area the suggestion belongs to."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_url
-msgid ""
-"Git repository the bot pushes its generated modules and change log to. This "
-"is the bot's own repository, never the customer's Odoo project. Leave empty "
-"to keep everything inside the instance."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -589,20 +534,6 @@ msgid "Mode"
 msgstr ""
 
 #. module: mail_bot_odooclaw
-#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_mode
-msgid ""
-"Mode a new pipeline starts with. Each pipeline can change it, and each stage"
-" can override it again."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
-msgid ""
-"Mode a new pipeline starts with: observe only, draft for a person, or answer"
-" directly."
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__model
 msgid "Model"
 msgstr ""
@@ -639,20 +570,6 @@ msgid "Name"
 msgstr ""
 
 #. module: mail_bot_odooclaw
-#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
-msgid ""
-"Name and email used for the bot commits, for example OdooClaw "
-"<bot@example.com>."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_author
-msgid ""
-"Name and email used for the bot's commits, e.g. 'OdooClaw "
-"<bot@example.com>'."
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #. odoo-python
 #: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
 msgid "New pipeline"
@@ -678,7 +595,6 @@ msgstr ""
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline__mode__observe
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__mode__observe
 #: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_stage__mode__observe
-#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__res_config_settings__odooclaw_pipeline_mode__observe
 msgid "Observe only"
 msgstr ""
 
@@ -896,24 +812,6 @@ msgid "Queued"
 msgstr ""
 
 #. module: mail_bot_odooclaw
-#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
-msgid ""
-"Refuse to create a field without a help text explaining what it is for."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
-msgid ""
-"Repository where the bot pushes the modules it builds. Never the customer's "
-"Odoo project. Leave empty to keep everything inside the instance."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_require_field_help
-msgid "Require help on created fields"
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__res_id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__res_id
 msgid "Res"
@@ -1113,13 +1011,6 @@ msgid ""
 msgstr ""
 
 #. module: mail_bot_odooclaw
-#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_require_field_help
-msgid ""
-"The change engine refuses to create a field without a help text. Turn it off"
-" only for a migration you control."
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #. odoo-python
 #: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
 msgid ""
@@ -1156,18 +1047,6 @@ msgstr ""
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__token
 msgid "Token"
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
-msgid "Token used to push to the bot repository."
-msgstr ""
-
-#. module: mail_bot_odooclaw
-#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_repo_token
-msgid ""
-"Token used to push. Stored as a system parameter, so it is only visible to "
-"administrators."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -1361,4 +1240,10 @@ msgstr ""
 #. odoo-python
 #: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
 msgid "unreadable response from the proactive engine"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+msgid "Understood. I have not turned suggestions on."
 msgstr ""

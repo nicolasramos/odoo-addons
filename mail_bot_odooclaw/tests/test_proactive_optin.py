@@ -54,6 +54,96 @@ class TestProactiveOptIn(TransactionCase):
             lambda m: m.body and "Sugerencias activadas" in m.body
         )
 
+    def _deliver_invitation(self):
+        """Put the engine's invitation in the chat the way the engine does.
+
+        The engine sends ``system.invitation`` as the playbook of that one
+        message and Odoo stamps it on what gets posted. That stamp is the only
+        thing that tells a refusal apart from any other "no" in the chat.
+        """
+        from odoo.addons.mail_bot_odooclaw.models.mail_odooclaw_area import (
+            post_proactive_message,
+        )
+
+        return post_proactive_message(
+            self.env,
+            self.user.id,
+            "¿Te activo las sugerencias?",
+            "system.invitation",
+            "test",
+        )
+
+    def _bot_messages_after(self, message):
+        return self.channel.message_ids.filtered(
+            lambda m: m.author_id == self.bot.partner_id and m.id > message.id
+        )
+
+    def test_the_invitation_playbook_is_pinned(self):
+        """The anchor is the engine's constant, not ours to drift.
+
+        If the engine renames it, a refusal stops being recognised in silence,
+        so the value is pinned here and the code names where it comes from.
+        """
+        from odoo.addons.mail_bot_odooclaw.models.mail_thread import MailThread
+
+        self.assertEqual(
+            MailThread._ODOOCLAW_INVITATION_PLAYBOOK, "system.invitation"
+        )
+
+    def test_a_no_to_the_invitation_is_acknowledged_once(self):
+        self._deliver_invitation()
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            answer = self._post_as_user("no")
+
+        post.assert_not_called()
+        acks = self._bot_messages_after(answer)
+        self.assertEqual(
+            len(acks),
+            1,
+            "the answer to the invitation was not acknowledged exactly once",
+        )
+        self.assertNotIn(
+            "Sugerencias activadas",
+            acks[0].body or "",
+            "a refusal was confirmed as an activation",
+        )
+
+    def test_a_no_without_an_invitation_stays_silent(self):
+        """Outside the invitation, a "no" is an ordinary message."""
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ) as post:
+            answer = self._post_as_user("no")
+
+        self.assertFalse(
+            self._bot_messages_after(answer),
+            "a bare no produced a consent answer",
+        )
+
+    def test_a_no_after_another_suggestion_stays_silent(self):
+        """The last proactive message decides, and here it is not the invitation."""
+        from odoo.addons.mail_bot_odooclaw.models.mail_odooclaw_area import (
+            post_proactive_message,
+        )
+
+        post_proactive_message(
+            self.env,
+            self.user.id,
+            "Tienes tres facturas sin pagar.",
+            "accounting.unposted_invoices",
+            "test",
+        )
+        with patch(
+            "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"
+        ):
+            answer = self._post_as_user("no")
+
+        # Outside the invitation a "no" is an ordinary message: the conversational
+        # agent may well answer it, but nothing about consent is said.
+        self.assertFalse(self._bot_messages_after(answer))
+
     def test_affirmative_reply_reports_the_optin(self):
         with patch(
             "odoo.addons.mail_bot_odooclaw.models.mail_thread.requests.post"

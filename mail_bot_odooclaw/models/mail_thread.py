@@ -77,11 +77,17 @@ class MailThread(models.AbstractModel):
 
             # The answer to the proactive invitation. The engine asks once
             # whether the user wants suggestions; a "sí" in the bot's private
-            # chat is that answer. It is handled here, before the webhook, so
-            # the conversational agent does not also reply to it.
-            if is_dm and self._odooclaw_is_optin_reply(body_text):
-                self._odooclaw_enable_optin(message)
-                return message
+            # chat is that answer, and a "no" is one only when what the bot last
+            # offered was that invitation. Both are handled here, before the
+            # webhook, so the conversational agent does not also reply to them.
+            if is_dm:
+                answer = self._odooclaw_optin_answer(body_text)
+                if answer == "yes":
+                    self._odooclaw_enable_optin(message)
+                    return message
+                if answer == "no" and self._odooclaw_invitation_is_open(message):
+                    self._odooclaw_decline_invitation(message)
+                    return message
 
             # Process attachments - include voice messages and invoices info
             voice_attachments = []
@@ -407,7 +413,8 @@ class MailThread(models.AbstractModel):
         return result
 
     # The invitation asks one question. These are the answers that count as a
-    # yes; anything else leaves the user uninvited, which fails closed.
+    # yes; a refusal is listed below, and anything else leaves the user
+    # uninvited, which fails closed.
     _ODOOCLAW_OPTIN_YES = {
         "si",
         "sí",
@@ -430,10 +437,89 @@ class MailThread(models.AbstractModel):
         "perfecto",
     }
 
-    def _odooclaw_is_optin_reply(self, body_text):
+    # A refusal, in the shapes it actually arrives. Recognising it is not about
+    # storing a preference -- the engine owns that -- it is about not leaving the
+    # user guessing whether their answer counted.
+    _ODOOCLAW_OPTIN_NO = {
+        "no",
+        "no gracias",
+        "gracias no",
+        "nah",
+        "nope",
+        "ahora no",
+        "por ahora no",
+        "no quiero",
+        "no me interesa",
+        "prefiero que no",
+        "dejalo",
+        "dejalo por ahora",
+    }
+
+    # The engine marks its one invitation with this playbook id so the host can
+    # recognise it "without guessing" (odooclaw: pkg/proactive/engine.go,
+    # invitationPlaybookID). It is the engine's constant, not ours: if it ever
+    # changes, a refusal stops being a refusal, so the test pins the value.
+    _ODOOCLAW_INVITATION_PLAYBOOK = "system.invitation"
+
+    def _odooclaw_optin_answer(self, body_text):
+        """``"yes"``, ``"no"`` or ``None`` for an answer to the invitation."""
         text = (body_text or "").strip().lower()
         text = text.strip(" .,!¡¿?")
-        return text in self._ODOOCLAW_OPTIN_YES
+        if text in self._ODOOCLAW_OPTIN_YES:
+            return "yes"
+        if text in self._ODOOCLAW_OPTIN_NO:
+            return "no"
+        return None
+
+    def _odooclaw_invitation_is_open(self, message):
+        """Was the bot's last proactive word in this chat the invitation?
+
+        A "no" refuses the invitation only when the invitation is what is on the
+        table. Elsewhere it is an ordinary message and the conversational agent
+        answers it like any other.
+        """
+        if message.model != "discuss.channel":
+            return False
+        last = (
+            self.env["mail.message"]
+            .sudo()
+            .search(
+                [
+                    ("model", "=", "discuss.channel"),
+                    ("res_id", "=", message.res_id),
+                    ("odooclaw_proactive", "=", True),
+                ],
+                order="id desc",
+                limit=1,
+            )
+        )
+        if not last:
+            return False
+        return last.odooclaw_playbook_id == self._ODOOCLAW_INVITATION_PLAYBOOK
+
+    def _odooclaw_decline_invitation(self, message):
+        """Say one line back to a refusal, and change nothing.
+
+        There is no decline endpoint in the engine, and the per-user preference
+        lives in another PR, so this writes no consent state and calls nothing.
+        The refusal already works on its own: the engine only speaks to users
+        with an opt-in and burns the invitation when it is acknowledged. What
+        was missing was telling the user, in words that claim no more than what
+        happened here.
+        """
+        bot_user = self.env.ref(
+            "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False
+        )
+        if not bot_user:
+            return
+        self.env["discuss.channel"].browse(message.res_id).with_user(
+            bot_user
+        ).sudo().message_post(
+            body=_("Understood. I have not turned suggestions on."),
+            author_id=bot_user.partner_id.id,
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+        )
 
     def _odooclaw_enable_optin(self, message):
         """Report the acceptance to the proactive engine and confirm in chat.

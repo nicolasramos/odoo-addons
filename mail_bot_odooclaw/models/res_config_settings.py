@@ -3,19 +3,19 @@
 """OdooClaw settings, all in one place.
 
 What lives here is what an administrator must be able to change without a
-developer: the global switch, the default mode, who receives escalations,
-whether created fields must explain themselves, and the optional git repository
-the bot pushes its generated modules to.
+developer: the global switch for processing incoming messages, and who
+receives the work the bot cannot finish by default.
 
-The repository is deliberately separate from the customer's Odoo project: it
-holds what the bot builds, not the ERP source. If it is configured, generated
-modules are pushed; if it is not, nothing leaves the instance.
+Every control in this block writes a parameter that the module actually reads.
+That is the rule, not a preference: a control that writes a key nobody reads
+promises the administrator an effect that does not exist, and a token stored
+for a push nothing performs is a secret kept for nothing. The guard is a test
+(``TestSettings.test_every_key_the_block_writes_has_a_reader``), so a key
+cannot arrive here without a reader.
 """
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-
-from .mail_odooclaw_pipeline import MODE_SELECTION
 
 # Areas whose model comes from an external module. Turning the pipeline on for
 # one of them without the module installed would leave a dead configuration that
@@ -36,59 +36,16 @@ class ResConfigSettings(models.TransientModel):
         "on a record of an area with a pipeline, the bot may observe, draft or "
         "answer according to that pipeline.",
     )
-    odooclaw_pipeline_mode = fields.Selection(
-        MODE_SELECTION,
-        string="Default mode",
-        config_parameter="odooclaw.pipeline.mode",
-        default="draft",
-        help="Mode a new pipeline starts with. Each pipeline can change it, and "
-        "each stage can override it again.",
-    )
     odooclaw_pipeline_escalate_user_id = fields.Many2one(
         "res.users",
         string="Escalation user",
         config_parameter="odooclaw.pipeline.escalate_user_id",
         help="Default person who receives work the bot cannot finish: no answer, "
-        "ambiguous request, or the customer asks for a human.",
-    )
-    odooclaw_require_field_help = fields.Boolean(
-        string="Require help on created fields",
-        config_parameter="odooclaw.require_field_help",
-        default=True,
-        help="The change engine refuses to create a field without a help text. "
-        "Turn it off only for a migration you control.",
-    )
-    odooclaw_repo_url = fields.Char(
-        string="Bot repository URL",
-        config_parameter="odooclaw.repo.url",
-        help="Git repository the bot pushes its generated modules and change log "
-        "to. This is the bot's own repository, never the customer's Odoo "
-        "project. Leave empty to keep everything inside the instance.",
-    )
-    odooclaw_repo_branch = fields.Char(
-        string="Bot repository branch",
-        config_parameter="odooclaw.repo.branch",
-        help="Branch the bot commits to, for example odooclaw/generated. Leave "
-        "empty to use the repository default.",
-    )
-    odooclaw_repo_token = fields.Char(
-        string="Bot repository token",
-        config_parameter="odooclaw.repo.token",
-        help="Token used to push. Stored as a system parameter, so it is only "
-        "visible to administrators.",
-    )
-    odooclaw_repo_author = fields.Char(
-        string="Bot repository author",
-        config_parameter="odooclaw.repo.author",
-        help="Name and email used for the bot's commits, e.g. "
-        "'OdooClaw <bot@example.com>'.",
+        "ambiguous request, or the customer asks for a human. A pipeline that "
+        "names its own wins over this default.",
     )
 
-    @api.constrains(
-        "odooclaw_pipeline_enabled",
-        "odooclaw_repo_url",
-        "odooclaw_repo_token",
-    )
+    @api.constrains("odooclaw_pipeline_enabled")
     def _check_odooclaw_settings(self):
         for settings in self:
             if settings.odooclaw_pipeline_enabled:
@@ -107,13 +64,6 @@ class ResConfigSettings(models.TransientModel):
                             ),
                         }
                     )
-            if settings.odooclaw_repo_url and not settings.odooclaw_repo_token:
-                raise ValidationError(
-                    _(
-                        "A bot repository URL without a token cannot be pushed "
-                        "to. Add the token or clear the URL."
-                    )
-                )
 
     @api.model
     def _missing_area_modules(self, settings=None):

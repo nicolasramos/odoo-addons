@@ -16,48 +16,10 @@
                         <field name="odooclaw_pipeline_enabled" />
                     </setting>
                     <setting
-                        id="odooclaw_pipeline_mode_setting"
-                        help="Mode a new pipeline starts with: observe only, draft for a person, or answer directly."
-                    >
-                        <field name="odooclaw_pipeline_mode" />
-                    </setting>
-                    <setting
                         id="odooclaw_pipeline_escalate_user_setting"
                         help="Person who receives the work the bot cannot finish: no answer, an ambiguous request, or the customer asking for a human."
                     >
                         <field name="odooclaw_pipeline_escalate_user_id" />
-                    </setting>
-                    <setting
-                        id="odooclaw_require_field_help_setting"
-                        help="Refuse to create a field without a help text explaining what it is for."
-                    >
-                        <field name="odooclaw_require_field_help" />
-                    </setting>
-                    <setting
-                        id="odooclaw_repo_url_setting"
-                        help="Repository where the bot pushes the modules it builds. Never the customer's Odoo project. Leave empty to keep everything inside the instance."
-                        company_dependent="False"
-                    >
-                        <field name="odooclaw_repo_url" />
-                    </setting>
-                    <setting
-                        id="odooclaw_repo_branch_setting"
-                        help="Branch the bot commits to. Empty uses the repository default."
-                    >
-                        <field name="odooclaw_repo_branch" />
-                    </setting>
-                    <setting
-                        id="odooclaw_repo_token_setting"
-                        help="Token used to push to the bot repository."
-                        password="True"
-                    >
-                        <field name="odooclaw_repo_token" password="True" />
-                    </setting>
-                    <setting
-                        id="odooclaw_repo_author_setting"
-                        help="Name and email used for the bot commits, for example OdooClaw &lt;bot@example.com&gt;."
-                    >
-                        <field name="odooclaw_repo_author" />
                     </setting>
                 </block>
             </xpath>
