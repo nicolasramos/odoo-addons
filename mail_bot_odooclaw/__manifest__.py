@@ -1,11 +1,11 @@
 {
     "name": "OdooClaw AI Bot",
-    "version": "18.0.1.7.1",
+    "version": "18.0.1.8.0",
     "category": "Discuss",
     "summary": "Integrate OdooClaw AI agent via webhooks in Odoo Discuss",
     "author": "Nicolás Ramos",
     "license": "AGPL-3",
-    "depends": ["mail", "base_setup"],
+    "depends": ["mail", "base_setup", "odooclaw_mcp"],
     "data": [
         "security/odooclaw_security.xml",
         "security/ir.model.access.csv",
