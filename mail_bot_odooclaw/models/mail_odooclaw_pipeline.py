@@ -22,6 +22,7 @@ trap for whoever administers it six months later.
 
 from markupsafe import Markup
 
+from datetime import timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -323,6 +324,58 @@ class MailOdooClawPipelineRun(models.Model):
     error = fields.Text(
         help="Failure detail when the run ended in error.",
     )
+
+    @api.model
+    def _cron_requeue_stale(self):
+        """Re-send the runs the engine lost, for example when it restarted.
+
+        The queue lives in the engine's memory, so a restart drops whatever was
+        waiting. A run stuck in queued is invisible work: here it is sent again
+        with the same message and the old row keeps the reason.
+        """
+        icp = self.env["ir.config_parameter"].sudo()
+        if icp.get_param("odooclaw.pipeline.enabled", "True").strip().lower() in (
+            "false",
+            "0",
+            "no",
+        ):
+            return
+        minutes = int(icp.get_param("odooclaw.pipeline.requeue_after_minutes", "15"))
+        cutoff = fields.Datetime.now() - timedelta(minutes=minutes)
+        stale = self.search([("state", "=", "queued"), ("create_date", "<", cutoff)])
+        bot_user = (
+            self.env["res.users"]
+            .sudo()
+            .search([("login", "=", "odooclaw_bot")], limit=1)
+        )
+        for run in stale:
+            message = run.message_id
+            if not message or not bot_user:
+                run.write(
+                    {
+                        "state": "failed",
+                        "error": "job lost; the original message cannot be replayed",
+                    }
+                )
+                continue
+            try:
+                self.env["mail.thread"]._odooclaw_trigger_pipeline(
+                    message, bot_user
+                )
+            except Exception as error:  # noqa: BLE001 - the run keeps the detail
+                run.write(
+                    {
+                        "state": "failed",
+                        "error": "job lost; requeue failed: %s" % error,
+                    }
+                )
+                continue
+            run.write(
+                {
+                    "state": "failed",
+                    "error": "job lost on engine restart; resent as a new run",
+                }
+            )
 
     @api.constrains("res_id")
     def _check_res_id(self):
