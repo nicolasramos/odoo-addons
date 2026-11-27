@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <menuitem
+        id="menu_odooclaw_mcp_root"
+        name="OdooClaw MCP"
+        parent="base.menu_custom"
+        sequence="90"
+    />
+    <menuitem
+        id="menu_odooclaw_mcp_keys"
+        name="MCP keys"
+        parent="menu_odooclaw_mcp_root"
+        action="action_odooclaw_mcp_key"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_odooclaw_mcp_tools"
+        name="MCP tools"
+        parent="menu_odooclaw_mcp_root"
+        action="action_odooclaw_mcp_tool"
+        sequence="20"
+    />
+</odoo>
