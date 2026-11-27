@@ -340,7 +340,20 @@ class MailOdooClawPipelineRun(models.Model):
             "no",
         ):
             return
-        minutes = int(icp.get_param("odooclaw.pipeline.requeue_after_minutes", "15"))
+        # An engine that is down must not turn this into a loop: the run stays
+        # queued and waits. Only a healthy engine that lost the job is retried.
+        job_url = icp.get_param(
+            "odooclaw.pipeline_url", "http://odooclaw:18790/odooclaw/job"
+        )
+        health_url = job_url.replace("/odooclaw/job", "/health")
+        try:
+            import requests
+
+            if requests.get(health_url, timeout=3).status_code != 200:
+                return
+        except Exception:  # noqa: BLE001 - no health, no requeue
+            return
+        minutes = int(icp.get_param("odooclaw.pipeline.requeue_after_minutes", "30"))
         cutoff = fields.Datetime.now() - timedelta(minutes=minutes)
         stale = self.search([("state", "=", "queued"), ("create_date", "<", cutoff)])
         bot_user = (
