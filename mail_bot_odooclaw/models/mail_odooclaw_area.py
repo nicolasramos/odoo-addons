@@ -26,6 +26,8 @@ the opposite flow, so it gets its own route and keeps the solicited one intact.
 import json
 import logging
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
@@ -229,9 +231,15 @@ def post_proactive_message(env, user_id, body, playbook_id, area):
         raise ValueError("target user has no partner")
 
     # Reuse the exact private-channel resolution the solicited path uses, so
-    # proactive and reply messages land in the same conversation.
-    channel = env["mail.thread"].sudo()._resolve_private_reply_channel(
-        partner, bot_user.partner_id
+    # proactive and reply messages land in the same conversation. It must run as
+    # the target user, not as the superuser: discuss.channel.create always adds
+    # the CURRENT user as a member, and the superuser turns a two-person chat
+    # into a three-member one, which the chat constraint rejects.
+    channel = (
+        env["mail.thread"]
+        .with_user(user)
+        .sudo()
+        ._resolve_private_reply_channel(partner, bot_user.partner_id)
     )
     if not channel:
         raise ValueError("could not resolve the private channel")
@@ -244,7 +252,9 @@ def post_proactive_message(env, user_id, body, playbook_id, area):
         channel.with_user(bot_user)
         .sudo()
         .message_post(
-            body=markdown_to_safe_html(body),
+            # Markup, not the raw string: message_post escapes a plain str, which
+            # turned the rendered <p> into a literal &lt;p&gt; inside another <p>.
+            body=Markup(markdown_to_safe_html(body)),
             author_id=bot_user.partner_id.id,
             message_type="comment",
             subtype_xmlid="mail.mt_comment",

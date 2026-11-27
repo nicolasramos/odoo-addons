@@ -90,7 +90,9 @@ class TestOdooclawAudience(TransactionCase):
     def test_without_audience_everyone_is_excluded(self):
         """Fail-closed: an unconfigured audience must never mean "everybody"."""
         self.Audience.search([]).write({"active": False})
-        result = self.Audience.resolve_for_user(self.internal.id)
+        result = self.Audience.with_context(lang="en_US").resolve_for_user(
+            self.internal.id
+        )
         self.assertFalse(result["eligible"])
         # Assert on the SOURCE string (English since NRA-3914). The Spanish the
         # user reads lives in i18n/es.po, so asserting on it here would make the

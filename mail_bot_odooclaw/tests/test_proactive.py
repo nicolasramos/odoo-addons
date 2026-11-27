@@ -35,6 +35,13 @@ class TestProactive(HttpCase):
         )
         cls.url = "/odooclaw/notify"
 
+    def setUp(self):
+        super().setUp()
+        # url_open has no session of its own: without a login the request
+        # carries no database and every route outside the login page is a 404.
+        # This was the real cause of the TestProactive 404s.
+        self.authenticate("admin", "admin")
+
     def _post(self, payload, token="test-secret"):
         headers = {"Content-Type": "application/json"}
         if token:

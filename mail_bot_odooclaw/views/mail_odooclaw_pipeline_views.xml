@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_mail_odooclaw_pipeline_list" model="ir.ui.view">
+        <field name="name">mail.odooclaw.pipeline.list</field>
+        <field name="model">mail.odooclaw.pipeline</field>
+        <field name="arch" type="xml">
+            <list string="Pipelines">
+                <field name="name" />
+                <field name="area_id" />
+                <field name="model_name" />
+                <field name="mode" />
+                <field name="enabled" />
+                <field name="run_count" />
+                <field name="active" invisible="1" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mail_odooclaw_pipeline_form" model="ir.ui.view">
+        <field name="name">mail.odooclaw.pipeline.form</field>
+        <field name="model">mail.odooclaw.pipeline</field>
+        <field name="arch" type="xml">
+            <form string="Pipeline">
+                <widget
+                    name="web_ribbon"
+                    title="Archived"
+                    bg_color="bg-danger"
+                    invisible="active"
+                />
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="area_id" options="{'no_create': True}" />
+                            <field name="model_name" />
+                            <field name="active" invisible="1" />
+                            <field name="enabled" />
+                        </group>
+                        <group>
+                            <field name="mode" />
+                            <field name="template_id" options="{'no_create': True}" />
+                            <field name="use_knowledge" />
+                            <field name="escalate_user_id" />
+                            <field name="escalate_after" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Instructions" name="instructions">
+                            <div class="text-muted mb-2">
+                                How the bot must act in this area. Written as rules a
+                                person would follow: tone, what to ask, what never to
+                                promise, when to hand over. The stage rules below can
+                                add to this text without repeating it.
+                            </div>
+                            <field name="instructions" placeholder="Example: always answer in the customer's language, never quote delivery dates or prices, ask for the order number before answering anything about an order, escalate if the customer asks for a refund." />
+                        </page>
+                        <page string="Stages" name="stages">
+                            <div class="text-muted mb-2">
+                                A stage rule wins over the area mode. Use it to answer
+                                only while the ticket is open, or to hand a closed
+                                ticket straight to a person.
+                            </div>
+                            <field name="stage_rule_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle" />
+                                    <field name="stage_id" />
+                                    <field name="stage_name" />
+                                    <field name="mode" />
+                                    <field name="template_id" options="{'no_create': True}" />
+                                    <field name="instructions" optional="hide" />
+                                    <field name="escalate" />
+                                    <field name="active" />
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Runs" name="runs">
+                            <field name="run_ids" readonly="1">
+                                <list>
+                                    <field name="create_date" />
+                                    <field name="res_name" />
+                                    <field name="state" />
+                                    <field name="mode" />
+                                    <field name="decision" />
+                                    <field name="attachment_text" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_mail_odooclaw_pipeline_run_list" model="ir.ui.view">
+        <field name="name">mail.odooclaw.pipeline.run.list</field>
+        <field name="model">mail.odooclaw.pipeline.run</field>
+        <field name="arch" type="xml">
+            <list
+                string="Runs"
+                decoration-success="state == 'sent'"
+                decoration-info="state in ('observed', 'drafted')"
+                decoration-warning="state == 'escalated'"
+                decoration-danger="state == 'failed'"
+            >
+                <field name="create_date" />
+                <field name="pipeline_id" />
+                <field name="res_name" />
+                <field name="model_name" />
+                <field name="stage_name" />
+                <field name="mode" />
+                <field name="state" />
+                <field name="decision" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mail_odooclaw_pipeline_run_form" model="ir.ui.view">
+        <field name="name">mail.odooclaw.pipeline.run.form</field>
+        <field name="model">mail.odooclaw.pipeline.run</field>
+        <field name="arch" type="xml">
+            <form string="Run" create="0" edit="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="pipeline_id" />
+                            <field name="model_name" />
+                            <field name="res_id" />
+                            <field name="res_name" />
+                        </group>
+                        <group>
+                            <field name="stage_id" />
+                            <field name="stage_name" />
+                            <field name="mode" />
+                            <field name="state" />
+                            <field name="message_id" />
+                        </group>
+                    </group>
+                    <group string="Decision">
+                        <field name="decision" nolabel="1" />
+                    </group>
+                    <group string="Error" invisible="not error">
+                        <field name="error" nolabel="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_odooclaw_pipeline" model="ir.actions.act_window">
+        <field name="name">OdooClaw Pipelines</field>
+        <field name="res_model">mail.odooclaw.pipeline</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Decide what the bot does when a customer writes</p>
+            <p>
+                One pipeline per area. The mode says whether the bot observes,
+                drafts for a person or answers directly; stage rules refine it
+                without touching the default.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_mail_odooclaw_pipeline_run" model="ir.actions.act_window">
+        <field name="name">OdooClaw Pipeline Runs</field>
+        <field name="res_model">mail.odooclaw.pipeline.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No run yet</p>
+            <p>Every decision the pipeline takes is recorded here with its reason.</p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_mail_odooclaw_pipeline"
+        name="Pipelines"
+        action="action_mail_odooclaw_pipeline"
+        parent="base.menu_custom"
+        sequence="91"
+    />
+
+    <menuitem
+        id="menu_mail_odooclaw_pipeline_run"
+        name="Pipeline Runs"
+        action="action_mail_odooclaw_pipeline_run"
+        parent="base.menu_custom"
+        sequence="92"
+    />
+</odoo>

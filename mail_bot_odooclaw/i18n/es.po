@@ -6,33 +6,43 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 09:01+0000\n"
-"PO-Revision-Date: 2026-09-27 09:01+0000\n"
+"POT-Creation-Date: 2026-11-25 15:58+0000\n"
+"PO-Revision-Date: 2026-11-25 15:58+0000\n"
 "Last-Translator: \n"
-"Language-Team: Español\n"
-"Language: es\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: \n"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"A stage rule wins over the area mode. Use it to answer\n"
+"                                only while the ticket is open, or to hand a closed\n"
+"                                ticket straight to a person."
+msgstr "La regla de etapa manda sobre el modo del área. Úsala para responder solo mientras el ticket está abierto, o para pasar un ticket cerrado directamente a una persona."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__action_ids
 msgid "Actions"
-msgstr ""
+msgstr "Acciones"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__active
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__active
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__active
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__active
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__active
 msgid "Active"
-msgstr ""
+msgstr "Activo"
 
 #. module: mail_bot_odooclaw
 #: model:res.groups,comment:mail_bot_odooclaw.group_odooclaw_delegator
 msgid ""
 "Allows the OdooClaw technical user to execute ORM calls under the "
 "permissions of the requesting Odoo user."
-msgstr ""
+msgstr "Permite al usuario técnico de OdooClaw ejecutar llamadas ORM con los permisos del usuario de Odoo que las solicita."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
@@ -40,14 +50,48 @@ msgid "An offboarded employee must not receive new messages."
 msgstr "Un empleado dado de baja no debe recibir mensajes nuevos."
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline__mode__auto
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__mode__auto
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_stage__mode__auto
+msgid "Answer directly"
+msgstr "Responder directamente"
+
+#. module: mail_bot_odooclaw
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_form
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
 msgid "Archived"
 msgstr "Archivada"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__area
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__area_id
 msgid "Area"
-msgstr ""
+msgstr "Área"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__area_id
+msgid "Area this pipeline governs: helpdesk, crm, accounting..."
+msgstr "Área que gobierna este pipeline: helpdesk, CRM, contabilidad..."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_form
+msgid "Artifact"
+msgstr "Artefacto"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__artifact_type
+msgid "Artifact Type"
+msgstr "Tipo de artefacto"
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_odooclaw_artifact
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_odooclaw_artifact
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_list
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Artifacts"
+msgstr "Artefactos"
 
 #. module: mail_bot_odooclaw
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
@@ -56,11 +100,7 @@ msgid ""
 "                            users and the public user never receive it: they are not company\n"
 "                            staff and the counters quoted in the offer are business\n"
 "                            figures."
-msgstr "Se ofrece ayuda a <b>cualquier usuario interno</b> (empleado). Los\n    "
-"                        usuarios de portal y el usuario público nunca la"
-" reciben: no son\n                            personal de la empresa y l"
-"os contadores citados en la oferta son\n                            cifr"
-"as de negocio."
+msgstr "Se ofrece ayuda a <b>cualquier usuario interno</b> (empleado). Los\n                            usuarios de portal y el usuario público nunca la reciben: no son\n                            personal de la empresa y los contadores citados en la oferta son\n                            cifras de negocio."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__internal_only
@@ -68,9 +108,12 @@ msgid ""
 "Assistance is offered to internal users (employees) only. Portal users and "
 "the public user are left out: they are not company staff and the counters "
 "quoted in the offer are business figures."
-msgstr "Solo se ofrece ayuda a usuarios internos (empleados). Los usuarios de po"
-"rtal y el usuario público quedan fuera: no son personal de la empresa y "
-"los contadores son cifras de negocio."
+msgstr "Solo se ofrece ayuda a usuarios internos (empleados). Los usuarios de portal y el usuario público quedan fuera: no son personal de la empresa y los contadores son cifras de negocio."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__attachment_text
+msgid "Attachment Text"
+msgstr "Texto de los adjuntos"
 
 #. module: mail_bot_odooclaw
 #: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_audience
@@ -79,39 +122,111 @@ msgid "Audience"
 msgstr "Audiencia"
 
 #. module: mail_bot_odooclaw
-#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_audience
-msgid "Audience de OdooClaw"
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_list
 msgid "Audiences"
 msgstr "Audiencias"
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_artifact__artifact_type__chart
+msgid "Chart"
+msgstr "Gráfico"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__channel_id
+msgid "Chat where the artifact was created, when it came from one."
+msgstr "Chat donde se creó el artefacto, cuando vino de uno."
+
+#. module: mail_bot_odooclaw
 #. odoo-python
 #: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
 msgid "Chat with OdooClaw"
-msgstr ""
+msgstr "Chat con OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_artifact__artifact_type__code
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Code"
+msgstr "Código"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__tag_list
+msgid ""
+"Comma-separated tags to find the artifact later: customer, invoice, q3..."
+msgstr "Etiquetas separadas por comas para encontrar el artefacto después: cliente, factura, t3..."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__escalate_after
+msgid ""
+"Consecutive turns without a useful answer before escalating. 0 disables "
+"automatic escalation."
+msgstr "Turnos consecutivos sin una respuesta útil antes de escalar. 0 desactiva el escalado automático."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_res_partner
 msgid "Contact"
-msgstr ""
+msgstr "Contacto"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__content
+msgid "Content"
+msgstr "Contenido"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__channel_id
+msgid "Conversation"
+msgstr "Conversación"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__create_uid
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__create_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__create_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__create_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__create_uid
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__create_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Creado por"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__create_date
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__create_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__create_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__create_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__create_date
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__create_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Creado el"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__stage_id
+msgid ""
+"Database id of the stage record. The stage model depends on the area: "
+"helpdesk.ticket.stage for helpdesk, crm.stage for crm."
+msgstr "Id de base de datos del registro de etapa. El modelo depende del área: helpdesk.ticket.stage para helpdesk, crm.stage para CRM."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_pipeline
+msgid "Decide what the bot does when a customer writes"
+msgstr "Decide qué hace el bot cuando escribe un cliente"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__decision
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_run_form
+msgid "Decision"
+msgstr "Decisión"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_escalate_user_id
+msgid ""
+"Default person who receives work the bot cannot finish: no answer, ambiguous"
+" request, or the customer asks for a human."
+msgstr "Persona por defecto que recibe el trabajo que el bot no puede terminar: sin respuesta, petición ambigua o cliente que pide una persona."
 
 #. module: mail_bot_odooclaw
 #: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_audience
@@ -121,14 +236,103 @@ msgstr "Define a quién se ofrece ayuda"
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__display_name
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__display_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__display_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__display_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__display_name
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__display_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre mostrado"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__res_name
+msgid ""
+"Display name of the record at the time of the run, kept as a snapshot so the"
+" history survives a rename or a delete."
+msgstr "Nombre del registro en el momento del run, guardado como instantánea para que el historial sobreviva a un renombrado o borrado."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_artifact__artifact_type__document
+msgid "Document"
+msgstr "Documento"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Documents"
+msgstr "Documentos"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline__mode__draft
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__mode__draft
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_stage__mode__draft
+msgid "Draft for a human"
+msgstr "Borrador para una persona"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__drafted
+msgid "Drafted"
+msgstr "En borrador"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__mode
+msgid ""
+"Effective mode applied: the stage rule if there was one, otherwise the "
+"pipeline default."
+msgstr "Modo efectivo aplicado: la regla de etapa si la había, si no el modo por defecto del pipeline."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_mail_thread
 msgid "Email Thread"
-msgstr ""
+msgstr "Hilo de correo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__enabled
+msgid "Enabled"
+msgstr "Activo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__error
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_run_form
+msgid "Error"
+msgstr "Error"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__escalate
+msgid "Escalate"
+msgstr "Escalar"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__escalate_after
+msgid "Escalate After"
+msgstr "Escalar tras"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__escalate_user_id
+msgid "Escalate User"
+msgstr "Usuario de escalado"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__escalated
+msgid "Escalated to a human"
+msgstr "Escalado a una persona"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_escalate_user_id
+msgid "Escalation user"
+msgstr "Usuario de escalado"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_pipeline_run
+msgid "Every decision the pipeline takes is recorded here with its reason."
+msgstr "Cada decisión del pipeline queda registrada aquí con su motivo."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"Example: always answer in the customer's language, never quote delivery "
+"dates or prices, ask for the order number before answering anything about an"
+" order, escalate if the customer asks for a refund."
+msgstr "Ejemplo: responde siempre en el idioma del cliente, nunca des fechas de entrega ni precios, pide el número de pedido antes de responder nada sobre un pedido, y escala si el cliente pide un reembolso."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__excluded_group_ids
@@ -138,14 +342,31 @@ msgstr "Excluir a estos grupos"
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__expiry
 msgid "Expiry"
-msgstr ""
+msgstr "Caducidad"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__instructions
+msgid ""
+"Extra rules for this stage only. They are added after the area's "
+"instructions, so a stage can refine them without repeating them."
+msgstr "Reglas extra solo para esta etapa. Se añaden después de las del área, así una etapa puede precisarlas sin repetirlas."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__failed
+msgid "Failed"
+msgstr "Fallido"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__error
+msgid "Failure detail when the run ended in error."
+msgstr "Detalle del fallo cuando el run terminó en error."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__area
 msgid ""
 "Functional area key shared with the knowledge base: accounting, sales, "
 "purchases, inventory, hr..."
-msgstr ""
+msgstr "Clave del área funcional compartida con la base de conocimiento: contabilidad, ventas, compras, inventario, rrhh..."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_area
@@ -154,11 +375,60 @@ msgid "Functional area the suggestion belongs to."
 msgstr "Área funcional a la que pertenece la sugerencia."
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_enabled
+msgid ""
+"Global switch for the operational pipeline. When a customer writes on a "
+"record of an area with a pipeline, the bot may observe, draft or answer "
+"according to that pipeline."
+msgstr "Interruptor global del pipeline operativo. Cuando un cliente escribe en un registro de un área con pipeline, el bot puede observar, redactar o responder según ese pipeline."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Group by"
+msgstr "Agrupar por"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__run_ids
+msgid "History of what the pipeline did and why."
+msgstr "Historial de lo que hizo el pipeline y por qué."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__run_count
+msgid "How many runs this pipeline has recorded."
+msgstr "Cuántos runs ha registrado este pipeline."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid ""
+"How the bot must act in this area. Written as rules a\n"
+"                                person would follow: tone, what to ask, what never to\n"
+"                                promise, when to hand over. The stage rules below can\n"
+"                                add to this text without repeating it."
+msgstr "Cómo debe actuar el bot en esta área. Escrito como reglas que seguiría una persona: tono, qué preguntar, qué no prometer nunca, cuándo entregar el caso. Las reglas de etapa de abajo pueden añadir a este texto sin repetirlo."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__instructions
+msgid ""
+"How the bot must act in this area: tone, what to ask, what never to promise,"
+" when to escalate. Written as rules a person would follow, short and "
+"concrete. Stage rules can add to it."
+msgstr "Cómo debe actuar el bot en esta área: tono, qué preguntar, qué no prometer nunca, cuándo escalar. Escrito como reglas cortas y concretas que seguiría una persona. Las reglas de etapa pueden añadir a este texto."
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__res_id
+msgid "Id of the record the pipeline looked at."
+msgstr "Id del registro que miró el pipeline."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_playbook_id
@@ -170,6 +440,13 @@ msgstr "Identificador del playbook que produjo esta sugerencia."
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
 msgid "Include deactivated users"
 msgstr "Incluir usuarios desactivados"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__instructions
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__instructions
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid "Instructions"
+msgstr "Instrucciones"
 
 #. module: mail_bot_odooclaw
 #. odoo-python
@@ -189,48 +466,119 @@ msgid ""
 "counters, e.g. {\"my_signal\": {\"model\": \"res.partner\", \"domain\": "
 "[[\"active\", \"=\", True]]}}. See the mail_bot_odooclaw_account module for "
 "real working examples."
-msgstr ""
+msgstr "Objeto JSON que asigna una clave de señal a la expresión de recuento usada para construir los contadores, por ejemplo {\"mi_senal\": {\"model\": \"res.partner\", ...}}."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__artifact_type
+msgid ""
+"Kind of artifact. Used to group and filter; it does not change how the "
+"content is stored."
+msgstr "Tipo de artefacto. Se usa para agrupar y filtrar; no cambia cómo se guarda el contenido."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__write_uid
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__write_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__write_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__write_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__write_uid
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__write_uid
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Actualizado por"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__write_date
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__write_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__write_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__write_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__write_date
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__write_date
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Actualizado el"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__mode
+msgid "Leave empty to inherit the pipeline's mode."
+msgstr "Déjalo vacío para heredar el modo del pipeline."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_mail_message
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__message_id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__message_id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__message_id
 msgid "Message"
-msgstr ""
+msgstr "Mensaje"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+msgid "Message from %(author)s received; mode %(mode)s."
+msgstr "Mensaje de %(author)s recibido; modo %(mode)s."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__message_id
+msgid "Message that triggered the run, when a customer reply did."
+msgstr "Mensaje que disparó el run, cuando fue una respuesta del cliente."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__message_id
+msgid "Message the artifact replies to, when it came from one."
+msgstr "Mensaje al que responde el artefacto, cuando vino de uno."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__mode
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__mode
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__mode
+msgid "Mode"
+msgstr "Modo"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__model
 msgid "Model"
-msgstr ""
+msgstr "Modelo"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__model_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__model_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__model_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__model_name
 msgid "Model Name"
-msgstr ""
+msgstr "Nombre del modelo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__model_name
+msgid "Model of the record the pipeline looked at."
+msgstr "Modelo del registro que miró el pipeline."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_ir_module_module
 msgid "Module"
-msgstr ""
+msgstr "Módulo"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "My artifacts"
+msgstr "Mis artefactos"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__name
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__name
 msgid "Name"
-msgstr ""
+msgstr "Nombre"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid "New pipeline"
+msgstr "Nuevo pipeline"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_pipeline_run
+msgid "No run yet"
+msgstr "Todavía sin runs"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__note
@@ -239,19 +587,76 @@ msgid "Notes"
 msgstr "Notas"
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_odooclaw_artifact
+msgid "Nothing saved yet"
+msgstr "Todavía no hay nada guardado"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline__mode__observe
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__mode__observe
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_stage__mode__observe
+msgid "Observe only"
+msgstr "Solo observar"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__observed
+msgid "Observed"
+msgstr "Observado"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
+msgid "OdooClaw"
+msgstr "OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_odooclaw_artifact
+msgid "OdooClaw Artifact"
+msgstr "Artefacto de OdooClaw"
+
+#. module: mail_bot_odooclaw
 #: model:res.groups,name:mail_bot_odooclaw.group_odooclaw_delegator
 msgid "OdooClaw Delegated RPC"
-msgstr ""
+msgstr "RPC delegado de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_pipeline
+msgid "OdooClaw Pipeline"
+msgstr "Pipeline de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_pipeline_run
+msgid "OdooClaw Pipeline Run"
+msgstr "Run de pipeline de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_pipeline_run
+msgid "OdooClaw Pipeline Runs"
+msgstr "Runs de pipeline de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_pipeline_stage
+msgid "OdooClaw Pipeline Stage Rule"
+msgstr "Regla de etapa de pipeline de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_pipeline
+msgid "OdooClaw Pipelines"
+msgstr "Pipelines de OdooClaw"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_area
 msgid "OdooClaw Proactive Area"
-msgstr ""
+msgstr "Área proactiva de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_audience
+msgid "OdooClaw Proactive Audience"
+msgstr "Audiencia proactiva de OdooClaw"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_reply_token
 msgid "OdooClaw Reply Token"
-msgstr ""
+msgstr "Token de respuesta de OdooClaw"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_area
@@ -268,12 +673,37 @@ msgstr "Playbook de OdooClaw"
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_audience
 msgid "OdooClaw proactive audience"
-msgstr ""
+msgstr "Audiencia proactiva de OdooClaw"
 
 #. module: mail_bot_odooclaw
 #: model:ir.actions.server,name:mail_bot_odooclaw.ir_cron_cleanup_reply_tokens_ir_actions_server
 msgid "OdooClaw: Clean up expired reply tokens"
-msgstr ""
+msgstr "OdooClaw: limpiar tokens de respuesta caducados"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid "OdooClaw: needs a person"
+msgstr "OdooClaw: necesita una persona"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_pipeline
+msgid ""
+"One pipeline per area. The mode says whether the bot observes,\n"
+"                drafts for a person or answers directly; stage rules refine it\n"
+"                without touching the default."
+msgstr "Un pipeline por área. El modo dice si el bot observa, redacta para una persona o responde directamente; las reglas de etapa lo afinan sin tocar el modo por defecto."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.constraint,message:mail_bot_odooclaw.constraint_mail_odooclaw_pipeline_area_unique
+msgid "One pipeline per area. Use the stage rules for finer behaviour."
+msgstr "Un pipeline por área. Usa las reglas de etapa para afinar el comportamiento."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__template_id
+msgid ""
+"Optional template the agent starts from instead of composing from scratch."
+msgstr "Plantilla opcional de la que parte el agente en lugar de redactar desde cero."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__company_ids
@@ -285,14 +715,80 @@ msgstr "Opcional. Vacío = todas las compañías."
 msgid ""
 "Optional. The members of these groups never receive assistance, even when "
 "they meet every other condition."
-msgstr ""
+msgstr "Opcional. Los miembros de estos grupos nunca reciben asistencia, aunque cumplan todas las demás condiciones."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__group_ids
 msgid ""
 "Optional. When set, the audience is further restricted to the members of "
 "these groups. Empty = any internal user."
-msgstr ""
+msgstr "Opcional. Si se define, la audiencia se limita a los miembros de estos grupos. Vacío = cualquier usuario interno."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__sequence
+msgid "Order of the rules in the form. Does not affect matching."
+msgstr "Orden de las reglas en el formulario. No afecta al emparejamiento."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_artifact__artifact_type__other
+msgid "Other"
+msgstr "Otro"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__user_id
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Owner"
+msgstr "Propietario"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__stage_rule_ids
+msgid "Per-stage overrides. A stage with no rule uses the area default."
+msgstr "Excepciones por etapa. Una etapa sin regla usa el modo por defecto del área."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__user_id
+msgid "Person the artifact belongs to. Only they and administrators see it."
+msgstr "Persona a la que pertenece el artefacto. Solo ella y administración lo ven."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
+msgid ""
+"Person who receives the work the bot cannot finish: no answer, an ambiguous "
+"request, or the customer asking for a human."
+msgstr "Persona que recibe el trabajo que el bot no puede terminar: sin respuesta, petición ambigua o cliente que pide una persona."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__pipeline_id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__pipeline_id
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid "Pipeline"
+msgstr "Pipeline"
+
+#. module: mail_bot_odooclaw
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_pipeline_run
+msgid "Pipeline Runs"
+msgstr "Runs del pipeline"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__pipeline_id
+msgid "Pipeline that produced this run."
+msgstr "Pipeline que produjo este run."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__pipeline_id
+msgid "Pipeline this rule belongs to."
+msgstr "Pipeline al que pertenece esta regla."
+
+#. module: mail_bot_odooclaw
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_pipeline
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_list
+msgid "Pipelines"
+msgstr "Pipelines"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__plain_text
+msgid "Plain Text"
+msgstr "Texto plano"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_proactive
@@ -306,9 +802,25 @@ msgid "Proactive suggestions"
 msgstr "Sugerencias proactivas"
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_config_settings__odooclaw_pipeline_enabled
+msgid "Process incoming messages"
+msgstr "Procesar mensajes entrantes"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__queued
+msgid "Queued"
+msgstr "En cola"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__res_id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__res_id
 msgid "Res"
-msgstr ""
+msgstr "Res"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__res_name
+msgid "Res Name"
+msgstr "Nombre del registro"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__company_ids
@@ -321,9 +833,44 @@ msgid "Restrict to these groups"
 msgstr "Limitar a estos grupos"
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__run_ids
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_run_form
+msgid "Run"
+msgstr "Run"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__run_count
+msgid "Run Count"
+msgstr "Número de runs"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_run_list
+msgid "Runs"
+msgstr "Runs"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__plain_text
+msgid "Searchable text version of the content, kept in sync automatically."
+msgstr "Versión en texto plano para buscar, sincronizada automáticamente."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__escalate
+msgid ""
+"Send the work to the pipeline's escalation user when the record is in this "
+"stage, whatever the mode says."
+msgstr "Manda el trabajo al usuario de escalado del pipeline cuando el registro está en esta etapa, diga lo que diga el modo."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__sent
+msgid "Sent"
+msgstr "Enviado"
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__sequence
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__sequence
 msgid "Sequence"
-msgstr ""
+msgstr "Secuencia"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_mail__odooclaw_proactive
@@ -331,53 +878,273 @@ msgstr ""
 msgid ""
 "Set when this message was an unsolicited suggestion from OdooClaw, not a "
 "reply to a user message."
-msgstr ""
+msgstr "Se marca cuando este mensaje fue una sugerencia no solicitada de OdooClaw, no una respuesta a un mensaje del usuario."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__name
+msgid "Shown in lists. Comes from the area it belongs to."
+msgstr "Se muestra en los listados. Viene del área a la que pertenece."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__signal_definition
 msgid "Signal Definition"
-msgstr ""
+msgstr "Definición de señal"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__mail_odooclaw_pipeline_run__state__skipped
+msgid "Skipped"
+msgstr "Omitido"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__stage_id
+msgid "Stage"
+msgstr "Etapa"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__stage_id
+msgid "Stage ID"
+msgstr "ID de etapa"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__stage_name
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__stage_name
+msgid "Stage Name"
+msgstr "Nombre de la etapa"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__stage_rule_ids
+msgid "Stage Rule"
+msgstr "Regla de etapa"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__stage_id
+msgid "Stage id at the time of the run."
+msgstr "ID de la etapa en el momento del run."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__stage_name
+msgid ""
+"Stage name as the administrator sees it. Informative: matching uses the id, "
+"never the name, because names repeat across teams."
+msgstr "Nombre de la etapa tal como lo ve el administrador. Informativo: el emparejamiento usa el id, nunca el nombre, porque los nombres se repiten entre equipos."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__stage_name
+msgid "Stage name at the time of the run."
+msgstr "Nombre de la etapa en el momento del run."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_pipeline_form
+msgid "Stages"
+msgstr "Etapas"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__state
+msgid "State"
+msgstr "Estado"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+msgid ""
+"Sugerencias activadas. Te avisaré cuando vea algo útil en la pantalla en la "
+"que estés."
+msgstr "Sugerencias activadas. Te avisaré cuando vea algo útil en la pantalla en la que estés."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_ir_config_parameter
 msgid "System Parameter"
-msgstr ""
+msgstr "Parámetro del sistema"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__odooclaw_artifact__artifact_type__table
+msgid "Table"
+msgstr "Tabla"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Tables"
+msgstr "Tablas"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_odooclaw_artifact__tag_list
+msgid "Tags"
+msgstr "Etiquetas"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__model_name
+msgid "Technical model of the area, e.g. helpdesk.ticket."
+msgstr "Modelo técnico del área, por ejemplo helpdesk.ticket."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__model_name
+msgid "Technical model of the stage, inherited from the pipeline."
+msgstr "Modelo técnico de la etapa, heredado del pipeline."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__model_name
 msgid "Technical model that identifies this area, e.g. res.partner."
-msgstr ""
+msgstr "Modelo técnico que identifica esta área, por ejemplo res.partner."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__template_id
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__template_id
+msgid "Template"
+msgstr "Plantilla"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__template_id
+msgid "Template for this stage. Overrides the pipeline's template."
+msgstr "Plantilla para esta etapa. Sustituye a la del pipeline."
 
 #. module: mail_bot_odooclaw
 #. odoo-python
 #: code:addons/mail_bot_odooclaw/models/mail_odooclaw_area.py:0
 msgid "The area key must be lowercase and without spaces: %s"
-msgstr ""
+msgstr "La clave del área debe ir en minúsculas y sin espacios: %s"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__content
+msgid ""
+"The artifact itself, as HTML. Sanitized on write: an artifact is data, never"
+" code that runs."
+msgstr "El artefacto en sí, como HTML. Se sanea al escribir: un artefacto es un dato, nunca código que se ejecuta."
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid ""
+"The knowledge base is on for %(area)s but the module "
+"mail_bot_odooclaw_knowledge is not installed. Install it or uncheck 'Use the"
+" knowledge base'."
+msgstr "La base de conocimiento está activada para %(area)s, pero el módulo mail_bot_odooclaw_knowledge no está instalado. Instálalo o desmarca «Usar la base de conocimiento»."
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/res_config_settings.py:0
+msgid ""
+"The pipeline is on for %(areas)s but %(modules)s is not installed. Install "
+"it or disable those areas first."
+msgstr "El pipeline está activo para %(areas)s pero %(modules)s no está instalado. Instálalo o desactiva esas áreas primero."
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid "The record id must be positive, got %(value)s."
+msgstr "El id del registro debe ser positivo, se recibió %(value)s."
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_pipeline.py:0
+msgid "The stage ID must be a positive database id, got %(value)s."
+msgstr "El ID de la etapa debe ser un id de base de datos positivo, se recibió %(value)s."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.constraint,message:mail_bot_odooclaw.constraint_mail_odooclaw_pipeline_stage_pipeline_stage_unique
+msgid "This stage already has a rule in this pipeline."
+msgstr "Esta etapa ya tiene una regla en este pipeline."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__token
 msgid "Token"
-msgstr ""
+msgstr "Token"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_odooclaw_artifact_search
+msgid "Type"
+msgstr "Tipo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__active
+msgid "Uncheck to archive the artifact without deleting it."
+msgstr "Desmarca para archivar el artefacto sin borrarlo."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_stage__active
+msgid "Uncheck to disable this rule without deleting it."
+msgstr "Desmarca para desactivar esta regla sin borrarla."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__active
+msgid "Uncheck to keep the configuration without applying it."
+msgstr "Desmarca para conservar la configuración sin aplicarla."
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/odooclaw_artifact.py:0
+msgid "Untitled artifact"
+msgstr "Artefacto sin título"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
+msgid "Use the knowledge base"
+msgstr "Usar la base de conocimiento"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__used
 msgid "Used"
-msgstr ""
+msgstr "Usado"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_res_users
 msgid "User"
-msgstr ""
+msgstr "Usuario"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__view_ids
 msgid "Views"
-msgstr ""
+msgstr "Vistas"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__view_ids
 msgid "Views that belong to this area. Optional: the model is usually enough."
-msgstr ""
+msgstr "Vistas que pertenecen a esta área. Opcional: normalmente basta con el modelo."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_odooclaw_artifact__name
+msgid "What the artifact is, in the words of whoever asked for it."
+msgstr "Qué es el artefacto, en palabras de quien lo pidió."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__attachment_text
+msgid ""
+"What the multimodal model read from the images and voice notes of the "
+"message: text for a person to check, not a customer field."
+msgstr "Lo que el modelo multimodal leyó de las imágenes y notas de voz del mensaje: texto para que una persona lo compruebe, no un campo para el cliente."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__state
+msgid "What the run ended up doing."
+msgstr "Qué acabó haciendo el run."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__mode
+msgid ""
+"What to do by default in this area. Stage rules can override it per stage."
+msgstr "Qué hacer por defecto en esta área. Las reglas de etapa pueden sustituirlo en cada etapa."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.res_config_settings_view_form
+msgid ""
+"When a customer writes on a record of an area with a pipeline, the bot "
+"processes it according to that pipeline."
+msgstr "Cuando un cliente escribe en un registro de un área con pipeline, el bot lo procesa según ese pipeline."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__use_knowledge
+msgid ""
+"When checked, the bot searches the knowledge document pages before answering"
+" and cites the page it used. Requires the mail_bot_odooclaw_knowledge "
+"module."
+msgstr "Si se marca, el bot busca en las páginas de conocimiento antes de responder y cita la página que usó. Requiere el módulo mail_bot_odooclaw_knowledge."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_odooclaw_artifact
+msgid ""
+"When the assistant builds something in a chat (a summary, a table,\n"
+"                a snippet), ask it to keep it. It lands here: named, owned by you\n"
+"                and searchable."
+msgstr "Cuando el asistente construye algo en un chat (un resumen, una tabla, un fragmento), pídele que lo guarde. Aparece aquí: con nombre, tuyo y buscable."
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__enabled
@@ -385,17 +1152,35 @@ msgid "When unchecked, entering this area never triggers a suggestion."
 msgstr "Si se desmarca, entrar en esta área nunca lanza una sugerencia."
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__enabled
+msgid ""
+"When unchecked, incoming messages in this area are never processed even if "
+"the global switch is on."
+msgstr "Si está desmarcado, los mensajes entrantes de esta área nunca se procesan aunque el interruptor global esté activo."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline__escalate_user_id
+msgid ""
+"Who receives the work when the pipeline escalates: the bot cannot answer, or"
+" the customer asked for a person."
+msgstr "Quién recibe el trabajo cuando el pipeline escala: el bot no puede responder o el cliente pidió una persona."
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_pipeline_run__decision
+msgid "Why the pipeline took this decision, in plain words."
+msgstr "Por qué el pipeline tomó esta decisión, en palabras claras."
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_area__action_ids
 msgid "Window actions that open this area."
-msgstr ""
+msgstr "Acciones de ventana que abren esta área."
 
 #. module: mail_bot_odooclaw
 #: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_audience
 msgid ""
 "Without a configured audience nobody is offered assistance: a missing\n"
 "                configuration is never read as \"everyone\"."
-msgstr "Sin una audiencia configurada no se ofrece ayuda a nadie: la ausencia de"
-"\n                configuración nunca se interpreta como \"todos\"."
+msgstr "Sin una audiencia configurada no se ofrece ayuda a nadie: la ausencia de\n                configuración nunca se interpreta como \"todos\"."
 
 #. module: mail_bot_odooclaw
 #. odoo-python
@@ -447,6 +1232,18 @@ msgstr "no hay área funcional para esta pantalla"
 
 #. module: mail_bot_odooclaw
 #. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+msgid "unknown"
+msgstr "desconocido"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
 #: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
 msgid "unreadable response from the proactive engine"
 msgstr "respuesta ilegible del motor de proactividad"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_thread.py:0
+msgid "Understood. I have not turned suggestions on."
+msgstr "Entendido. No he activado las sugerencias."

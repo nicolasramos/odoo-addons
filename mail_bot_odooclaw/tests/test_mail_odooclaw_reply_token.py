@@ -51,8 +51,12 @@ class TestMailOdooClawReplyToken(TransactionCase):
         result = self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1)
         self.assertTrue(result)
 
-    def test_validate_single_use(self):
+    def test_validate_is_use_bounded(self):
+        # One answer per human message was not enough: a chat reply and a
+        # pipeline note share the same token. It stays valid for a few uses.
+        self.env["ir.config_parameter"].sudo().set_param("odooclaw.reply_token_max_uses", "2")
         self._make_token()
+        self.assertTrue(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
         self.assertTrue(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
         self.assertFalse(self.Token.sudo()._validate("test-uuid-1234", "res.partner", 1))
 
@@ -78,6 +82,15 @@ class TestMailOdooClawReplyToken(TransactionCase):
         self._make_token(token="expired", offset_seconds=-1)
         self.Token.sudo()._cleanup_expired()
         self.assertFalse(self.Token.sudo().search([("token", "=", "expired")]))
+
+    def test_token_accepts_several_uses(self):
+        """One human message can produce more than one bot answer."""
+        rec = self._make_token()
+        first = self.Token._validate(rec.token, "res.partner", 1)
+        second = self.Token._validate(rec.token, "res.partner", 1)
+        self.assertTrue(first)
+        self.assertTrue(second)
+        self.assertFalse(rec.used)
 
     def test_cleanup_removes_used(self):
         self._make_token(token="used", used=True)
