@@ -262,6 +262,7 @@ absent simply stays silent.
 | `mail_bot_odooclaw_account` | `+ account` | Accounting |
 | `mail_bot_odooclaw_sale` | `+ sale_management` | Sales |
 | `mail_bot_odooclaw_crm` | `+ crm` | CRM |
+| `mail_bot_odooclaw_helpdesk` | `+ helpdesk_mgmt` | Helpdesk |
 | `mail_bot_odooclaw_purchase` | `+ purchase` | Purchase |
 | `mail_bot_odooclaw_stock` | `+ stock` | Inventory |
 | `mail_bot_odooclaw_hr` | `+ hr_holidays` | Human resources |
@@ -350,6 +351,27 @@ mounted as an empty directory.
 > **Sharing a test base class:** set `allow_inherited_tests_method = True`.
 > Odoo's loader reads `test_case_class.__dict__`, so inherited test methods are
 > invisible without it — the whole suite then reports `0 tests, 0 failed`.
+
+## Knowledge — answers from the document pages
+
+`mail_bot_odooclaw_knowledge` is a companion module, not a proactive area: it
+adds no `mail.odooclaw.area` row. It exposes `POST /odooclaw/knowledge/search`,
+which looks the query up in the `document_page` knowledge base and returns the
+matching pages with a snippet and a backend link, so an answer can cite the page
+it came from instead of inventing one.
+
+| Module | Depends on | Ships |
+|--------|-----------|-------|
+| `mail_bot_odooclaw_knowledge` | `+ document_page` | Knowledge search endpoint for the bot |
+
+The search is deliberately plain — every word of the query is looked up on its
+own in name or content, and the pages carrying more of them come first, newest
+first to break a tie — so whatever a person finds in the page list, the bot can
+find too. The
+quoted snippet is centred on the words that matched and the link is absolute,
+so the citation can be checked from wherever the answer was read. The endpoint
+is authorized through the same shared webhook security as the rest of the bot's
+routes (`mail_bot_odooclaw.controllers.security`).
 
 ## Security
 

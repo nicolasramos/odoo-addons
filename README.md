@@ -13,12 +13,14 @@ This repository contains installable Odoo addons intended to be consumed through
 | `mail_bot_odooclaw_account` | 18.0 | Proactive assistance: Accounting areas. Requires `mail_bot_odooclaw`. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md#proactive-assistance--one-module-per-area) |
 | `mail_bot_odooclaw_sale` | 18.0 | Proactive assistance: Sales areas. | ↑ |
 | `mail_bot_odooclaw_crm` | 18.0 | Proactive assistance: CRM areas. | ↑ |
+| `mail_bot_odooclaw_helpdesk` | 18.0 | Proactive assistance: Helpdesk areas. Requires `helpdesk_mgmt`. | ↑ |
 | `mail_bot_odooclaw_purchase` | 18.0 | Proactive assistance: Purchase areas. | ↑ |
 | `mail_bot_odooclaw_stock` | 18.0 | Proactive assistance: Inventory areas. | ↑ |
 | `mail_bot_odooclaw_hr` | 18.0 | Proactive assistance: Human resources areas. | ↑ |
 | `mail_bot_odooclaw_expense` | 18.0 | Proactive assistance: Expenses areas. | ↑ |
 | `mail_bot_odooclaw_project` | 18.0 | Proactive assistance: Projects areas. | ↑ |
 | `mail_bot_odooclaw_fleet` | 18.0 | Proactive assistance: Fleet areas. | ↑ |
+| `mail_bot_odooclaw_knowledge` | 18.0 | OdooClaw answers from the `document_page` knowledge base, citing the page it used. Requires `mail_bot_odooclaw` and `document_page`. | [`mail_bot_odooclaw/README.md`](mail_bot_odooclaw/README.md#knowledge-answers-from-the-document-pages) |
 
 ## Repository strategy
 

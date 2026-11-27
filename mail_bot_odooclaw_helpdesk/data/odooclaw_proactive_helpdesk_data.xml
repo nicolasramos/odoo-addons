@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="0": shipped defaults that must keep reaching existing
+        installations. To customise, create a NEW mail.odooclaw.area row.
+
+        Helpdesk is its own area: the model is helpdesk.ticket, not sale.order
+        or crm.lead, so resolve_area() would never reach it from those screens.
+
+        Every domain here is written against fields helpdesk_mgmt 18.0 defines
+        and inherits:
+
+        * "still open" is [["stage_id.closed", "=", false]], stable and
+          language-independent. Matching the stage NAME would break the moment
+          someone renames a stage.
+        * "new, not attended yet" is [["stage_id.unattended", "=", true]], the
+          flag helpdesk_mgmt ships on the New stage. It is helpdesk_mgmt's own
+          meaning
+          and it does not depend on how the stage is named or on whether a
+          creator was auto-assigned to the ticket.
+        * activity_date_deadline is store=False BUT searchable: it is computed
+          from the activities on the ticket, so "no activity scheduled" is
+          expressed as [["activity_date_deadline", "=", false]] and not as an
+          old write_date. The same field helpdesk_mgmt inherits from
+          mail.activity.mixin that crm.lead uses.
+        * priority stores the selection VALUES "0".."3" as strings, so the
+          comparison to "2" keeps high (2) and very high (3).
+    -->
+    <data noupdate="0">
+        <record id="area_helpdesk" model="mail.odooclaw.area">
+            <field name="name">Helpdesk</field>
+            <field name="area">helpdesk</field>
+            <field name="sequence">35</field>
+            <field name="enabled" eval="True" />
+            <field name="model_name">helpdesk.ticket</field>
+            <field
+                name="signal_definition"
+            >{"new_tickets": {"model": "helpdesk.ticket", "domain": [["stage_id.unattended", "=", true], ["stage_id.closed", "=", false]]}, "high_priority_tickets": {"model": "helpdesk.ticket", "domain": [["stage_id.closed", "=", false], ["priority", "&gt;=", "2"]]}, "tickets_without_activity": {"model": "helpdesk.ticket", "domain": [["stage_id.closed", "=", false], ["activity_date_deadline", "=", false]]}}</field>
+        </record>
+    </data>
+</odoo>
