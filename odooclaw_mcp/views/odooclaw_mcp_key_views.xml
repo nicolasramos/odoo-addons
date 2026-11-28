@@ -4,7 +4,7 @@
         <field name="name">odooclaw.mcp.key.list</field>
         <field name="model">odooclaw.mcp.key</field>
         <field name="arch" type="xml">
-            <list string="MCP keys">
+            <tree string="MCP keys">
                 <field name="name" />
                 <field name="user_id" />
                 <field name="active" />

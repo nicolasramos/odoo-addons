@@ -4,7 +4,7 @@
         <field name="name">odooclaw.mcp.tool.list</field>
         <field name="model">odooclaw.mcp.tool</field>
         <field name="arch" type="xml">
-            <list string="MCP tools">
+            <tree string="MCP tools">
                 <field name="sequence" widget="handle" />
                 <field name="name" />
                 <field name="model_name" />

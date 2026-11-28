@@ -6,7 +6,7 @@
         <field name="name">mail.odooclaw.audience.list</field>
         <field name="model">mail.odooclaw.audience</field>
         <field name="arch" type="xml">
-            <list string="Audiences">
+            <tree string="Audiences">
                 <field name="name" />
                 <field name="internal_only" />
                 <field name="include_inactive" />

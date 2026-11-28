@@ -6,7 +6,7 @@
         <field name="name">mail.odooclaw.pipeline.list</field>
         <field name="model">mail.odooclaw.pipeline</field>
         <field name="arch" type="xml">
-            <list string="Pipelines">
+            <tree string="Pipelines">
                 <field name="name" />
                 <field name="area_id" />
                 <field name="model_name" />
@@ -63,7 +63,7 @@
                                 ticket straight to a person.
                             </div>
                             <field name="stage_rule_ids">
-                                <list editable="bottom">
+                                <tree editable="bottom">
                                     <field name="sequence" widget="handle" />
                                     <field name="stage_id" />
                                     <field name="stage_name" />
@@ -77,7 +77,7 @@
                         </page>
                         <page string="Runs" name="runs">
                             <field name="run_ids" readonly="1">
-                                <list>
+                                <tree>
                                     <field name="create_date" />
                                     <field name="res_name" />
                                     <field name="state" />
@@ -97,7 +97,7 @@
         <field name="name">mail.odooclaw.pipeline.run.list</field>
         <field name="model">mail.odooclaw.pipeline.run</field>
         <field name="arch" type="xml">
-            <list
+            <tree
                 string="Runs"
                 decoration-success="state == 'sent'"
                 decoration-info="state in ('observed', 'drafted')"
