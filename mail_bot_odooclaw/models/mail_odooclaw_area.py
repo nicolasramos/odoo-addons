@@ -269,6 +269,12 @@ def post_proactive_message(env, user_id, body, playbook_id, area):
     if not user.exists():
         raise ValueError("target user not found")
 
+    if user.odooclaw_proactive_mode == "disabled":
+        # The engine may have decided to speak; the person still owns their
+        # inbox. This is the one choke point every proactive write goes
+        # through — `/odooclaw/signal` and `/odooclaw/notify` both land here.
+        raise ValueError("this user has proactive suggestions disabled")
+
     partner = user.partner_id
     if not partner:
         raise ValueError("target user has no partner")

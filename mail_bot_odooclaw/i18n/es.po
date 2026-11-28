@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 09:01+0000\n"
-"PO-Revision-Date: 2026-09-27 09:01+0000\n"
+"POT-Creation-Date: 2026-10-30 16:58+0000\n"
+"PO-Revision-Date: 2026-10-30 16:58+0000\n"
 "Last-Translator: \n"
 "Language-Team: Español\n"
 "Language: es\n"
@@ -15,6 +15,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid "A counter may declare a <code>requires</code> gate: a\\n                                second <code>{\\\"model\\\": ..., \\\"domain\\\": ...}</code> that\\n                                must match at least one record for the signal to mean\\n                                anything. That is how a signal written for one country\\n                                stays silent everywhere else."
+msgstr "Un contador puede declarar una puerta <code>requires</code>: un segundo <code>{\"model\": ..., \"domain\": ...}</code> que debe encontrar al menos un registro para que la señal signifique algo. Así es como una señal escrita para un país calla en todos los demás."
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid "Accounting"
+msgstr "Contabilidad"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__action_ids
@@ -35,11 +45,20 @@ msgid ""
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_area
+msgid ""
+"An area maps a screen to the signals the assistant is allowed to\n"
+"                talk about. With no area, nothing is ever offered: a missing\n"
+"                configuration is silence, never a guess."
+msgstr ""
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,help:mail_bot_odooclaw.field_mail_odooclaw_audience__include_inactive
 msgid "An offboarded employee must not receive new messages."
 msgstr "Un empleado dado de baja no debe recibir mensajes nuevos."
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_form
 msgid "Archived"
 msgstr "Archivada"
@@ -79,11 +98,6 @@ msgid "Audience"
 msgstr "Audiencia"
 
 #. module: mail_bot_odooclaw
-#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_audience
-msgid "Audience de OdooClaw"
-msgstr ""
-
-#. module: mail_bot_odooclaw
 #: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_audience_list
 msgid "Audiences"
 msgstr "Audiencias"
@@ -114,9 +128,24 @@ msgid "Created on"
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_area
+msgid "Define a functional area"
+msgstr "Define un área funcional"
+
+#. module: mail_bot_odooclaw
 #: model_terms:ir.actions.act_window,help:mail_bot_odooclaw.action_mail_odooclaw_audience
 msgid "Define who is offered assistance"
 msgstr "Define a quién se ofrece ayuda"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__res_users__odooclaw_proactive_mode__dm
+msgid "Direct message"
+msgstr "Mensaje directo"
+
+#. module: mail_bot_odooclaw
+#: model:ir.model.fields.selection,name:mail_bot_odooclaw.selection__res_users__odooclaw_proactive_mode__disabled
+msgid "Disabled"
+msgstr "Desactivadas"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__display_name
@@ -154,6 +183,11 @@ msgid "Functional area the suggestion belongs to."
 msgstr "Área funcional a la que pertenece la sugerencia."
 
 #. module: mail_bot_odooclaw
+#: model:ir.model.fields,help:mail_bot_odooclaw.field_res_users__odooclaw_proactive_mode
+msgid "How the assistant may start a conversation with you. 'Direct message' posts to your private chat with the assistant. 'Disabled' never writes to you unprompted: asking the assistant something still works normally."
+msgstr "Cómo puede el assistant iniciar una conversación contigo. «Mensaje directo» escribe en tu chat privado con el asistente. «Desactivadas» hace que nunca reciba mensajes sin pedirlos: preguntarle algo al asistente sigue funcionando igual."
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_audience__id
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_reply_token__id
@@ -188,9 +222,9 @@ msgid ""
 "JSON object mapping a signal key to the count expression used to build the "
 "counters, e.g. {\"my_signal\": {\"model\": \"res.partner\", \"domain\": "
 "[[\"active\", \"=\", True]]}}. A counter may add a \"requires\" gate: a "
-"second {\"model\": ..., \"domain\": ...} that must match at least one record "
-"for the counter to mean anything. When the gate does not match the counter is "
-"0. See the mail_bot_odooclaw_account module for real working examples."
+"second {\"model\": ..., \"domain\": ...} that must match at least one record"
+" for the counter to mean anything. When the gate does not match the counter "
+"is 0. See the mail_bot_odooclaw_account module for real working examples."
 msgstr ""
 
 #. module: mail_bot_odooclaw
@@ -251,6 +285,16 @@ msgid "OdooClaw Proactive Area"
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_area
+msgid "OdooClaw Proactive Areas"
+msgstr "Áreas proactivas de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model:ir.actions.act_window,name:mail_bot_odooclaw.action_mail_odooclaw_audience
+msgid "OdooClaw Proactive Audience"
+msgstr "Audiencia proactiva de OdooClaw"
+
+#. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_mail_odooclaw_reply_token
 msgid "OdooClaw Reply Token"
 msgstr ""
@@ -260,6 +304,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_area
 msgid "OdooClaw area"
 msgstr "Área de OdooClaw"
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_users_form_simple_modif_odooclaw
+msgid "OdooClaw assistant"
+msgstr "Asistente de OdooClaw"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_playbook_id
@@ -297,6 +346,17 @@ msgid ""
 msgstr ""
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid "Proactive Area"
+msgstr "Área proactiva"
+
+#. module: mail_bot_odooclaw
+#: model:ir.ui.menu,name:mail_bot_odooclaw.menu_mail_odooclaw_area
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_list
+msgid "Proactive Areas"
+msgstr "Áreas proactivas"
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_mail__odooclaw_proactive
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_message__odooclaw_proactive
 msgid "Proactive suggestion"
@@ -304,6 +364,7 @@ msgstr "Sugerencia proactiva"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__enabled
+#: model:ir.model.fields,field_description:mail_bot_odooclaw.field_res_users__odooclaw_proactive_mode
 msgid "Proactive suggestions"
 msgstr "Sugerencias proactivas"
 
@@ -323,6 +384,15 @@ msgid "Restrict to these groups"
 msgstr "Limitar a estos grupos"
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid ""
+"Rows that ship with a module are restored on upgrade.\n"
+"                                To customise one, create a new row instead of editing\n"
+"                                the shipped one: the resolver picks the most specific\n"
+"                                match (action, then view, then model)."
+msgstr ""
+
+#. module: mail_bot_odooclaw
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__sequence
 msgid "Sequence"
 msgstr ""
@@ -339,6 +409,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:mail_bot_odooclaw.field_mail_odooclaw_area__signal_definition
 msgid "Signal Definition"
 msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid "Signals"
+msgstr "Señales"
 
 #. module: mail_bot_odooclaw
 #: model:ir.model,name:mail_bot_odooclaw.model_ir_config_parameter
@@ -400,6 +475,16 @@ msgstr "Sin una audiencia configurada no se ofrece ayuda a nadie: la ausencia de
 "\n                configuración nunca se interpreta como \"todos\"."
 
 #. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid "account.move"
+msgstr ""
+
+#. module: mail_bot_odooclaw
+#: model_terms:ir.ui.view,arch_db:mail_bot_odooclaw.view_mail_odooclaw_area_form
+msgid "accounting"
+msgstr ""
+
+#. module: mail_bot_odooclaw
 #. odoo-python
 #: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
 msgid "it is the bot itself"
@@ -446,6 +531,12 @@ msgstr "el usuario queda fuera de la audiencia configurada"
 #: code:addons/mail_bot_odooclaw/controllers/proactive.py:0
 msgid "there is no functional area for this screen"
 msgstr "no hay área funcional para esta pantalla"
+
+#. module: mail_bot_odooclaw
+#. odoo-python
+#: code:addons/mail_bot_odooclaw/models/mail_odooclaw_audience.py:0
+msgid "this user has proactive suggestions disabled"
+msgstr "este usuario tiene las sugerencias proactivas desactivadas"
 
 #. module: mail_bot_odooclaw
 #. odoo-python

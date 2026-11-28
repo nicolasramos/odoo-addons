@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Nicolás Ramos
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        Why these views exist (issue #27): every area row carries its own
+        `enabled` switch, and the areas ship as data precisely so an
+        administrator can retarget one without a code change. With no view and
+        no menu, that switch was reachable only from technical mode or by
+        editing XML — which in practice meant it was never touched.
+    -->
+    <record id="view_mail_odooclaw_area_list" model="ir.ui.view">
+        <field name="name">mail.odooclaw.area.list</field>
+        <field name="model">mail.odooclaw.area</field>
+        <field name="arch" type="xml">
+            <list string="Proactive Areas">
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="area" />
+                <field name="model_name" />
+                <field name="enabled" />
+                <field name="active" column_invisible="1" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mail_odooclaw_area_form" model="ir.ui.view">
+        <field name="name">mail.odooclaw.area.form</field>
+        <field name="model">mail.odooclaw.area</field>
+        <field name="arch" type="xml">
+            <form string="Proactive Area">
+                <sheet>
+                    <widget
+                        name="web_ribbon"
+                        title="Archived"
+                        bg_color="bg-danger"
+                        invisible="active"
+                    />
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Accounting" /></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="area" placeholder="accounting" />
+                            <field name="model_name" placeholder="account.move" />
+                            <field name="sequence" />
+                            <field name="active" invisible="1" />
+                        </group>
+                        <group>
+                            <field name="enabled" />
+                            <field
+                                name="view_ids"
+                                widget="many2many_tags"
+                                options="{'no_create': True}"
+                            />
+                            <field
+                                name="action_ids"
+                                widget="many2many_tags"
+                                options="{'no_create': True}"
+                            />
+                        </group>
+                    </group>
+                    <group string="Signals">
+                        <field name="signal_definition" nolabel="1" colspan="2" />
+                    </group>
+                    <group>
+                        <div class="text-muted">
+                            <p>
+                                A counter may declare a <code>requires</code> gate: a
+                                second <code>{"model": ..., "domain": ...}</code> that
+                                must match at least one record for the signal to mean
+                                anything. That is how a signal written for one country
+                                stays silent everywhere else.
+                            </p>
+                            <p>
+                                Rows that ship with a module are restored on upgrade.
+                                To customise one, create a new row instead of editing
+                                the shipped one: the resolver picks the most specific
+                                match (action, then view, then model).
+                            </p>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_odooclaw_area" model="ir.actions.act_window">
+        <field name="name">OdooClaw Proactive Areas</field>
+        <field name="res_model">mail.odooclaw.area</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define a functional area</p>
+            <p>
+                An area maps a screen to the signals the assistant is allowed to
+                talk about. With no area, nothing is ever offered: a missing
+                configuration is silence, never a guess.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_mail_odooclaw_area"
+        name="Proactive Areas"
+        action="action_mail_odooclaw_area"
+        parent="base.menu_custom"
+        sequence="89"
+    />
+</odoo>
