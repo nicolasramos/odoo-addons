@@ -8,7 +8,7 @@ server action. Nothing is exposed by default, write tools stay disabled unless
 their record says otherwise, and the key carries its own MCP scope: a normal
 Odoo API key does not open this endpoint.
     """,
-    'version': '18.0.1.0.0',
+    'version': '17.0.1.0.0',
     'category': 'Technical',
     'license': 'LGPL-3',
     'author': 'Nicolás Ramos',

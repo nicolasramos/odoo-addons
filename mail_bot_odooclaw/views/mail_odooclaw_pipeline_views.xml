@@ -14,7 +14,7 @@
                 <field name="enabled" />
                 <field name="run_count" />
                 <field name="active" invisible="1" />
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -72,7 +72,7 @@
                                     <field name="instructions" optional="hide" />
                                     <field name="escalate" />
                                     <field name="active" />
-                                </list>
+                                </tree>
                             </field>
                         </page>
                         <page string="Runs" name="runs">
@@ -84,7 +84,7 @@
                                     <field name="mode" />
                                     <field name="decision" />
                                     <field name="attachment_text" />
-                                </list>
+                                </tree>
                             </field>
                         </page>
                     </notebook>
@@ -112,7 +112,7 @@
                 <field name="mode" />
                 <field name="state" />
                 <field name="decision" />
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -151,7 +151,7 @@
     <record id="action_mail_odooclaw_pipeline" model="ir.actions.act_window">
         <field name="name">OdooClaw Pipelines</field>
         <field name="res_model">mail.odooclaw.pipeline</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Decide what the bot does when a customer writes</p>
             <p>
@@ -165,7 +165,7 @@
     <record id="action_mail_odooclaw_pipeline_run" model="ir.actions.act_window">
         <field name="name">OdooClaw Pipeline Runs</field>
         <field name="res_model">mail.odooclaw.pipeline.run</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No run yet</p>
             <p>Every decision the pipeline takes is recorded here with its reason.</p>

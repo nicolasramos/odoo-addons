@@ -3,7 +3,7 @@
 
 {
     'name': 'OdooClaw AI Bot - Human Resources',
-    'version': '18.0.1.0.0',
+    'version': '17.0.1.0.0',
     'category': 'Human Resources',
     'summary': 'HR areas and counters for OdooClaw proactive assistance',
     'author': 'Nicolás Ramos',
