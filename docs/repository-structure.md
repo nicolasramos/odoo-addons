@@ -11,8 +11,9 @@ odoo-addons/
 ├── docs/
 │   ├── repository-structure.md
 │   └── release-policy.md
-├── scripts/
-│   └── validate_addon.py
+├── .github/
+│   └── scripts/
+│       └── validate_addon.py
 └── odoo_agent/
     ├── __manifest__.py
     ├── models/
