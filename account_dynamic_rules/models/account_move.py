@@ -25,15 +25,6 @@ class AccountMove(models.Model):
                 # Only for Purchase Invoices (Vendor Bills) -> Vendor Bank
                 # For Sales Invoices, bank depends on Payment Mode or Company
                 move_type = vals.get('move_type', self.env.context.get('default_move_type'))
-                
-                # 3. Payment Mode (requires account_payment_partner)
-                if not vals.get('payment_mode_id'):
-                    if move_type in ('in_invoice', 'in_refund', 'in_receipt') and hasattr(partner, 'supplier_payment_mode_id'):
-                        if partner.supplier_payment_mode_id:
-                            vals['payment_mode_id'] = partner.supplier_payment_mode_id.id
-                    elif move_type in ('out_invoice', 'out_refund', 'out_receipt') and hasattr(partner, 'customer_payment_mode_id'):
-                         if partner.customer_payment_mode_id:
-                            vals['payment_mode_id'] = partner.customer_payment_mode_id.id
 
                 if move_type in ('in_invoice', 'in_refund', 'in_receipt') and not vals.get('partner_bank_id'):
                     if partner.bank_ids:
@@ -72,14 +63,11 @@ class AccountMoveLine(models.Model):
         if self.tax_line_id:
             return
         
-        # Check account type to avoid touching Payables/Receivables (e.g. auto-generated lines)
-        if self.account_id.account_type in ('liability_payable', 'asset_receivable', 'liability_credit_card', 'asset_cash', 'liability_current'):
-             # Note: liability_current might be valid target, but usually we target expenses.
-             # Strict safety: Only touch expenses/income/assets/liabilities that are NOT the main AP/AR
-             return
-
-        # Simplified: Just ensure we don't mess with AP/AR if that's the risk
-        if self.account_id.account_type in ('liability_payable', 'asset_receivable'):
+        # Skip auto-generated lines (AP/AR, tax clearing, cash) — only touch expense/income accounts
+        if self.account_id.account_type in (
+            'liability_payable', 'asset_receivable',
+            'liability_credit_card', 'asset_cash', 'liability_current',
+        ):
             return
         
         # Helper to get partner (it might be on the move if not on the line)
@@ -96,16 +84,9 @@ class AccountMoveLine(models.Model):
             ('product_id', 'in', [product.id, False]),
         ]
         
-        # Payment mode check (defensive)
-        if hasattr(self.env['account.dynamic.rule'], 'payment_mode_id'):
-            # Simplified: check move's payment_mode_id if exists
-            payment_mode_id = self.move_id.payment_mode_id.id if hasattr(self.move_id, 'payment_mode_id') and self.move_id.payment_mode_id else False
-            domain.append(('payment_mode_id', 'in', [payment_mode_id, False]))
-
         rules = self.env['account.dynamic.rule'].search(domain, order='sequence')
         _logger.info("Dynamic Rules found: %s for Line %s", rules, self.name)
-        
-        match_found = False
+
         for rule in rules:
             # check description match if set
             if rule.description_match:
@@ -115,8 +96,7 @@ class AccountMoveLine(models.Model):
 
             # If we reached here, the rule matches
             _logger.info("Applying Dynamic Rule: %s for Line %s", rule.name, self.name)
-            match_found = True
-            
+
             # Apply Actions
             updates = {}
             if rule.account_id:
@@ -129,7 +109,6 @@ class AccountMoveLine(models.Model):
                 self.write(updates)
 
             if rule.analytic_account_id:
-                # Set analytic distribution: { 'account_id': 100 }
                 self.analytic_distribution = {str(rule.analytic_account_id.id): 100}
             
             if rule.payment_term_id and self.move_id:

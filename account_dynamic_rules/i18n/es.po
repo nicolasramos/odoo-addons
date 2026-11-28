@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: account_dynamic_rules 18.0\n"
+"Project-Id-Version: account_dynamic_rules 16.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-14 17:30+0000\n"
 "PO-Revision-Date: 2026-08-14 17:30+0000\n"
@@ -41,11 +41,6 @@ msgstr "Empresa"
 #: code:addons/account_dynamic_rules/models/account_dynamic_rule.py:0
 msgid "Product"
 msgstr "Producto"
-
-#. module: account_dynamic_rules
-#: code:addons/account_dynamic_rules/models/account_dynamic_rule.py:0
-msgid "Payment Mode"
-msgstr "Modo de Pago"
 
 #. module: account_dynamic_rules
 #: code:addons/account_dynamic_rules/models/account_dynamic_rule.py:0

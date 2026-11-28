@@ -15,7 +15,6 @@ class AccountDynamicRule(models.Model):
     # Match criteria
     partner_id = fields.Many2one("res.partner", string="Partner")
     product_id = fields.Many2one("product.product", string="Product")
-    payment_mode_id = fields.Many2one("account.payment.mode", string="Payment Mode")
     description_match = fields.Char(string="Description Match (Contains)", help="If set, relevant only if line description contains this text (case insensitive).")
 
     # Actions

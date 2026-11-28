@@ -4,12 +4,11 @@
         <field name="name">account.dynamic.rule.list</field>
         <field name="model">account.dynamic.rule</field>
         <field name="arch" type="xml">
-            <list editable="bottom">
+            <tree editable="bottom">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="product_id"/>
-                <field name="payment_mode_id"/>
                 <field name="description_match"/>
                 <field name="account_id"/>
                 <field name="analytic_account_id"/>
@@ -17,7 +16,7 @@
                 <field name="payment_term_id"/>
                 <field name="tax_ids" widget="many2many_tags"/>
                 <field name="fiscal_position_id"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -36,7 +35,6 @@
                         <group string="Conditions">
                             <field name="partner_id"/>
                             <field name="product_id"/>
-                            <field name="payment_mode_id"/>
                             <field name="description_match"/>
                         </group>
                         <group string="Actions">
@@ -80,9 +78,10 @@
     <record id="action_account_dynamic_rule" model="ir.actions.act_window">
         <field name="name">Account Dynamic Rules</field>
         <field name="res_model">account.dynamic.rule</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 
+    <!-- v16: account.account_menu is the correct menu for accounting settings -->
     <menuitem id="menu_account_dynamic_rule"
               parent="account.account_account_menu"
               action="action_account_dynamic_rule"
