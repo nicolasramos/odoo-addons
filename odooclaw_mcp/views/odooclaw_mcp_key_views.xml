@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_odooclaw_mcp_key_list" model="ir.ui.view">
+        <field name="name">odooclaw.mcp.key.list</field>
+        <field name="model">odooclaw.mcp.key</field>
+        <field name="arch" type="xml">
+            <tree string="MCP keys">
+                <field name="name" />
+                <field name="user_id" />
+                <field name="active" />
+                <field name="last_used_at" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_odooclaw_mcp_key_form" model="ir.ui.view">
+        <field name="name">odooclaw.mcp.key.form</field>
+        <field name="model">odooclaw.mcp.key</field>
+        <field name="arch" type="xml">
+            <form string="MCP key">
+                <header>
+                    <button name="action_rotate" type="object" string="Rotate token" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="user_id" />
+                        <field name="token" />
+                        <field name="active" />
+                        <field name="last_used_at" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_odooclaw_mcp_key" model="ir.actions.act_window">
+        <field name="name">MCP keys</field>
+        <field name="res_model">odooclaw.mcp.key</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

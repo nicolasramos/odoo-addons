@@ -49,7 +49,7 @@ class TestReplyDeliversAttachments(TransactionCase):
 
     def setUp(self):
         super().setUp()
-        self.channel = self.env["discuss.channel"].create({"name": "oc-test"})
+        self.channel = self.env["mail.channel"].create({"name": "oc-test"})
         self.attachment = self.env["ir.attachment"].sudo().create({
             "name": "report.txt",
             "datas": b"cmVwb3J0",  # base64 "report"
@@ -81,7 +81,14 @@ class TestReplyDeliversAttachments(TransactionCase):
         Without this, someone could "fix" a later refactor by removing the
         helper and the suite would still be green.
         """
-        with self.assertRaises(ValueError):
+        # 18 raises ValueError on the raw command form; 16 dies earlier with a
+        # TypeError inside browse. Either way the raw form cannot get through.
+        # (Odoo 16's assertRaises wrapper cannot take a tuple of classes.)
+        try:
             self.channel.sudo().message_post(
                 body="raw", attachment_ids=[(6, 0, [self.attachment.id])]
             )
+        except Exception as exc:  # noqa: BLE001 - the type is the assertion
+            self.assertIsInstance(exc, (ValueError, TypeError))
+        else:
+            self.fail("the raw x2many attachment form must not get through")

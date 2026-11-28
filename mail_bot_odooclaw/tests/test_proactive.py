@@ -29,90 +29,226 @@ class TestProactive(HttpCase):
         # The shared secret has to be configured or authorize() default-denies.
         # This is the same parameter the webhook path uses — the proactive routes
         # intentionally reuse the existing service credential rather than
-        # inventing a new one.
+        # introducing a second one.
         cls.env["ir.config_parameter"].sudo().set_param(
-            "odooclaw.service_secret", "test-secret"
+            "odooclaw.reply_token", "test-secret"
         )
-        # Ensure the area model exists so the area resolver works.
-        cls.Area = cls.env["mail.odooclaw.area"]
-        cls.area = cls.Area.create(
+        cls.url = "/odooclaw/notify"
+
+    def setUp(self):
+        super().setUp()
+        # url_open has no session of its own: without a login the request
+        # carries no database and every route outside the login page is a 404.
+        # This was the real cause of the TestProactive 404s.
+        self.authenticate("admin", "admin")
+
+    def _post(self, payload, token="test-secret"):
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-OdooClaw-Token"] = token
+        return self.url_open(
+            self.url,
+            data=json.dumps(payload),
+            headers=headers,
+        )
+
+    # --- delivery ---
+
+    def test_notify_posts_to_private_chat(self):
+        resp = self._post(
             {
+                "user_id": self.user.id,
+                # Playbook copy lives in the engine (odooclaw pkg/proactive); this
+                # module only relays it. The value is a stand-in for the engine text,
+                # so it is intentionally NOT translated here (see NRA-3914).
+                "message": "¿Quieres que te explique cómo publicar las facturas?",
+                "playbook_id": "accounting.unposted_invoices",
                 "area": "accounting",
-                "name": "Accounting",
+            }
+        )
+        self.assertEqual(resp.status_code, 200, resp.text)
+        body = resp.json()
+        self.assertEqual(body["status"], "ok")
+        self.assertTrue(body["message_id"])
+
+        # The message must exist, be authored by the bot, and land in a private
+        # (chat) channel — never in a business record's chatter.
+        message = self.env["mail.message"].sudo().browse(body["message_id"])
+        self.assertTrue(message.exists())
+        self.assertEqual(message.author_id, self.bot.partner_id)
+
+        channel = self.env["mail.channel"].sudo().browse(body["channel_id"])
+        self.assertEqual(channel.channel_type, "chat")
+
+    def test_notify_is_marked_proactive(self):
+        resp = self._post({"user_id": self.user.id, "message": "hola"})
+        self.assertEqual(resp.status_code, 200, resp.text)
+        message = self.env["mail.message"].sudo().browse(resp.json()["message_id"])
+        self.assertTrue(message.odooclaw_proactive)
+
+    def test_notify_reuses_one_private_channel(self):
+        """Two offers must land in the SAME conversation, not create a new one."""
+        first = self._post({"user_id": self.user.id, "message": "uno"})
+        second = self._post({"user_id": self.user.id, "message": "dos"})
+        self.assertEqual(
+            first.json()["channel_id"], second.json()["channel_id"],
+            "proactive messages created two separate private channels",
+        )
+
+    # --- refusals ---
+
+    def test_notify_rejects_missing_message(self):
+        resp = self._post({"user_id": self.user.id})
+        self.assertIn(resp.status_code, (400, 401))
+        self.assertEqual(resp.json()["status"], "error")
+
+    def test_notify_rejects_unknown_user(self):
+        resp = self._post({"user_id": 999999, "message": "hola"})
+        self.assertIn(resp.status_code, (400, 401))
+        self.assertEqual(resp.json()["status"], "error")
+
+    def test_notify_rejects_bad_token(self):
+        resp = self._post({"user_id": self.user.id, "message": "hola"}, token="wrong")
+        self.assertEqual(resp.status_code, 401)
+
+    # --- area resolution ---
+
+    def test_resolve_area_by_model(self):
+        # res.partner, not a business model: this test pins the RESOLVER, and the
+        # base module must not depend on any functional module to prove it works.
+        self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Generic",
+                "area": "generic",
+                "model_name": "res.partner",
+            }
+        )
+        area = self.env["mail.odooclaw.area"].sudo().resolve_area("res.partner")
+        self.assertEqual(area.area, "generic")
+
+    def test_resolve_area_is_silent_for_unknown_screen(self):
+        area = self.env["mail.odooclaw.area"].sudo().resolve_area("ir.ui.view")
+        self.assertFalse(area, "an unknown model must resolve to no area")
+
+    def test_disabled_area_never_resolves(self):
+        rec = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Disabled",
+                "area": "generic",
+                "model_name": "res.partner",
+                "enabled": False,
+            }
+        )
+        area = self.env["mail.odooclaw.area"].sudo().resolve_area("res.partner")
+        self.assertNotEqual(area, rec)
+
+    def test_counters_are_built_from_the_definition(self):
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Contabilidad",
+                "area": "accounting",
+                "model_name": "res.partner",
+                "signal_definition": json.dumps(
+                    {"partners": {"model": "res.partner", "domain": []}}
+                ),
+            }
+        )
+        counters = area.counters_for("res.partner")
+        self.assertIn("partners", counters)
+        self.assertGreater(counters["partners"], 0)
+
+    def test_a_broken_definition_degrades_to_zero(self):
+        """A configuration mistake must produce silence, never a 500."""
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Rota",
+                "area": "accounting",
+                "model_name": "res.partner",
+                "signal_definition": "not json at all",
+            }
+        )
+        self.assertEqual(area.counters_for("res.partner"), {})
+
+        area.signal_definition = json.dumps(
+            {"partners": {"model": "no.such.model", "domain": []}}
+        )
+        self.assertEqual(area.counters_for("no.such.model"), {"partners": 0})
+
+    # --- $today: counters that must not rot ---
+
+    def test_today_placeholder_counts_the_past_not_the_future(self):
+        """`$today` must resolve to the real date at count time.
+
+        An overdue counter written with a literal date keeps returning a number
+        long after that date, and a wrong count is not an error anywhere. This
+        pins the behaviour in both directions: a partner created BEFORE today is
+        counted, one created "in the future" by the domain's own clock is not.
+        """
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Vencidos",
+                "area": "contabilidad",
+                "model_name": "res.partner",
+                "signal_definition": json.dumps(
+                    {
+                        "past_partners": {
+                            "model": "res.partner",
+                            "domain": [["create_date", "<", "$today"]],
+                        }
+                    }
+                ),
             }
         )
 
-    def test_signal_missing_auth(self):
-        """/odooclaw/signal without auth must default-deny."""
-        resp = self.url_open(
-            "/odooclaw/signal",
-            data=json.dumps({"user_id": self.user.id, "screen": "accounting"}),
-            headers={"Content-Type": "application/json"},
+        # A record from yesterday must match. Backdate through SQL, because
+        # create_date is not writable.
+        old = self.env["res.partner"].create({"name": "De ayer"})
+        self.env.cr.execute(
+            "UPDATE res_partner SET create_date = now() - interval '2 days' "
+            "WHERE id = %s",
+            (old.id,),
         )
-        self.assertEqual(resp.status_code, 401)
+        self.env["res.partner"].invalidate_model()
 
-    def test_signal_valid_auth(self):
-        """/odooclaw/signal with valid secret returns a decision dict."""
-        resp = self.url_open(
-            "/odooclaw/signal",
-            data=json.dumps({"user_id": self.user.id, "screen": "accounting"}),
-            headers={
-                "Content-Type": "application/json",
-                "X-OdooClaw-Token": "test-secret",
-            },
+        counters = area.counters_for("res.partner")
+        self.assertIn("past_partners", counters)
+        self.assertGreaterEqual(
+            counters["past_partners"],
+            1,
+            "$today did not resolve to a date: nothing from the past matched",
         )
-        self.assertEqual(resp.status_code, 200)
-        body = resp.json()
-        # The Go engine is not running, so we expect a failure reason,
-        # not a crash.
-        self.assertIn("speak", body)
-        self.assertIn("area", body)
-        self.assertEqual(body["area"], "accounting")
 
-    def test_signal_missing_fields(self):
-        """/odooclaw/signal without user_id or screen must return an error."""
-        resp = self.url_open(
-            "/odooclaw/signal",
-            data=json.dumps({"screen": "accounting"}),
-            headers={
-                "Content-Type": "application/json",
-                "X-OdooClaw-Token": "test-secret",
-            },
+    def test_today_placeholder_is_resolved_not_stored(self):
+        """The stored definition keeps `$today`; only the count resolves it."""
+        area = self.env["mail.odooclaw.area"].sudo().create(
+            {
+                "name": "Vencidos 2",
+                "area": "contabilidad",
+                "model_name": "res.partner",
+                "signal_definition": json.dumps(
+                    {
+                        "future_partners": {
+                            "model": "res.partner",
+                            "domain": [["create_date", ">", "$today"]],
+                        }
+                    }
+                ),
+            }
         )
-        body = resp.json()
-        self.assertIn("error", body)
+        # Nothing can be created after today, so a correctly resolved domain
+        # yields exactly 0 — and the definition is untouched.
+        self.assertEqual(area.counters_for("res.partner"), {"future_partners": 0})
+        self.assertIn("$today", area.signal_definition)
 
-    def test_notify_missing_auth(self):
-        """/odooclaw/notify without auth must default-deny."""
-        resp = self.url_open(
-            "/odooclaw/notify",
-            data=json.dumps({"user_id": 1, "message": "unsolicited"}),
-            headers={
-                "Content-Type": "application/json",
-            },
-        )
-        self.assertEqual(resp.status_code, 401)
+    # --- the invariant that matters ---
 
-    def test_notify_valid_auth(self):
-        """/odooclaw/notify with valid secret posts to bot chat."""
+    def test_reply_still_requires_a_reply_token(self):
+        """The solicited path must stay guarded: proactivity must not loosen it."""
         resp = self.url_open(
-            "/odooclaw/notify",
-            data=json.dumps({"user_id": self.user.id, "message": "unsolicited"}),
-            headers={
-                "Content-Type": "application/json",
-                "X-OdooClaw-Token": "test-secret",
-            },
-        )
-        body = resp.json()
-        # The bot user exists but has no private channel yet, so the message
-        # is posted and a channel is created.
-        self.assertEqual(body["status"], "ok")
-
-    def test_notify_missing_fields(self):
-        """/odooclaw/notify without user_id or message returns an error."""
-        resp = self.url_open(
-            "/odooclaw/notify",
-            data=json.dumps({"area": "accounting"}),
+            "/odooclaw/reply",
+            data=json.dumps(
+                {"model": "discuss.channel", "res_id": 1, "message": "unsolicited"}
+            ),
             headers={
                 "Content-Type": "application/json",
                 "X-OdooClaw-Token": "test-secret",

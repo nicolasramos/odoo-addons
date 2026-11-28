@@ -22,23 +22,34 @@ class TestSecurityHelpers(TransactionCase):
         """Without any config, authorize() should reject the request."""
         from ..controllers.security import authorize, _abort
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.env["ir.config_parameter"].sudo().get_param = (
                 lambda key, default="": ""
             )
             mock_request.httprequest.remote_addr = "10.0.0.1"
             mock_request.httprequest.headers.get = lambda key, default="": ""
+            mock_request.make_json_response = lambda d, **kw: MagicMock(
+                data=json.dumps(d).encode(), status_code=kw.get("status", 400)
+            )
             with self.assertRaises(Exception) as ctx:
                 authorize()
-            self.assertIn("Unauthorized", str(ctx.exception))
+            # The reason lives in the HTTPException's response body,
+            # not in str(exception).
+            exc = ctx.exception
+            self.assertTrue(hasattr(exc, "response") and exc.response is not None,
+                            "authorize() must raise HTTPException with a response")
+            body = json.loads(exc.response.data)
+            self.assertEqual(body.get("reason"), "Unauthorized: no security configuration. Set odooclaw.reply_token or odooclaw.allowed_ips")
 
     def test_ip_allowed_cidr(self):
         """Test that IPs within allowed CIDR ranges pass."""
         from ..controllers.security import _check_ip_allowlist
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.httprequest.remote_addr = "192.168.1.50"
             mock_request.env["ir.config_parameter"].sudo().get_param = (
                 lambda key, default="": (
@@ -54,8 +65,9 @@ class TestSecurityHelpers(TransactionCase):
         """Test that IPs outside allowed ranges are rejected."""
         from ..controllers.security import _check_ip_allowlist
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.httprequest.remote_addr = "8.8.8.8"
             mock_request.env["ir.config_parameter"].sudo().get_param = (
                 lambda key, default="": (
@@ -71,8 +83,9 @@ class TestSecurityHelpers(TransactionCase):
         """Test that a valid token passes."""
         from ..controllers.security import _check_token
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.httprequest.headers.get = lambda key, default="": (
                 "test-token-123" if key == "X-OdooClaw-Token" else default
             )
@@ -90,8 +103,9 @@ class TestSecurityHelpers(TransactionCase):
         """Test that an invalid token is rejected."""
         from ..controllers.security import _check_token
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.httprequest.headers.get = lambda key, default="": (
                 "wrong-token" if key == "X-OdooClaw-Token" else default
             )
@@ -109,7 +123,12 @@ class TestSecurityHelpers(TransactionCase):
         """Test that error responses don't leak internals."""
         from ..controllers.security import error_response
 
-        result = error_response("Something went wrong", status=500)
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                   new=MagicMock()) as mock_req:
+            mock_req.make_json_response = lambda d, **kw: MagicMock(
+                data=json.dumps(d).encode(), status_code=kw.get("status", 400)
+            )
+            result = error_response("Something went wrong", status=500)
         data = json.loads(result.data)
         self.assertEqual(data["status"], "error")
         self.assertEqual(data["reason"], "Something went wrong")
@@ -119,15 +138,21 @@ class TestSecurityHelpers(TransactionCase):
         """Test default status code is 400."""
         from ..controllers.security import error_response
 
-        result = error_response("Bad request")
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                   new=MagicMock()) as mock_req:
+            mock_req.make_json_response = lambda d, **kw: MagicMock(
+                data=json.dumps(d).encode(), status_code=kw.get("status", 400)
+            )
+            result = error_response("Bad request")
         self.assertEqual(result.status_code, 400)
 
     def test_authorize_passes_with_token_only(self):
         """authorize() should pass when only token is configured and valid."""
         from ..controllers.security import authorize
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.httprequest.remote_addr = "10.0.0.1"
             mock_request.httprequest.headers.get = lambda key, default="": (
                 "test-token-123" if key == "X-OdooClaw-Token" else default
@@ -146,8 +171,9 @@ class TestSecurityHelpers(TransactionCase):
         """authorize() should pass when only IP allowlist is configured and IP matches."""
         from ..controllers.security import authorize
 
-        with patch("odoo.http.request") as mock_request:
-            mock_request.env = self.env
+        with patch("odoo.addons.mail_bot_odooclaw.controllers.security.request",
+                        new=MagicMock()) as mock_request:
+            mock_request.env = MagicMock()
             mock_request.httprequest.remote_addr = "192.168.1.50"
             mock_request.httprequest.headers.get = lambda key, default="": ""
             mock_request.env["ir.config_parameter"].sudo().get_param = (

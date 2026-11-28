@@ -11,14 +11,17 @@ odoo-addons/
 ├── docs/
 │   ├── repository-structure.md
 │   └── release-policy.md
-└── mail_bot_odooclaw/
+├── .github/
+│   └── scripts/
+│       └── validate_addon.py
+└── odoo_agent/
     ├── __manifest__.py
     ├── models/
     ├── controllers/
     ├── views/
     ├── security/
     ├── tests/
-    └── utils/
+    └── docs/
 ```
 
 ## What belongs here

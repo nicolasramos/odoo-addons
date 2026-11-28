@@ -20,7 +20,9 @@
             <field name="sequence">50</field>
             <field name="enabled" eval="True" />
             <field name="model_name">hr.leave</field>
-            <field name="signal_definition">{"pending_leave_requests": {"model": "hr.leave", "domain": [["state", "in", ["confirm", "validate1"]]]}}</field>
+            <field
+                name="signal_definition"
+            >{"pending_leave_requests": {"model": "hr.leave", "domain": [["state", "in", ["confirm", "validate1"]]]}}</field>
         </record>
     </data>
 </odoo>

@@ -19,146 +19,110 @@ Why a separate endpoint and not ``/odooclaw/reply``: that route requires a
 single-use ``reply_token`` that Odoo mints when a human writes to the bot, and
 it validates that the reply is a direct answer. That gate is deliberate — it is
 what makes ``sudo().message_post()`` safe there. Its direct consequence is that
-a message nobody solicited cannot reach a business record's chatter through
-that route.
-
-The counters that power the offers live here too: they are deterministic — no
-ML, no "confidence score" — so that when a user complains the assistant is
-"suggesting the same thing every day", the answer is a number on a record, not
-a guess.
+a message nobody solicited is *impossible by construction*. Proactivity needs
+the opposite flow, so it gets its own route and keeps the solicited one intact.
 """
 
 import json
 import logging
 
-from dateutil.relativedelta import relativedelta
+from markupsafe import Markup
 
-from odoo import api, fields, models, _
-from odoo.exceptions import AccessError, ValidationError
-from odoo.tools.safe_eval import safe_eval
+from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
 
+# The metadata key the knowledge base and the playbooks share. Keeping one
+# vocabulary on both sides is what lets "the trigger knows where the user is"
+# meet "the knowledge base knows what to teach".
+AREA_KEY = "area"
 
-class MailOdooclawArea(models.Model):
-    """Mapping from an Odoo action to a proactive area.
 
-    The area is the functional label the Go engine expects (``accounting``,
-    ``sales``, etc.). The counters are the deterministic triggers that decide
-    whether the area should offer help.
+class MailOdooClawArea(models.Model):
+    """Maps an Odoo view/action to a functional area and its signal counters.
 
-    Why this is a model instead of a static dict:
-    * **It is a business rule.** "What counts as 'unreconciled'?" changes when
-      the company changes its bank reconciliation process.
-    * **It must be inspectable.** When the assistant is silent, someone needs to
-      see the counters in the UI and understand why nothing triggered.
-    * **The Go engine depends on the identifier.** Renaming one side without the
-      other leaves the assistant mute with zero errors.
+    Rows are data: an administrator can retarget an area or change a threshold
+    without touching code, which matters for material whose rules change (the
+    VeriFactu deadlines already moved once with RDL 15/2025).
     """
 
     _name = "mail.odooclaw.area"
-    _description = "OdooClaw proactive area"
+    _description = "OdooClaw Proactive Area"
+    _order = "sequence, id"
 
-    name = fields.Char(
-        required=True,
-        help="Human-readable label for this area.",
-    )
+    name = fields.Char(required=True, translate=True)
     area = fields.Char(
         required=True,
-        help="Functional area identifier. Must match what the Go engine "
-        "expects in English: ``accounting``, ``sales``, etc.",
+        index=True,
+        help="Functional area key shared with the knowledge base: "
+        "accounting, sales, purchases, inventory, hr...",
     )
-    sequence = fields.Integer(
-        default=100,
-        help="Order in which areas are presented to the user.",
-    )
+    sequence = fields.Integer(default=10)
+    active = fields.Boolean(default=True)
     enabled = fields.Boolean(
+        string="Proactive suggestions",
         default=True,
-        help="When disabled, this area never fires, even if the counters "
-        "are non-zero.",
+        help="When unchecked, entering this area never triggers a suggestion.",
     )
     model_name = fields.Char(
-        help="Primary model for this area. Used as a fallback when no "
-        "action-specific row exists.",
+        help="Technical model that identifies this area, e.g. res.partner.",
     )
-    signal_definition = fields.Text(
-        help="JSON definition of the counters for the Go engine. "
-        "Format: {\"counter_name\": {\"model\": \"model.name\", "
-        "\"domain\": [...]}}, ...",
-    )
-    counters = fields.One2many(
-        "mail.odooclaw.area.counter",
-        "area_id",
-        "Counters",
-        help="Legacy counters. Use signal_definition for new areas.",
+    view_ids = fields.Many2many(
+        "ir.ui.view",
+        string="Views",
+        help="Views that belong to this area. Optional: the model is usually enough.",
     )
     action_ids = fields.Many2many(
         "ir.actions.act_window",
-        "mail_odooclaw_area_action_rel",
-        "area_id",
-        "action_id",
-        "Actions",
-        help="Actions that map to this area. When the user opens one of "
-        "these actions, the area's counters are evaluated.",
+        string="Actions",
+        help="Window actions that open this area.",
+    )
+    signal_definition = fields.Text(
+        default="{}",
+        help="JSON object mapping a signal key to the count expression used to "
+        "build the counters, e.g. "
+        '{"my_signal": {"model": "res.partner", "domain": [["active", "=", True]]}}.'
+        " See the mail_bot_odooclaw_account module for real working examples.",
     )
 
-    @api.model
-    def _count_with_today(self, model_name, domain):
-        """Count records, resolving ``$today`` and ``$n_days_ago``.
+    @api.constrains("area")
+    def _check_area(self):
+        for rec in self:
+            if rec.area and rec.area != rec.area.strip().lower():
+                raise models.ValidationError(
+                    _("The area key must be lowercase and without spaces: %s", rec.area)
+                )
 
-        ``$today`` is replaced with today's date. ``$n_days_ago`` is
-        replaced with today minus n days. This makes overdue counters
-        self-updating without needing a cron job.
-
-        Placeholder replacement happens at the leaf level, so a domain like
-        ``["date_deadline", "<", "$today"]`` becomes
-        ``["date_deadline", "<", "2026-10-01"]`` (or whatever today is).
+    def _resolve_today(self, value):
+        """Replace the ``$today`` placeholder with today's date, recursively.
 
         Overdue counters ("tasks past their deadline", "projects past their end
         date") need a moving reference. Hardcoding a date makes the counter
         silently rot: it keeps returning a number that is no longer meaningful,
         which is worse than returning nothing. ``$today`` is resolved at count
-        time, so the counter always reflects today's perspective.
-
-        ``$n_days_ago`` is resolved to the date n days before today and
-        makes it possible to say "opportunities without activity in 30 days"
-        without hardcoding a date or running a cron job.
+        time so the definition stays correct forever.
         """
-        if not domain:
+        if isinstance(value, str):
+            return fields.Date.today().isoformat() if value == "$today" else value
+        if isinstance(value, (list, tuple)):
+            return [self._resolve_today(item) for item in value]
+        return value
+
+    def _count_for(self, definition):
+        """Count records for one signal definition. Returns 0 on any problem.
+
+        Counting failures must never surface to the user: a bad definition
+        should degrade to silence, not to an error dialog on a view open.
+        """
+        self.ensure_one()
+        domain = definition.get("domain") or []
+        model_name = definition.get("model") or self.model_name
+        if not model_name:
             return 0
 
-        def _resolve_placeholder(value):
-            """Resolve placeholders recursively."""
-            if isinstance(value, str):
-                if value == "$today":
-                    return fields.Date.context_today(self)
-                if value.startswith("$") and "_days_ago" in value:
-                    try:
-                        n = int(value.split("_")[1])
-                        return fields.Date.from_string(
-                            fields.Date.context_today(self)
-                        ) - relativedelta(days=n)
-                    except (ValueError, IndexError):
-                        return value
-                return value
-            if isinstance(value, list):
-                return [_resolve_placeholder(v) for v in value]
-            if isinstance(value, tuple):
-                return tuple(_resolve_placeholder(v) for v in value)
-            return value
+        domain = self._resolve_today(domain)
 
-        resolved_domain = [_resolve_placeholder(d) for d in domain]
-        return self._count_records(model_name, resolved_domain)
-
-    def _count_records(self, model_name, domain):
-        """Count records matching a model + domain.
-
-        This is the helper that makes every counter a one-liner.
-        """
-        if not domain:
-            return 0
-
-        # If the model is not installed (e.g., Contabilidad needs
+        # a model from a module that is not installed (Contabilidad needs
         # `account`). That is not an error: it is an area that cannot apply yet,
         # and it must stay silent without logging a traceback on every view open.
         if model_name not in self.env:
@@ -199,127 +163,123 @@ class MailOdooclawArea(models.Model):
         for key, definition in definitions.items():
             if not isinstance(definition, dict):
                 continue
-            model_name = definition.get("model")
-            domain = definition.get("domain")
-            if not model_name or not domain:
-                continue
-            count = self._count_with_today(model_name, domain)
-            if count > 0:
-                counters[key] = {
-                    "count": count,
-                    "model": model_name,
-                    "domain": domain,
-                }
+            counters[key] = self._count_for(definition)
         return counters
 
-    def write(self, vals):
-        if "area" in vals and vals["area"]:
-            # Check for duplicates
-            existing = self.search(
-                [("area", "=", vals["area"]), ("id", "!=", self.id)]
-            )
-            if existing:
-                raise ValidationError(
-                    _("Area '%s' already exists.") % vals["area"]
-                )
-        return super().write(vals)
+    @api.model
+    def resolve_area(self, model_name, view_id=None, action_id=None):
+        """Resolve the functional area for a screen, or an empty recordset.
 
-    def name_search(self, name, args=None, operator="ilike", limit=100):
-        if not args:
-            args = []
-        if name:
-            records = self.search(
-                [("area", operator, name)] + args, limit=limit
-            )
-            if not records and operator == "ilike":
-                records = self.search(
-                    [("name", operator, name)] + args, limit=limit
-                )
-            return records.name_get()
-        return super().name_search(name, args=args, operator=operator, limit=limit)
+        Resolution order, most specific first: window action, then view, then
+        model. Deterministic on purpose — the same screen must always resolve to
+        the same area, otherwise the cooldown behaves inconsistently.
+        """
+        base = self.search([("active", "=", True), ("enabled", "=", True)])
+        if not base:
+            return self.browse()
+
+        if action_id:
+            by_action = base.filtered(lambda r: action_id in r.action_ids.ids)
+            if by_action:
+                return by_action[0]
+
+        if view_id:
+            by_view = base.filtered(lambda r: view_id in r.view_ids.ids)
+            if by_view:
+                return by_view[0]
+
+        if model_name:
+            by_model = base.filtered(lambda r: r.model_name == model_name)
+            if by_model:
+                return by_model[0]
+
+        return self.browse()
 
 
-class MailOdooclawAreaCounter(models.Model):
-    """A single deterministic counter for a proactive area.
+class OdooClawProactiveController:
+    """Mixin-less controller holder; see ``controllers/main.py`` for the routes.
 
-    Every counter is a (model, domain) pair plus a human-readable label.
-    When the counter is ``> 0`` the area is a candidate for offering help.
+    The route itself is defined in main.py alongside the existing endpoints so
+    all OdooClaw routes stay in one place; this class documents the contract and
+    is intentionally not an http.Controller.
     """
 
-    _name = "mail.odooclaw.area.counter"
-    _description = "OdooClaw proactive area counter"
+    pass
 
-    area_id = fields.Many2one(
-        "mail.odooclaw.area",
-        required=True,
-        ondelete="cascade",
+
+def post_proactive_message(env, user_id, body, playbook_id, area):
+    """Post an unsolicited offer to the bot's private chat with ``user_id``.
+
+    Returns the created ``mail.message``. Raises ``ValueError`` with a
+    human-readable reason on any refusal, which the caller turns into a 4xx.
+    """
+    # Everything below runs as superuser: an unsolicited post arrives on a public
+    # route with no user session, so reading res.users or creating the private
+    # channel would otherwise raise AccessError.
+    env = env["res.users"].sudo().env
+
+    bot_user = env.ref("mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False)
+    if not bot_user:
+        raise ValueError("OdooClaw bot user not found")
+
+    user = env["res.users"].browse(int(user_id))
+    if not user.exists():
+        raise ValueError("target user not found")
+
+    partner = user.partner_id
+    if not partner:
+        raise ValueError("target user has no partner")
+
+    # Reuse the exact private-channel resolution the solicited path uses, so
+    # proactive and reply messages land in the same conversation. It must run as
+    # the target user, not as the superuser: discuss.channel.create always adds
+    # the CURRENT user as a member, and the superuser turns a two-person chat
+    # into a three-member one, which the chat constraint rejects.
+    channel = (
+        env["mail.thread"]
+        .with_user(user)
+        .sudo()
+        ._resolve_private_reply_channel(partner, bot_user.partner_id)
     )
-    trigger = fields.Char(
-        required=True,
-        help="Identifier for the Go engine. Must be in English.",
+    if not channel:
+        raise ValueError("could not resolve the private channel")
+
+    from ..utils.markdown_html import markdown_to_safe_html
+
+    # Post as the bot so the message is attributed correctly and any reply the
+    # user writes comes back through the normal webhook path.
+    message = (
+        channel.with_user(bot_user)
+        .sudo()
+        .message_post(
+            # Markup, not the raw string: message_post escapes a plain str, which
+            # turned the rendered <p> into a literal &lt;p&gt; inside another <p>.
+            body=Markup(markdown_to_safe_html(body)),
+            author_id=bot_user.partner_id.id,
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+        )
     )
-    model_name = fields.Char(
-        required=True,
-        help="Odoo model to count, e.g. ``account.move``.",
-    )
-    domain = fields.Text(
-        required=True,
-        help="Domain as a string, e.g. "
-        "'[\\\"state\\\", \\\"!=\\\", \\\"posted\\\"]'.",
-    )
-    name = fields.Char(
-        compute="_compute_name",
-        store=True,
-        readonly=True,
+    message.sudo().write(
+        {
+            "odooclaw_proactive": True,
+            "odooclaw_playbook_id": playbook_id or "",
+            "odooclaw_area": area or "",
+        }
     )
 
-    @api.depends("trigger", "model_name")
-    def _compute_name(self):
-        for rec in self:
-            rec.name = _("%(trigger)s (%(model)s)") % {
-                "trigger": rec.trigger,
-                "model": rec.model_name,
-            }
+    # Mirror the "typing" cue the reply path shows, so a proactive message and a
+    # reply feel like the same assistant.
+    bot_member = channel.channel_member_ids.filtered(
+        lambda m: m.partner_id.id == bot_user.partner_id.id
+    )
+    if bot_member:
+        bot_member.sudo()._notify_typing(is_typing=False)
 
-    def _compute_count(self):
-        """Evaluate the counter and return the count."""
-        self.ensure_one()
-        try:
-            domain = safe_eval(self.domain)
-        except Exception as exc:
-            _logger.error(
-                "odooclaw area: invalid domain %s: %s", self.domain, exc
-            )
-            return 0
-        try:
-            model = self.env[self.model_name].sudo()
-            return model.search_count(domain)
-        except AccessError:
-            _logger.warning(
-                "odooclaw area: AccessError on %s domain %s",
-                self.model_name,
-                self.domain,
-            )
-            return 0
-        except Exception as exc:
-            _logger.error(
-                "odooclaw area: error on %s domain %s: %s",
-                self.model_name,
-                self.domain,
-                exc,
-            )
-            return 0
-
-    def name_search(self, name, args=None, operator="ilike", limit=100):
-        if not args:
-            args = []
-        if name:
-            records = self.search(
-                [("trigger", operator, name)] + args, limit=limit
-            )
-            if not records:
-                records = self.search(
-                    [("name", operator, name)] + args, limit=limit
-                )
-            return records.name_get()
-        return super().name_search(name, args=args, operator=operator, limit=limit)
+    _logger.info(
+        "odooclaw: proactive message posted user_id=%s area=%s playbook=%s",
+        user_id,
+        area,
+        playbook_id,
+    )
+    return message

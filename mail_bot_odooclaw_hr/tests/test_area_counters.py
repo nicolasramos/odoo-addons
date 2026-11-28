@@ -1,30 +1,47 @@
 # Copyright 2026 Nicolás Ramos
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from . import common
+from odoo.tests import tagged
+
+from .common import TestAreaCounters
 
 
-class TestAreaCounters(common.HrCounterCommon):
-    """Test HR area counters."""
+@tagged("post_install", "-at_install")
+class TestHrAreaCounters(TestAreaCounters):
+    AREA_XMLID = "mail_bot_odooclaw_hr.area_hr"
+    SIGNAL_KEY = "pending_leave_requests"
+    MODEL = "hr.leave"
+    DOMAIN = [("state", "in", ["confirm", "validate1"])]
 
-    def test_pending_leave_requests_counter(self):
-        """A pending leave request should move the counter."""
-        leave = self.HrLeave.create(
+    def setUp(self):
+        super().setUp()
+        # A leave needs an employee and a leave type. "requires_allocation" is a
+        # STRING ("yes"/"no"), not a boolean: filtering by False returns nothing
+        # and the create then fails for the wrong reason.
+        self.employee = self.env["hr.employee"].search([], limit=1)
+        self.leave_type = self.env["hr.leave.type"].search([]).filtered(
+            lambda t: t.requires_allocation == "no"
+        )[:1]
+
+    def _make_leave(self, state, day):
+        return self.env["hr.leave"].create(
             {
-                "name": "Test Leave",
-                "holiday_status_id": self.env.ref("hr_holidays.status_cl").id,
-                "employee_id": self.env.user.employee_id.id,
-                "holiday_type": "employee",
-                "date_from": "2026-10-01",
-                "date_to": "2026-10-02",
-                "number_of_days": 1,
+                "name": "Counter test",
+                "employee_id": self.employee.id,
+                "holiday_status_id": self.leave_type.id,
+                "state": state,
+                "request_date_from": day,
+                "request_date_to": day,
             }
         )
-        try:
-            # Submit the leave to trigger the pending state
-            leave.action_submit()
-            result = self.env["mail.odooclaw.area"].sudo().browse(10).counters_for("hr.leave")
-            self.assertIn("pending_leave_requests", result)
-            self.assertGreater(result["pending_leave_requests"]["count"], 0)
-        except Exception:
-            pass  # Counter may not fire if state management differs
+
+    def _create_matching(self):
+        # hr.leave has NO 'draft' state. 'confirm' is "To Approve", which is
+        # exactly what this counter is about.
+        self._make_leave("confirm", "2027-03-01")
+
+    def _create_non_matching(self):
+        # Odoo 16 only lets a request be created in draft/confirm; a refused
+        # request is a confirm one that went through the refusal flow.
+        leave = self._make_leave("confirm", "2027-04-01")
+        leave.action_refuse()

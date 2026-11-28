@@ -1,0 +1,15 @@
+{
+    "name": "OdooClaw Knowledge (document_page)",
+    "version": "16.0.1.0.0",
+    "category": "Discuss",
+    "summary": "Let OdooClaw answer from the knowledge document pages, with the page it used",
+    "author": "Nicolás Ramos",
+    "license": "AGPL-3",
+    "depends": ["mail_bot_odooclaw", "document_page"],
+    "data": [],
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+    "maintainer": "nicolasramos",
+    "development_status": "Beta",
+}

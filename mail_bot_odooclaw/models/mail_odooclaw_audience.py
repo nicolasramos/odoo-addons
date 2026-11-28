@@ -21,111 +21,163 @@ The classification itself is the standard Odoo one, and it is verified against a
 real Odoo 18 database rather than assumed:
 
 * ``share = False``  -> internal user (employee)
-* ``share = True``   -> portal user (excluded)
-* ``id == public``   -> public user (excluded)
-* ``id == False``    -> anonymous (excluded)
+* ``share = True``   -> portal user
+* ``active = False`` -> deactivated; must not receive new messages
 
-This is not opinion; it is the result of inspecting a live Odoo 18 database
-and confirming the ``res.users`` schema.
+``share`` is the field Odoo itself uses to draw the line between an employee and
+an outsider (``base.group_user`` sets it), so using it keeps us aligned with the
+platform instead of inventing a parallel definition.
 """
 
-from odoo import api, fields, models
+import logging
+
+from odoo import _, api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class MailOdooclawAudience(models.Model):
-    """A rule that selects which users may be offered proactive help.
-
-    The default audience is "all internal users" — any employee with an
-    internal Odoo account.
-
-    The model exists so that the rule can be inspected, edited, and audited
-    from the UI without touching code.
-    """
+    """The audience of proactive assistance: which internal users qualify."""
 
     _name = "mail.odooclaw.audience"
     _description = "OdooClaw proactive audience"
+    _rec_name = "name"
 
-    name = fields.Char(required=True)
+    name = fields.Char(
+        default=lambda self: _("Internal users of DU"),
+        required=True,
+    )
+    active = fields.Boolean(default=True)
+
+    # -- The rule ---------------------------------------------------------
     internal_only = fields.Boolean(
+        string="Internal users only",
         default=True,
-        help="When checked, only internal users (employees) are eligible. "
-        "Portal users and the public user are excluded.",
+        help="Assistance is offered to internal users (employees) only. Portal "
+        "users and the public user are left out: they are not company staff "
+        "and the counters quoted in the offer are business figures.",
     )
     include_inactive = fields.Boolean(
+        string="Include deactivated users",
         default=False,
-        help="When checked, inactive (disabled) employees are also eligible. "
-        "Useful when onboarding or offboarding.",
+        help="An offboarded employee must not receive new messages.",
     )
+
+    # -- Optional narrowing ----------------------------------------------
     group_ids = fields.Many2many(
         "res.groups",
-        "mail_odooclaw_audience_group_rel",
-        "audience_id",
-        "group_id",
-        "Required groups",
-        help="When set, only users in ALL of these groups are eligible. "
-        "Useful for limiting to a department or role.",
+        string="Restrict to these groups",
+        help="Optional. When set, the audience is further restricted to the "
+        "members of these groups. Empty = any internal user.",
     )
     excluded_group_ids = fields.Many2many(
         "res.groups",
         "mail_odooclaw_audience_excluded_group_rel",
-        "audience_id",
-        "excluded_group_id",
-        "Excluded groups",
-        help="Users in ANY of these groups are excluded, even if they meet "
-        "all other criteria.",
+        string="Exclude these groups",
+        help="Optional. The members of these groups never receive assistance, "
+        "even when they meet every other condition.",
     )
-    active = fields.Boolean(default=True)
-    note = fields.Html(
-        sanitize=False,
-        help="Free-text note for humans who inspect the audience. "
-        "Not used by the engine.",
+
+    company_ids = fields.Many2many(
+        "res.company",
+        string="Restrict to these companies",
+        help="Optional. Empty = all companies.",
     )
+
+    note = fields.Text(string="Notes")
 
     @api.model
-    def _audience_domain(self):
-        """Build the domain for eligible users.
+    def _internal_domain(self):
+        """The Odoo domain for "internal user", in one place.
 
-        Returns a domain list suitable for ``res.users.search()``.
+        Kept as a method so the definition cannot drift between the resolver,
+        the tests and any admin view.
         """
-        domain = []
-        if self.internal_only:
-            domain.append(("share", "=", False))
+        return [("share", "=", False), ("active", "=", True)]
+
+    def _audience_domain(self):
+        """The full domain of users who are a candidate audience.
+
+        Fail-closed by design: if no active audience row exists, nobody is a
+        candidate. A missing configuration must never default to "everybody",
+        because that would offer help (and show business figures) to users the
+        customer never intended to include.
+        """
+        self.ensure_one()
+        domain = [("share", "=", False)]
         if not self.include_inactive:
             domain.append(("active", "=", True))
         if self.group_ids:
             domain.append(("groups_id", "in", self.group_ids.ids))
         if self.excluded_group_ids:
             domain.append(("groups_id", "not in", self.excluded_group_ids.ids))
-        # Exclude portal/public users
-        domain.append(("id", "!=", self.env.ref("base.public_user").id))
+        if self.company_ids:
+            domain.append(("company_ids", "in", self.company_ids.ids))
         return domain
 
+    @api.model
     def resolve_for_user(self, user_id):
-        """Check if a user is eligible for proactive offers.
+        """Classify one user for the engine.
 
-        Returns a dict with ``eligible`` (bool) and ``reason`` (str).
+        Returns a dict matching the Go side's ``ClassifiedUser`` so the caller
+        never has to reinterpret Odoo's model: ``{user_id, is_internal,
+        is_active, eligible, reason}``.
+
+        The bot itself is excluded: it is an internal user, but offering the bot
+        help would produce the assistant talking to itself.
         """
-        self.ensure_one()
-        user = self.env["res.users"].browse(user_id)
-        domain = self._audience_domain()
-        if user.id in self.env["res.users"].sudo().search(domain).ids:
-            return {"eligible": True, "reason": ""}
-        # Build a human-readable reason
-        reasons = []
-        if self.internal_only and user.share:
-            reasons.append("portal user")
-        if not self.include_inactive and not user.active:
-            reasons.append("inactive")
-        if self.group_ids and not user.groups_id & self.group_ids:
-            reasons.append("missing required groups")
-        if self.excluded_group_ids and user.groups_id & self.excluded_group_ids:
-            reasons.append("excluded by group")
+        user = self.env["res.users"].sudo().browse(int(user_id))
+        if not user.exists():
+            return {
+                "user_id": int(user_id),
+                "is_internal": False,
+                "is_active": False,
+                "eligible": False,
+                "reason": _("the user does not exist"),
+            }
+
+        bot = self.env.ref("mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False)
+
+        is_internal = not user.share
+        is_active = bool(user.active)
+
+        audience = self.search([], limit=1)
+        if not audience:
+            return {
+                "user_id": user.id,
+                "is_internal": is_internal,
+                "is_active": is_active,
+                "eligible": False,
+                "reason": _("no audience is configured"),
+            }
+
+        if bot and user.id == bot.id:
+            return {
+                "user_id": user.id,
+                "is_internal": is_internal,
+                "is_active": is_active,
+                "eligible": False,
+                "reason": _("it is the bot itself"),
+            }
+
+        if not user.filtered_domain(audience._audience_domain()):
+            return {
+                "user_id": user.id,
+                "is_internal": is_internal,
+                "is_active": is_active,
+                "eligible": False,
+                "reason": _("the user falls outside the configured audience"),
+            }
+
         return {
-            "eligible": False,
-            "reason": "; ".join(reasons) or "does not match audience criteria",
+            "user_id": user.id,
+            "is_internal": is_internal,
+            "is_active": is_active,
+            "eligible": True,
+            "reason": "",
         }
 
-    def get_candidate_user_ids(self):
+    def eligible_user_ids(self):
         """Ids of every user who is a candidate audience right now."""
         self.ensure_one()
         bot = self.env.ref("mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False)

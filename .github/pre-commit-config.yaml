@@ -1,8 +1,8 @@
 repos:
   - repo: local
     hooks:
-      - id: odooclaw-bot-static-validation
-        name: OdooClaw Bot static validation
+      - id: odoo-agent-static-validation
+        name: Odoo Agent static validation
         entry: python3 .github/scripts/validate_addon.py
         language: system
         pass_filenames: false

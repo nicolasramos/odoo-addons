@@ -1,26 +1,95 @@
 # Copyright 2026 Nicolás Ramos
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from . import common
+from odoo.tests import tagged
+
+from .common import TestAreaCounters
 
 
-class TestAreaCounters(common.ExpenseCounterCommon):
-    """Test expense area counters."""
+@tagged("post_install", "-at_install")
+class TestExpenseAreaCounters(TestAreaCounters):
+    AREA_XMLID = "mail_bot_odooclaw_expense.area_expenses"
+    SIGNAL_KEY = "draft_expenses"
+    MODEL = "hr.expense"
+    DOMAIN = [("state", "in", ["draft", "reported"])]
 
-    def test_awaiting_approval_counter(self):
-        """Submitted expenses should move the counter."""
-        expense = self.Expense.create(
+    def _employee(self):
+        # hr_employee_user_uniq allows only ONE employee per user, so reuse it
+        # instead of creating another one for the same login.
+        employee = self.env["hr.employee"].search(
+            [("user_id", "=", self.env.user.id)], limit=1
+        )
+        if not employee:
+            employee = self.env["hr.employee"].create({"name": "Expense Owner"})
+        return employee
+
+    def _create_matching(self):
+        # A freshly created expense starts in draft: "To Report".
+        self.env["hr.expense"].create(
             {
-                "name": "Test Expense",
-                "product_id": self.env.ref("product.product_product_1").id,
-                "unit_amount": 100.0,
-                "employee_id": self.env.user.employee_id.id,
+                "name": "Draft expense",
+                "employee_id": self._employee().id,
+                "total_amount": 100.0,
+                "payment_mode": "own_account",
             }
         )
-        try:
-            expense.action_submit_expense()
-            result = self.env["mail.odooclaw.area"].sudo().browse(10).counters_for("hr.expense")
-            self.assertIn("expenses_awaiting_approval", result)
-            self.assertGreater(result["expenses_awaiting_approval"]["count"], 0)
-        except Exception:
-            pass  # Counter may not fire if state management differs
+
+    def _create_non_matching(self):
+        # Done is no longer waiting for the employee to report it.
+        expense = self.env["hr.expense"].create(
+            {
+                "name": "Done expense",
+                "employee_id": self._employee().id,
+                "total_amount": 100.0,
+                "payment_mode": "own_account",
+            }
+        )
+        expense.write({"state": "done"})
+
+
+@tagged("post_install", "-at_install")
+class TestExpenseApprovalCounters(TestAreaCounters):
+    AREA_XMLID = "mail_bot_odooclaw_expense.area_expenses_awaiting_approval"
+    SIGNAL_KEY = "expenses_awaiting_approval"
+    MODEL = "hr.expense"
+    DOMAIN = [("state", "in", ["reported", "approved"])]
+
+    def _employee(self):
+        employee = self.env["hr.employee"].search(
+            [("user_id", "=", self.env.user.id)], limit=1
+        )
+        if not employee:
+            employee = self.env["hr.employee"].create({"name": "Expense Owner"})
+        return employee
+
+    def _new_expense(self):
+        # Odoo 16 refuses to report an expense without a category product.
+        category = self.env["product.product"].create(
+            {"name": "Counter category", "type": "service", "expense_policy": "no"}
+        )
+        return self.env["hr.expense"].create(
+            {
+                "name": "Expense",
+                "product_id": category.id,
+                "employee_id": self._employee().id,
+                "total_amount": 50.0,
+                "payment_mode": "own_account",
+            }
+        )
+
+    def _create_matching(self):
+        # In Odoo 16 the state lives on the report: submitting it moves the
+        # expense to 'reported' (awaiting approval).
+        expense = self._new_expense()
+        sheet = self.env["hr.expense.sheet"].create(
+            {
+                "name": "Counter report",
+                "employee_id": expense.employee_id.id,
+                "expense_line_ids": [(4, expense.id)],
+            }
+        )
+        sheet.action_submit_sheet()
+
+    def _create_non_matching(self):
+        # A plain draft expense never reached an approver.
+        self._new_expense()

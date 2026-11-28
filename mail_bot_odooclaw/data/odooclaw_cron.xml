@@ -7,7 +7,16 @@
         <field name="code">model._cleanup_expired()</field>
         <field name="interval_number">1</field>
         <field name="interval_type">hours</field>
-        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+
+    <record id="ir_cron_requeue_pipeline_runs" model="ir.cron">
+        <field name="name">OdooClaw: Re-send pipeline runs the engine lost</field>
+        <field name="model_id" ref="model_mail_odooclaw_pipeline_run"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_requeue_stale()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
         <field name="active">True</field>
     </record>
 

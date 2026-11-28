@@ -25,192 +25,261 @@ import logging
 
 from odoo import _, http
 from odoo.http import request
-from werkzeug.exceptions import Unauthorized, Forbidden
+from werkzeug.exceptions import HTTPException
+
+from ..models.mail_odooclaw_area import post_proactive_message
+from ..utils.odooclaw_channel import CHANNEL_MODEL
+from . import security
 
 _logger = logging.getLogger(__name__)
 
 
-def _resolve_area(screen):
-    """Return the area record for a screen name, or None."""
-    area = request.env["mail.odooclaw.area"].sudo().search(
-        [("area", "=", screen)], limit=1
+class OdooClawProactiveController(http.Controller):
+    @http.route(
+        "/odooclaw/signal",
+        type="http",
+        auth="public",
+        methods=["POST"],
+        csrf=False,
     )
-    return area or None
+    def odooclaw_signal(self, **kwargs):
+        """Evaluate a signal and post the suggestion when the engine allows it.
 
+        Expected payload::
 
-def _get_bot_user():
-    """Return the bot user record."""
-    return request.env.ref(
-        "mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False
-    )
+            {
+              "user_id": 7,          # mandatory; the user whose screen opened
+              "model": "res.partner",
+              "view_id": 123,        # optional
+              "action_id": 456       # optional
+            }
 
-
-def _get_service_secret():
-    """Return the configured service secret."""
-    icp = request.env["ir.config_parameter"].sudo()
-    return icp.get_param("odooclaw.service_secret", "")
-
-
-def _get_allowed_ips():
-    """Return the configured allowed IP list."""
-    icp = request.env["ir.config_parameter"].sudo()
-    ips = icp.get_param("odooclaw.allowed_ips", "")
-    return [ip.strip() for ip in ips.split(",") if ip.strip()] if ips else []
-
-
-def _authorize():
-    """Authorize the request via service secret or IP allowlist.
-
-    Raises ``Unauthorized`` or ``Forbidden`` on failure.
-    """
-    secret = _get_service_secret()
-    if secret:
-        token = request.headers.get("X-OdooClaw-Token", "")
-        if token == secret:
-            return
-    # Fallback to IP allowlist
-    allowed_ips = _get_allowed_ips()
-    if allowed_ips:
-        client_ip = request.httprequest.remote_addr
-        if client_ip in allowed_ips:
-            return
-    # Check X-Forwarded-For for proxied requests
-    forwarded = request.httprequest.headers.get("X-Forwarded-For", "")
-    if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
-        if client_ip in allowed_ips:
-            return
-    raise Unauthorized("Invalid or missing authentication token")
-
-
-class Proactive(http.Controller):
-    """Proactive assistance endpoints."""
-
-    def _post_to_bot_chat(self, user_id, message, area, playbook_id):
-        """Post a proactive message to the bot's private chat with a user.
-
-        This is the ONLY route in the module that writes without a human
-        message behind it, so it is narrow, authenticated with the service
-        secret (or the IP allowlist) and it can only ever target the bot's
-        own private chat with a user — never a business record's chatter.
+        Response always includes ``speak`` and ``reason``: a silence is an
+        answer, and it is the one an operator most often needs to see.
         """
-        bot = _get_bot_user()
-        if not bot:
-            return None
+        try:
+            security.authorize()
 
-        # Find or create the bot channel for this user
-        Channel = request.env["mail.channel"]
-        domain = [
-            ("channel_type", "=", "channel"),
-            ("channel_last_notification_date", "=", False),
-        ]
-        # Find existing private channel between bot and user
-        channels = Channel.sudo().search(domain)
-        private_channel = None
-        for ch in channels:
-            if (
-                bot.partner_id.id in ch.partner_ids.ids
-                and user_id in ch.partner_ids.ids
-            ):
-                private_channel = ch
-                break
+            payload = json.loads(request.httprequest.data)
+            user_id = payload.get("user_id")
+            model_name = payload.get("model") or ""
+            view_id = payload.get("view_id")
+            action_id = payload.get("action_id")
 
-        if not private_channel:
-            # Create a new private channel
-            user = request.env["res.users"].browse(user_id)
-            private_channel = Channel.sudo().create(
+            if not user_id:
+                return security.error_response("Missing user_id")
+
+            result = self._evaluate_and_post(user_id, model_name, view_id, action_id)
+            return request.make_json_response(result)
+
+        except Exception as e:
+            # authorize() short-circuits by raising an HTTPException carrying the
+            # JSON 401. Rethrowing it is what makes the status survive; catching
+            # it here would turn every auth rejection into a 500.
+            if isinstance(e, (http.Response, HTTPException)):
+                raise
+            return security.log_exception(_logger, "odooclaw_signal error")
+
+    @http.route(
+        "/odooclaw/notify",
+        type="http",
+        auth="public",
+        methods=["POST"],
+        csrf=False,
+    )
+    def odooclaw_notify(self, **kwargs):
+        """Post an unsolicited proactive message to a user's private bot chat.
+
+        Expected payload::
+
+            {
+              "user_id": 7,
+              "message": "...",
+              "playbook_id": "accounting.unposted_invoices",
+              "area": "accounting"
+            }
+
+        This route cannot post to a business record: the target is resolved from
+        ``user_id`` and is always the bot's private channel with that user.
+        """
+        try:
+            security.authorize()
+
+            payload = json.loads(request.httprequest.data)
+            user_id = payload.get("user_id")
+            message = (payload.get("message") or "").strip()
+
+            if not user_id or not message:
+                return security.error_response("Missing user_id or message")
+
+            try:
+                msg = post_proactive_message(
+                    request.env,
+                    user_id,
+                    message,
+                    payload.get("playbook_id"),
+                    payload.get("area"),
+                )
+            except ValueError as exc:
+                # Expected refusals (unknown user, no channel) are 400s, not 500s.
+                return security.error_response(str(exc))
+
+            return request.make_json_response(
                 {
-                    "name": bot.partner_id.name + " / " + user.name,
-                    "channel_type": "channel",
-                    "channel_last_notification_date": False,
-                    "channel_is_private": True,
-                    "channel_user_ids": [(4, user.partner_id.id)],
-                    "channel_user_ids": [(4, bot.partner_id.id)],
+                    "status": "ok",
+                    "message_id": msg.id,
+                    "channel_id": msg.res_id if msg.model == CHANNEL_MODEL else False,
                 }
             )
 
-        # Post the message
-        values = {
-            "body": message,
-            "message_type": "comment",
-            "model": private_channel._name,
-            "res_id": private_channel.id,
-            "odooclaw_proactive": True,
-            "odooclaw_playbook_id": playbook_id,
-            "odooclaw_area": area,
-        }
-        message = private_channel.message_post(**values)
+        except Exception as e:
+            # authorize() short-circuits by raising an HTTPException carrying the
+            # JSON 401. Rethrowing it is what makes the status survive; catching
+            # it here would turn every auth rejection into a 500.
+            if isinstance(e, (http.Response, HTTPException)):
+                raise
+            return security.log_exception(_logger, "odooclaw_notify error")
 
-        # Stop typing indicator
-        bot_member = private_channel.channel_channel_member_ids.filtered(
-            lambda m: m.partner_id.id == bot.partner_id.id
-        )
-        if bot_member:
-            bot_member.sudo()._notify_typing(is_typing=False)
+    # ------------------------------------------------------------------
+    # Internals
+    # ------------------------------------------------------------------
 
-        _logger.info(
-            "odooclaw: proactive message posted user_id=%s area=%s playbook=%s",
-            user_id,
-            area,
-            playbook_id,
-        )
-        return message
+    def _evaluate_and_post(self, user_id, model_name, view_id, action_id):
+        """Resolve the area, ask the engine, and post when it says speak.
 
-    @http.route("/odooclaw/signal", type="json", auth="public", methods=["POST"],
-                csrf=False, website_published=False)
-    def signal(self, **kwargs):
-        """Handle a proactive signal from the frontend.
-
-        The frontend posts the current screen name and the user id.
-        The controller resolves the area, calls the Go engine, and posts
-        the result to the bot's private chat.
+        The engine call is the ONLY network hop. When the engine is not
+        configured or is unreachable we return a silent decision with an explicit
+        reason instead of raising: a view open must never fail because the
+        assistant is down.
         """
-        _authorize()
-
-        body = request.get_json()
-        if not body:
-            return {"error": "empty body"}
-
-        user_id = body.get("user_id")
-        screen = body.get("screen")
-        if not user_id or not screen:
-            return {"error": "missing user_id or screen"}
-
-        # Resolve area
-        area_rec = _resolve_area(screen)
-        if not area_rec:
-            return {"speak": False, "reason": _("no area for this screen"), "area": ""}
-
-        # Call Go engine
-        icp = request.env["ir.config_parameter"].sudo()
-        webhook_url = icp.get_param(
-            "odooclaw.webhook_url", "http://odooclaw:18790/webhook/odoo"
+        area_rec = request.env["mail.odooclaw.area"].sudo().resolve_area(
+            model_name, view_id, action_id
         )
-        webhook_token = icp.get_param("odooclaw.webhook_token", "")
-
-        payload = {
-            "event": "signal",
-            "user_id": user_id,
-            "screen": screen,
-            "area": area_rec.area,
-        }
-
-        try:
-            import requests
-            headers = {"Content-Type": "application/json"}
-            if webhook_token:
-                headers["X-OdooClaw-Token"] = webhook_token
-            resp = requests.post(
-                webhook_url, json=payload, headers=headers, timeout=10
-            )
-            resp.raise_for_status()
-            decision = resp.json()
-        except Exception as exc:
+        if not area_rec:
             return {
                 "speak": False,
-                "reason": str(exc),
+                "reason": _("there is no functional area for this screen"),
+                "area": "",
+            }
+
+        # WHO, before WHAT. The audience rule (DU: internal users only) is
+        # resolved here, in Odoo, because only Odoo knows whether a user is an
+        # employee, a portal user or the public user. The engine receives the
+        # verdict already made and fails closed on anything unclassified, so a
+        # gap in this resolution shows up as silence rather than as help offered
+        # to the wrong person.
+        audience = request.env["mail.odooclaw.audience"].sudo().resolve_for_user(user_id)
+        if not audience["eligible"]:
+            return {
+                "speak": False,
+                "reason": audience["reason"],
                 "area": area_rec.area,
             }
+
+        counters = area_rec.counters_for(model_name)
+
+        engine_url = (
+            request.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.proactive_url", "")
+        )
+        if not engine_url:
+            return {
+                "speak": False,
+                "reason": _(
+                    "the proactive engine is not configured (odooclaw.proactive_url)"
+                ),
+                "area": area_rec.area,
+            }
+
+        # Local import: requests is only needed on this path.
+        import requests
+
+        # The same shared secret the webhook and reply paths use, so there is one
+        # service credential to rotate rather than two.
+        token = (
+            request.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.reply_token", "")
+        )
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-OdooClaw-Token"] = token
+
+        try:
+            resp = requests.post(
+                engine_url,
+                json={
+                    "user_id": user_id,
+                    "area": area_rec.area,
+                    "model": model_name,
+                    "view_id": view_id or 0,
+                    "counters": counters,
+                    # The classification travels with the signal so the engine
+                    # can assert it independently. Odoo decides, the engine
+                    # re-checks: one mistake on either side stays a silence.
+                    "user": {
+                        "id": audience["user_id"],
+                        "is_internal": audience["is_internal"],
+                        "is_active": audience["is_active"],
+                    },
+                },
+                headers=headers,
+                timeout=5,
+            )
+        except Exception:  # noqa: BLE001 - engine unreachable means silence
+            _logger.warning(
+                "odooclaw: proactive engine unreachable at %s", engine_url, exc_info=True
+            )
+            return {
+                "speak": False,
+                "reason": _("the proactive engine is not responding"),
+                "area": area_rec.area,
+            }
+
+        if resp.status_code != 200:
+            return {
+                "speak": False,
+                "reason": _("the proactive engine returned %s") % resp.status_code,
+                "area": area_rec.area,
+            }
+
+        try:
+            decision = resp.json()
+        except ValueError:
+            return {
+                "speak": False,
+                "reason": _("unreadable response from the proactive engine"),
+                "area": area_rec.area,
+            }
+
+        if not decision.get("speak"):
+            return {
+                "speak": False,
+                "reason": decision.get("reason", ""),
+                "area": area_rec.area,
+            }
+
+        # The engine decided; Odoo delivers. Posting here (rather than having the
+        # engine call back) keeps the whole decision inside the request scope of
+        # the user who triggered it, so there is no window where a suggestion
+        # arrives after the user has already navigated away and logged out.
+        try:
+            post_proactive_message(
+                request.env,
+                user_id,
+                decision.get("message", ""),
+                decision.get("playbook_id"),
+                area_rec.area,
+            )
+        except ValueError as exc:
+            return {"speak": False, "reason": str(exc), "area": area_rec.area}
+
+        # The message exists now, so the decision can be persisted. The engine
+        # burns the invitation (or records the area cooldown) only after this
+        # ack: an unacked invitation is asked again instead of being lost on a
+        # post that never happened.
+        self._ack_engine(engine_url, user_id, area_rec.area, decision)
 
         return {
             "speak": True,
@@ -220,30 +289,35 @@ class Proactive(http.Controller):
             "message": decision.get("message", ""),
         }
 
-    @http.route("/odooclaw/notify", type="json", auth="public", methods=["POST"],
-                csrf=False, website_published=False)
-    def notify(self, **kwargs):
-        """Handle a proactive notification from OdooClaw.
+    def _ack_engine(self, engine_url, user_id, area, decision):
+        """Tell the engine the message was posted.
 
-        OdooClaw posts an UNSOLICITED offer here; this controller resolves
-        the private bot chat for the target user and posts the message there.
+        Deciding and recording are separate on purpose: the engine holds the
+        opt-in, the cooldown and the dedupe, and it must not burn any of them
+        for a message this host failed to deliver.
         """
-        _authorize()
+        ack_url = engine_url.rsplit("/signal", 1)[0] + "/ack"
+        token = (
+            request.env["ir.config_parameter"]
+            .sudo()
+            .get_param("odooclaw.reply_token", "")
+        )
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["X-OdooClaw-Token"] = token
+        try:
+            import requests
 
-        body = request.get_json()
-        if not body:
-            return {"error": "empty body"}
-
-        user_id = body.get("user_id")
-        message = body.get("message")
-        area = body.get("area", "")
-        playbook_id = body.get("playbook_id", "")
-
-        if not user_id or not message:
-            return {"error": "missing user_id or message"}
-
-        posted_msg = self._post_to_bot_chat(user_id, message, area, playbook_id)
-        if not posted_msg:
-            return {"error": "bot user not configured"}
-
-        return {"status": "ok", "message_id": posted_msg.id}
+            requests.post(
+                ack_url,
+                json={
+                    "user_id": user_id,
+                    "area": area,
+                    "playbook_id": decision.get("playbook_id", ""),
+                    "invitation": bool(decision.get("invitation")),
+                },
+                headers=headers,
+                timeout=3,
+            )
+        except Exception:  # noqa: BLE001 - the ack is best effort, never a 500
+            _logger.warning("odooclaw: proactive ack failed at %s", ack_url, exc_info=True)
