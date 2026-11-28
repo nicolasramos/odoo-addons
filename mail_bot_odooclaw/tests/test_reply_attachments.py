@@ -83,7 +83,12 @@ class TestReplyDeliversAttachments(TransactionCase):
         """
         # 18 raises ValueError on the raw command form; 16 dies earlier with a
         # TypeError inside browse. Either way the raw form cannot get through.
-        with self.assertRaises((ValueError, TypeError)):
+        # (Odoo 16's assertRaises wrapper cannot take a tuple of classes.)
+        try:
             self.channel.sudo().message_post(
                 body="raw", attachment_ids=[(6, 0, [self.attachment.id])]
             )
+        except Exception as exc:  # noqa: BLE001 - the type is the assertion
+            self.assertIsInstance(exc, (ValueError, TypeError))
+        else:
+            self.fail("the raw x2many attachment form must not get through")
