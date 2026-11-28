@@ -1,17 +1,17 @@
-name: Odoo 18 Tests
+name: Odoo 16 Tests
 
 on:
   pull_request:
     paths:
-      - 'odoo_agent/**'
-      - 'odoo_agent_sale/**'
+      - 'mail_bot_odooclaw/**'
+      - 'odooclaw_mcp/**'
       - '.github/workflows/odoo-tests.yml'
   push:
     branches:
-      - '18.0'
+      - '16.0'
     paths:
-      - 'odoo_agent/**'
-      - 'odoo_agent_sale/**'
+      - 'mail_bot_odooclaw/**'
+      - 'odooclaw_mcp/**'
       - '.github/workflows/odoo-tests.yml'
   workflow_dispatch:
 
@@ -44,18 +44,18 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.10'
 
       - name: Cache Odoo source
         uses: actions/cache@v4
         with:
           path: odoo-src
-          key: odoo-18-${{ runner.os }}-${{ hashFiles('.github/workflows/odoo-tests.yml') }}
+          key: odoo-16-${{ runner.os }}-${{ hashFiles('.github/workflows/odoo-tests.yml') }}
 
-      - name: Fetch Odoo 18
+      - name: Fetch Odoo 16
         run: |
           if [ ! -d odoo-src/.git ]; then
-            git clone --depth 1 -b 18.0 https://github.com/odoo/odoo.git odoo-src
+            git clone --depth 1 -b 16.0 https://github.com/odoo/odoo.git odoo-src
           fi
 
       - name: Install system dependencies
@@ -78,10 +78,10 @@ jobs:
             --db_port=5432 \
             --db_user=odoo \
             --db_password=odoo \
-            -d odoo_agent_ci \
-            -i odoo_agent,odoo_agent_sale \
+            -d odooclaw_ci \
+            -i odooclaw_mcp,mail_bot_odooclaw \
             --test-enable \
-            --test-tags=/odoo_agent,/odoo_agent_sale \
+            --test-tags=/odooclaw_mcp,/mail_bot_odooclaw \
             --stop-after-init \
             --without-demo=all \
             --log-level=test
