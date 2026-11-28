@@ -28,6 +28,7 @@ from odoo.http import request
 from werkzeug.exceptions import HTTPException
 
 from ..models.mail_odooclaw_area import post_proactive_message
+from ..utils.odooclaw_channel import CHANNEL_MODEL
 from . import security
 
 _logger = logging.getLogger(__name__)
@@ -127,7 +128,7 @@ class OdooClawProactiveController(http.Controller):
                 {
                     "status": "ok",
                     "message_id": msg.id,
-                    "channel_id": msg.res_id if msg.model == "discuss.channel" else False,
+                    "channel_id": msg.res_id if msg.model == CHANNEL_MODEL else False,
                 }
             )
 

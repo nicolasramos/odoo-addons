@@ -11,14 +11,15 @@ class TestStockAreaCounters(TestAreaCounters):
     AREA_XMLID = "mail_bot_odooclaw_stock.area_inventory"
     SIGNAL_KEY = "negative_stock_products"
     MODEL = "product.product"
-    DOMAIN = [("qty_available", "<", 0), ("is_storable", "=", True)]
+    DOMAIN = [("qty_available", "<", 0), ("type", "=", "product")]
 
     def _create_storable(self, name):
-        # is_storable is what makes a product hold a quantity at all: a
-        # consumable/service cannot carry negative stock, so a counter without
-        # this filter would count nothing real.
+        # type=product is what makes a product hold a quantity at all (the
+        # Odoo 16 name for storable): a consumable/service cannot carry
+        # negative stock, so a counter without this filter would count
+        # nothing real.
         return self.env["product.product"].create(
-            {"name": name, "is_storable": True}
+            {"name": name, "type": "product"}
         )
 
     def _create_matching(self):

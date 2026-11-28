@@ -41,4 +41,4 @@ class TestHrAreaCounters(TestAreaCounters):
         self._make_leave("confirm", "2027-03-01")
 
     def _create_non_matching(self):
-        self._make_leave("cancel", "2027-04-01")
+        self._make_leave("refuse", "2027-04-01")

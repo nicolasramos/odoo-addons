@@ -60,7 +60,7 @@ class OdooClawArtifact(models.Model):
         "it.",
     )
     channel_id = fields.Many2one(
-        "discuss.channel",
+        "mail.channel",
         string="Conversation",
         ondelete="set null",
         help="Chat where the artifact was created, when it came from one.",

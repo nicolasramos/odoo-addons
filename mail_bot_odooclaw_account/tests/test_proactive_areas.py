@@ -24,6 +24,36 @@ class TestProactiveAreas(TransactionCase):
         # present; when it is absent the areas must still load (asserted below)
         # but the counter tests have nothing to count against.
         self.has_account = "account.move" in self.env
+        if self.has_account:
+            # Tests run without demo data and Odoo 16 creates no journal on
+            # install, so the fixtures must provide their own.
+            self._journal("sale")
+            self._journal("bank")
+
+    def _journal(self, jtype):
+        journal = self.env["account.journal"].search(
+            [("type", "=", jtype)], limit=1
+        )
+        if not journal:
+            journal = self.env["account.journal"].create(
+                {
+                    "name": "%s (counter test)" % jtype,
+                    "code": "CT" + jtype[:3].upper(),
+                    "type": jtype,
+                }
+            )
+        return journal
+
+    def _account(self, type_xmlid, code):
+        type_ = self.env.ref(type_xmlid)
+        account = self.env["account.account"].search(
+            [("user_type_id", "=", type_.id)], limit=1
+        )
+        if not account:
+            account = self.env["account.account"].create(
+                {"name": "Counter test " + code, "code": code, "user_type_id": type_.id}
+            )
+        return account
 
     def _area(self, xmlid):
         return self.env.ref(
@@ -57,7 +87,7 @@ class TestProactiveAreas(TransactionCase):
             self.skipTest("account is not installed; nothing to count against")
         area = self._area("area_accounting")
         partner = self.env["res.partner"].create({"name": "Counter Test Client"})
-        journal = self.env["account.journal"].search([("type", "=", "sale")], limit=1)
+        journal = self._journal("sale")
 
         before = area.counters_for("account.move").get("unposted_invoices", 0)
 
@@ -79,7 +109,12 @@ class TestProactiveAreas(TransactionCase):
             self.skipTest("account is not installed; nothing to count against")
         area = self._area("area_accounting")
         partner = self.env["res.partner"].create({"name": "Counter Test Posted"})
-        journal = self.env["account.journal"].search([("type", "=", "sale")], limit=1)
+        # Without a chart of accounts, posting needs the receivable on the
+        # partner and an income account on the line, or Odoo 16 refuses to post.
+        partner.property_account_receivable_id = self._account(
+            "account.data_account_type_receivable", "400CT"
+        )
+        journal = self._journal("sale")
         move = self.env["account.move"].create(
             {
                 "move_type": "out_invoice",
@@ -87,7 +122,18 @@ class TestProactiveAreas(TransactionCase):
                 "journal_id": journal.id,
                 "invoice_date": "2026-09-01",
                 "invoice_line_ids": [
-                    (0, 0, {"name": "Servicio", "quantity": 1, "price_unit": 100.0})
+                    (
+                        0,
+                        0,
+                        {
+                            "name": "Servicio",
+                            "quantity": 1,
+                            "price_unit": 100.0,
+                            "account_id": self._account(
+                                "account.data_account_type_other_income", "700CT"
+                            ).id,
+                        },
+                    )
                 ],
             }
         )
@@ -104,7 +150,7 @@ class TestProactiveAreas(TransactionCase):
         if not self.has_account:
             self.skipTest("account is not installed; nothing to count against")
         area = self._area("area_accounting_bank_statement")
-        bank = self.env["account.journal"].search([("type", "=", "bank")], limit=1)
+        bank = self._journal("bank")
         before = area.counters_for("account.bank.statement.line").get(
             "unreconciled_statement_lines", 0
         )
@@ -127,9 +173,14 @@ class TestProactiveAreas(TransactionCase):
         Pointing the counter at a module name that does not exist would return 0
         forever and nobody would ever be offered help with VeriFactu. This test
         fails loudly if the name is ever wrong.
+
+        VeriFactu is an Odoo 17+ feature: on 16 the counter is not shipped at
+        all, and there is nothing to pin.
         """
         area = self._area("area_accounting")
         definitions = json.loads(area.signal_definition)
+        if "verifactu_unconfigured" not in definitions:
+            self.skipTest("no VeriFactu counter on this Odoo version")
         domain = definitions["verifactu_unconfigured"]["domain"]
 
         module = domain[0][2]
@@ -155,6 +206,11 @@ class TestProactiveAreas(TransactionCase):
             "verifactu_unconfigured",
             "unreconciled_statement_lines",
         }
+        if not self.env["ir.module.module"].search_count(
+            [("name", "=", "l10n_es_edi_verifactu")]
+        ):
+            # VeriFactu does not exist on this Odoo; its counter is not shipped.
+            expected.discard("verifactu_unconfigured")
         seen = set()
         for xmlid in ("area_accounting", "area_accounting_bank_statement"):
             area = self._area(xmlid)

@@ -49,7 +49,7 @@ class TestReplyDeliversAttachments(TransactionCase):
 
     def setUp(self):
         super().setUp()
-        self.channel = self.env["discuss.channel"].create({"name": "oc-test"})
+        self.channel = self.env["mail.channel"].create({"name": "oc-test"})
         self.attachment = self.env["ir.attachment"].sudo().create({
             "name": "report.txt",
             "datas": b"cmVwb3J0",  # base64 "report"

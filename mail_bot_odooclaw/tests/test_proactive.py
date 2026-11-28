@@ -77,7 +77,7 @@ class TestProactive(HttpCase):
         self.assertTrue(message.exists())
         self.assertEqual(message.author_id, self.bot.partner_id)
 
-        channel = self.env["discuss.channel"].sudo().browse(body["channel_id"])
+        channel = self.env["mail.channel"].sudo().browse(body["channel_id"])
         self.assertEqual(channel.channel_type, "chat")
 
     def test_notify_is_marked_proactive(self):

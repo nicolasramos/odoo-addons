@@ -48,7 +48,7 @@
             <field name="model_name">project.task</field>
             <field
                 name="signal_definition"
-            >{"overdue_tasks": {"model": "project.task", "domain": [["date_deadline", "&lt;", "$today"], ["state", "not in", ["1_done", "1_canceled"]]]}, "waiting_tasks": {"model": "project.task", "domain": [["state", "=", "04_waiting_normal"]]}, "urgent_tasks": {"model": "project.task", "domain": [["priority", "=", "1"], ["state", "not in", ["1_done", "1_canceled"]]]}}</field>
+            >{"overdue_tasks": {"model": "project.task", "domain": [["date_deadline", "&lt;", "$today"], ["stage_id.fold", "=", false]]}, "urgent_tasks": {"model": "project.task", "domain": [["priority", "=", "1"], ["stage_id.fold", "=", false]]}}</field>
         </record>
     </data>
 </odoo>

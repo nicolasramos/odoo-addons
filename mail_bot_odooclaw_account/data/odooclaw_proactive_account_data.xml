@@ -37,6 +37,10 @@
               would return 0 forever and the user would simply never be told.
             * `account.bank.statement.line.is_reconciled` is the field that
               exists. Its domain counts unreconciled bank lines.
+
+            On the 16.0 branch the VeriFactu counter is not shipped: the module
+            `l10n_es_edi_verifactu` only exists from Odoo 17, so a counter for
+            it would be dead weight and its test would assert on a ghost.
         -->
 
         <record id="area_accounting" model="mail.odooclaw.area">

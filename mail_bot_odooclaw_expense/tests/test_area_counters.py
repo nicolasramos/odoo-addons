@@ -52,7 +52,7 @@ class TestExpenseApprovalCounters(TestAreaCounters):
     AREA_XMLID = "mail_bot_odooclaw_expense.area_expenses_awaiting_approval"
     SIGNAL_KEY = "expenses_awaiting_approval"
     MODEL = "hr.expense"
-    DOMAIN = [("state", "in", ["submitted", "approved"])]
+    DOMAIN = [("state", "in", ["to_approve", "approved"])]
 
     def _employee(self):
         employee = self.env["hr.employee"].search(
@@ -73,7 +73,7 @@ class TestExpenseApprovalCounters(TestAreaCounters):
         )
 
     def _create_matching(self):
-        self._new_expense().write({"state": "submitted"})
+        self._new_expense().write({"state": "to_approve"})
 
     def _create_non_matching(self):
         self._new_expense().write({"state": "done"})

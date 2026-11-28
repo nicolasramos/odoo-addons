@@ -32,6 +32,14 @@ class TestAreaCounters(TransactionCase):
     MODEL = None                 # set by the subclass
     DOMAIN = None                # set by the subclass
 
+    def setUp(self):
+        super().setUp()
+        # Odoo 16's loader collects every TestCase in a test module's
+        # namespace, imported bases included. The abstract base has no
+        # xmlid, so it must skip instead of erroring.
+        if self.AREA_XMLID is None:
+            self.skipTest("abstract counter base: AREA_XMLID not set")
+
     def _area(self):
         area = self.env.ref(self.AREA_XMLID, raise_if_not_found=False)
         self.assertTrue(area, "%s was not loaded" % self.AREA_XMLID)

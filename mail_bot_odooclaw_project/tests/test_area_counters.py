@@ -56,22 +56,26 @@ class TestOverdueTaskCounters(TestAreaCounters):
     AREA_XMLID = "mail_bot_odooclaw_project.area_projects_tasks"
     SIGNAL_KEY = "overdue_tasks"
     MODEL = "project.task"
+    # Odoo 16 project.task has no `state`: closure is the stage's fold flag.
     DOMAIN = [
         ("date_deadline", "<", "$today"),
-        ("state", "not in", ["1_done", "1_canceled"]),
+        ("stage_id.fold", "=", False),
     ]
 
     def _create_matching(self):
         self.env["project.task"].create(
-            {
-                "name": "Late task",
-                "date_deadline": "2020-01-01",
-                "state": "01_in_progress",
-            }
+            {"name": "Late task", "date_deadline": "2020-01-01"}
         )
 
     def _create_non_matching(self):
         # Overdue, but already closed: it must NOT be counted.
+        folded = self.env["project.task.type"].create(
+            {"name": "Done (counter test)", "fold": True}
+        )
         self.env["project.task"].create(
-            {"name": "Late but done", "date_deadline": "2020-01-01", "state": "1_done"}
+            {
+                "name": "Late but done",
+                "date_deadline": "2020-01-01",
+                "stage_id": folded.id,
+            }
         )

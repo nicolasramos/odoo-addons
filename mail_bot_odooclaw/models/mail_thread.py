@@ -5,6 +5,12 @@ import json
 import threading
 from odoo import models, api, tools, _
 
+from ..utils.odooclaw_channel import (
+    CHANNEL_MODEL,
+    channel_runtime_model,
+    channel_wire_model,
+)
+
 # What the engine can read on its own. Anything else is left out on purpose:
 # a spreadsheet is not a document the model can look at.
 _ODOOCLAW_ATTACHMENT_TYPES = ("image/", "audio/")
@@ -19,7 +25,7 @@ class MailThread(models.AbstractModel):
     _inherit = "mail.thread"
 
     def _resolve_private_reply_channel(self, author_partner, bot_partner):
-        Channel = self.env["discuss.channel"].sudo()
+        Channel = self.env[CHANNEL_MODEL].sudo()
         existing = Channel.search(
             [
                 ("channel_type", "=", "chat"),
@@ -62,8 +68,8 @@ class MailThread(models.AbstractModel):
 
         # If it's a channel, check if it's a DM with OdooClaw
         is_dm = False
-        if message.model == "discuss.channel":
-            channel = self.env["discuss.channel"].browse(message.res_id)
+        if message.model == CHANNEL_MODEL:
+            channel = self.env[CHANNEL_MODEL].browse(message.res_id)
             if (
                 channel.channel_type == "chat"
                 and odooclaw_partner_id
@@ -128,7 +134,7 @@ class MailThread(models.AbstractModel):
                 "message_id": message.id,
                 "model": message.model,
                 "res_id": message.res_id,
-                "reply_model": message.model,
+                "reply_model": channel_wire_model(message.model),
                 "reply_res_id": message.res_id,
                 "author_id": message.author_id.id,
                 "author_user_id": message.author_id.user_ids[:1].id or False,
@@ -142,8 +148,8 @@ class MailThread(models.AbstractModel):
                 "attachments": other_attachments,
             }
 
-            if not is_dm and message.model == "discuss.channel":
-                channel = self.env["discuss.channel"].browse(message.res_id)
+            if not is_dm and message.model == CHANNEL_MODEL:
+                channel = self.env[CHANNEL_MODEL].browse(message.res_id)
                 if channel.channel_type == "chat":
                     # Existing 1-to-1 chat: keep private reply behaviour
                     private_channel = self._resolve_private_reply_channel(
@@ -159,7 +165,7 @@ class MailThread(models.AbstractModel):
             chatter_context = []
             if not is_dm and payload["reply_model"] != "discuss.channel":
                 for ctx_msg in self.env["mail.message"].sudo().search([
-                    ("model", "=", payload["reply_model"]),
+                    ("model", "=", channel_runtime_model(payload["reply_model"])),
                     ("res_id", "=", payload["reply_res_id"]),
                     ("message_type", "in", ["comment", "email"]),
                     ("id", "!=", message.id),
@@ -214,8 +220,8 @@ class MailThread(models.AbstractModel):
             threaded_call.start()
 
             # Trigger "typing..." indicator if it's a discuss channel
-            if message.model == "discuss.channel":
-                channel = self.env["discuss.channel"].browse(message.res_id)
+            if message.model == CHANNEL_MODEL:
+                channel = self.env[CHANNEL_MODEL].browse(message.res_id)
                 bot_member = channel.channel_member_ids.filtered(
                     lambda m: m.partner_id.id == odooclaw_partner_id
                 )
@@ -478,14 +484,14 @@ class MailThread(models.AbstractModel):
         table. Elsewhere it is an ordinary message and the conversational agent
         answers it like any other.
         """
-        if message.model != "discuss.channel":
+        if message.model != CHANNEL_MODEL:
             return False
         last = (
             self.env["mail.message"]
             .sudo()
             .search(
                 [
-                    ("model", "=", "discuss.channel"),
+                    ("model", "=", CHANNEL_MODEL),
                     ("res_id", "=", message.res_id),
                     ("odooclaw_proactive", "=", True),
                 ],
@@ -512,7 +518,7 @@ class MailThread(models.AbstractModel):
         )
         if not bot_user:
             return
-        self.env["discuss.channel"].browse(message.res_id).with_user(
+        self.env[CHANNEL_MODEL].browse(message.res_id).with_user(
             bot_user
         ).sudo().message_post(
             body=_("Understood. I have not turned suggestions on."),
@@ -582,7 +588,7 @@ class MailThread(models.AbstractModel):
             return
         # Posting as the bot re-enters this method with author == bot, which
         # returns early: no webhook, no loop.
-        self.env["discuss.channel"].browse(message.res_id).with_user(
+        self.env[CHANNEL_MODEL].browse(message.res_id).with_user(
             bot_user
         ).sudo().message_post(
             body=_(
