@@ -3,6 +3,11 @@
     "version": "16.0.1.9.0",
     "category": "Discuss",
     "summary": "Integrate OdooClaw AI agent via webhooks in Odoo Discuss",
+    "description": """Connects Odoo Discuss to an OdooClaw engine through
+webhooks. An @mention in a channel or a record chatter creates a pipeline
+run, the engine answers through a reply token, and the areas modules add
+proactive assistance per model and stage. See the module README for the
+webhook contract.""",
     "author": "Nicolás Ramos",
     "license": "AGPL-3",
     "depends": ["mail", "base_setup", "odooclaw_mcp"],
