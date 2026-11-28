@@ -133,7 +133,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": False,
                 "is_active": False,
                 "eligible": False,
-                "reason": self.env._("the user does not exist"),
+                "reason": _("the user does not exist"),
             }
 
         bot = self.env.ref("mail_bot_odooclaw.odooclaw_bot", raise_if_not_found=False)
@@ -148,7 +148,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": is_internal,
                 "is_active": is_active,
                 "eligible": False,
-                "reason": self.env._("no audience is configured"),
+                "reason": _("no audience is configured"),
             }
 
         if bot and user.id == bot.id:
@@ -157,7 +157,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": is_internal,
                 "is_active": is_active,
                 "eligible": False,
-                "reason": self.env._("it is the bot itself"),
+                "reason": _("it is the bot itself"),
             }
 
         if not user.filtered_domain(audience._audience_domain()):
@@ -166,7 +166,7 @@ class MailOdooclawAudience(models.Model):
                 "is_internal": is_internal,
                 "is_active": is_active,
                 "eligible": False,
-                "reason": self.env._("the user falls outside the configured audience"),
+                "reason": _("the user falls outside the configured audience"),
             }
 
         return {

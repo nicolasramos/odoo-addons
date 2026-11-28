@@ -1,6 +1,6 @@
 {
     "name": "OdooClaw Knowledge (document_page)",
-    "version": "18.0.1.0.0",
+    "version": "16.0.1.0.0",
     "category": "Discuss",
     "summary": "Let OdooClaw answer from the knowledge document pages, with the page it used",
     "author": "Nicolás Ramos",

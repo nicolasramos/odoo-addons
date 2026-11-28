@@ -6,14 +6,14 @@
         <field name="name">odooclaw.artifact.list</field>
         <field name="model">odooclaw.artifact</field>
         <field name="arch" type="xml">
-            <list string="Artifacts">
+            <tree string="Artifacts">
                 <field name="name" />
                 <field name="artifact_type" />
                 <field name="user_id" widget="many2one_avatar_user" />
                 <field name="tag_list" optional="show" />
                 <field name="create_date" />
                 <field name="active" invisible="1" />
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -85,7 +85,7 @@
     <record id="action_odooclaw_artifact" model="ir.actions.act_window">
         <field name="name">Artifacts</field>
         <field name="res_model">odooclaw.artifact</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_odooclaw_artifact_search" />
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Nothing saved yet</p>

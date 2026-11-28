@@ -6,7 +6,7 @@
         <field name="name">mail.odooclaw.pipeline.list</field>
         <field name="model">mail.odooclaw.pipeline</field>
         <field name="arch" type="xml">
-            <list string="Pipelines">
+            <tree string="Pipelines">
                 <field name="name" />
                 <field name="area_id" />
                 <field name="model_name" />
@@ -14,7 +14,7 @@
                 <field name="enabled" />
                 <field name="run_count" />
                 <field name="active" invisible="1" />
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -63,7 +63,7 @@
                                 ticket straight to a person.
                             </div>
                             <field name="stage_rule_ids">
-                                <list editable="bottom">
+                                <tree editable="bottom">
                                     <field name="sequence" widget="handle" />
                                     <field name="stage_id" />
                                     <field name="stage_name" />
@@ -72,19 +72,19 @@
                                     <field name="instructions" optional="hide" />
                                     <field name="escalate" />
                                     <field name="active" />
-                                </list>
+                                </tree>
                             </field>
                         </page>
                         <page string="Runs" name="runs">
                             <field name="run_ids" readonly="1">
-                                <list>
+                                <tree>
                                     <field name="create_date" />
                                     <field name="res_name" />
                                     <field name="state" />
                                     <field name="mode" />
                                     <field name="decision" />
                                     <field name="attachment_text" />
-                                </list>
+                                </tree>
                             </field>
                         </page>
                     </notebook>
@@ -97,7 +97,7 @@
         <field name="name">mail.odooclaw.pipeline.run.list</field>
         <field name="model">mail.odooclaw.pipeline.run</field>
         <field name="arch" type="xml">
-            <list
+            <tree
                 string="Runs"
                 decoration-success="state == 'sent'"
                 decoration-info="state in ('observed', 'drafted')"
@@ -112,7 +112,7 @@
                 <field name="mode" />
                 <field name="state" />
                 <field name="decision" />
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -151,7 +151,7 @@
     <record id="action_mail_odooclaw_pipeline" model="ir.actions.act_window">
         <field name="name">OdooClaw Pipelines</field>
         <field name="res_model">mail.odooclaw.pipeline</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Decide what the bot does when a customer writes</p>
             <p>
@@ -165,7 +165,7 @@
     <record id="action_mail_odooclaw_pipeline_run" model="ir.actions.act_window">
         <field name="name">OdooClaw Pipeline Runs</field>
         <field name="res_model">mail.odooclaw.pipeline.run</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No run yet</p>
             <p>Every decision the pipeline takes is recorded here with its reason.</p>

@@ -3,7 +3,7 @@
 
 {
     'name': 'OdooClaw AI Bot - CRM',
-    'version': '18.0.1.0.0',
+    'version': '16.0.1.0.0',
     'category': 'Sales/CRM',
     'summary': 'CRM areas and counters for OdooClaw proactive assistance',
     'author': 'Nicolás Ramos',

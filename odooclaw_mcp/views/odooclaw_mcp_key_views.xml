@@ -4,12 +4,12 @@
         <field name="name">odooclaw.mcp.key.list</field>
         <field name="model">odooclaw.mcp.key</field>
         <field name="arch" type="xml">
-            <list string="MCP keys">
+            <tree string="MCP keys">
                 <field name="name" />
                 <field name="user_id" />
                 <field name="active" />
                 <field name="last_used_at" />
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -37,6 +37,6 @@
     <record id="action_odooclaw_mcp_key" model="ir.actions.act_window">
         <field name="name">MCP keys</field>
         <field name="res_model">odooclaw.mcp.key</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>
