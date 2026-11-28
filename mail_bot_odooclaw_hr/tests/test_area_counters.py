@@ -41,4 +41,7 @@ class TestHrAreaCounters(TestAreaCounters):
         self._make_leave("confirm", "2027-03-01")
 
     def _create_non_matching(self):
-        self._make_leave("refuse", "2027-04-01")
+        # Odoo 16 only lets a request be created in draft/confirm; a refused
+        # request is a confirm one that went through the refusal flow.
+        leave = self._make_leave("confirm", "2027-04-01")
+        leave.action_refuse()

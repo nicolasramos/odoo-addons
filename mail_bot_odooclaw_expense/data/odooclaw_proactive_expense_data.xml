@@ -37,7 +37,7 @@
             <field name="model_name">hr.expense</field>
             <field
                 name="signal_definition"
-            >{"expenses_awaiting_approval": {"model": "hr.expense", "domain": [["state", "in", ["to_approve", "approved"]]]}}</field>
+            >{"expenses_awaiting_approval": {"model": "hr.expense", "domain": [["state", "in", ["reported", "approved"]]]}}</field>
         </record>
     </data>
 </odoo>

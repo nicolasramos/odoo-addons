@@ -62,20 +62,32 @@ class TestOverdueTaskCounters(TestAreaCounters):
         ("stage_id.fold", "=", False),
     ]
 
+    def _stage(self, project, name, fold):
+        # In Odoo 16 a task stage belongs to a project; a stage without one is
+        # a personal stage and cannot be set on a project task.
+        return self.env["project.task.type"].create(
+            {"name": name, "fold": fold, "project_ids": [(4, project.id)]}
+        )
+
     def _create_matching(self):
+        project = self.env["project.project"].create({"name": "Late project"})
         self.env["project.task"].create(
-            {"name": "Late task", "date_deadline": "2020-01-01"}
+            {
+                "name": "Late task",
+                "project_id": project.id,
+                "stage_id": self._stage(project, "Open (counter test)", False).id,
+                "date_deadline": "2020-01-01",
+            }
         )
 
     def _create_non_matching(self):
         # Overdue, but already closed: it must NOT be counted.
-        folded = self.env["project.task.type"].create(
-            {"name": "Done (counter test)", "fold": True}
-        )
+        project = self.env["project.project"].create({"name": "Done project"})
         self.env["project.task"].create(
             {
                 "name": "Late but done",
+                "project_id": project.id,
+                "stage_id": self._stage(project, "Done (counter test)", True).id,
                 "date_deadline": "2020-01-01",
-                "stage_id": folded.id,
             }
         )

@@ -81,7 +81,9 @@ class TestReplyDeliversAttachments(TransactionCase):
         Without this, someone could "fix" a later refactor by removing the
         helper and the suite would still be green.
         """
-        with self.assertRaises(ValueError):
+        # 18 raises ValueError on the raw command form; 16 dies earlier with a
+        # TypeError inside browse. Either way the raw form cannot get through.
+        with self.assertRaises((ValueError, TypeError)):
             self.channel.sudo().message_post(
                 body="raw", attachment_ids=[(6, 0, [self.attachment.id])]
             )

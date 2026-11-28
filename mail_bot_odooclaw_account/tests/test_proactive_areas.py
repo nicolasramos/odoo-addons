@@ -28,7 +28,10 @@ class TestProactiveAreas(TransactionCase):
             # Tests run without demo data and Odoo 16 creates no journal on
             # install, so the fixtures must provide their own.
             self._journal("sale")
-            self._journal("bank")
+            bank = self._journal("bank")
+            if not bank.suspense_account_id:
+                # 16 refuses statement lines without a suspense account.
+                bank.suspense_account_id = self._account("asset_current", "571CT")
 
     def _journal(self, jtype):
         journal = self.env["account.journal"].search(
@@ -44,14 +47,15 @@ class TestProactiveAreas(TransactionCase):
             )
         return journal
 
-    def _account(self, type_xmlid, code):
-        type_ = self.env.ref(type_xmlid)
+    def _account(self, account_type, code):
+        # Odoo 16 classifies accounts with the `account_type` selection; the
+        # account.account.type model only exists from Odoo 17.
         account = self.env["account.account"].search(
-            [("user_type_id", "=", type_.id)], limit=1
+            [("account_type", "=", account_type)], limit=1
         )
         if not account:
             account = self.env["account.account"].create(
-                {"name": "Counter test " + code, "code": code, "user_type_id": type_.id}
+                {"name": "Counter test " + code, "code": code, "account_type": account_type}
             )
         return account
 
@@ -112,7 +116,7 @@ class TestProactiveAreas(TransactionCase):
         # Without a chart of accounts, posting needs the receivable on the
         # partner and an income account on the line, or Odoo 16 refuses to post.
         partner.property_account_receivable_id = self._account(
-            "account.data_account_type_receivable", "400CT"
+            "asset_receivable", "400CT"
         )
         journal = self._journal("sale")
         move = self.env["account.move"].create(
@@ -130,7 +134,7 @@ class TestProactiveAreas(TransactionCase):
                             "quantity": 1,
                             "price_unit": 100.0,
                             "account_id": self._account(
-                                "account.data_account_type_other_income", "700CT"
+                                "income", "700CT"
                             ).id,
                         },
                     )

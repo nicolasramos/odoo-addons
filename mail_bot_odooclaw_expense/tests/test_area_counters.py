@@ -52,7 +52,7 @@ class TestExpenseApprovalCounters(TestAreaCounters):
     AREA_XMLID = "mail_bot_odooclaw_expense.area_expenses_awaiting_approval"
     SIGNAL_KEY = "expenses_awaiting_approval"
     MODEL = "hr.expense"
-    DOMAIN = [("state", "in", ["to_approve", "approved"])]
+    DOMAIN = [("state", "in", ["reported", "approved"])]
 
     def _employee(self):
         employee = self.env["hr.employee"].search(
@@ -63,9 +63,14 @@ class TestExpenseApprovalCounters(TestAreaCounters):
         return employee
 
     def _new_expense(self):
+        # Odoo 16 refuses to report an expense without a category product.
+        category = self.env["product.product"].create(
+            {"name": "Counter category", "type": "service", "expense_policy": "no"}
+        )
         return self.env["hr.expense"].create(
             {
                 "name": "Expense",
+                "product_id": category.id,
                 "employee_id": self._employee().id,
                 "total_amount": 50.0,
                 "payment_mode": "own_account",
@@ -73,7 +78,18 @@ class TestExpenseApprovalCounters(TestAreaCounters):
         )
 
     def _create_matching(self):
-        self._new_expense().write({"state": "to_approve"})
+        # In Odoo 16 the state lives on the report: submitting it moves the
+        # expense to 'reported' (awaiting approval).
+        expense = self._new_expense()
+        sheet = self.env["hr.expense.sheet"].create(
+            {
+                "name": "Counter report",
+                "employee_id": expense.employee_id.id,
+                "expense_line_ids": [(4, expense.id)],
+            }
+        )
+        sheet.action_submit_sheet()
 
     def _create_non_matching(self):
-        self._new_expense().write({"state": "done"})
+        # A plain draft expense never reached an approver.
+        self._new_expense()
