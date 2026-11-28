@@ -23,7 +23,7 @@ class TestAccountDynamicRules(TransactionCase):
         # Accounts
         self.account_start = self.env['account.account'].create({
             'name': 'Start Account',
-            'code': '600000.TEST', # Unique suffix
+            'code': '600000.TEST',
             'account_type': 'expense',
             'company_id': self.env.company.id,
         })
@@ -54,13 +54,13 @@ class TestAccountDynamicRules(TransactionCase):
         })
 
     def test_apply_rule_on_invoice_line_creation(self):
-        """ Test that account is changed when creating an invoice line matching the rule """
+        """Test that account is changed when creating an invoice line matching the rule."""
         move = self.env['account.move'].create({
             'move_type': 'in_invoice',
             'partner_id': self.partner_a.id,
             'invoice_date': '2026-01-01',
         })
-        
+
         # Create line with Generic Product and Partner A
         # Logic should trigger on create/write
         line = self.env['account.move.line'].create({
@@ -69,44 +69,44 @@ class TestAccountDynamicRules(TransactionCase):
             'quantity': 1,
             'price_unit': 100,
         })
-        
+
         # Assertion: Account should be Target Account (621000) due to rule, NOT Start Account (600000)
         self.assertEqual(line.account_id, self.account_target, "Rule should have applied Target Account")
 
     def test_no_rule_match(self):
-        """ Test that standard account is used when no rule matches """
+        """Test that standard account is used when no rule matches."""
         move = self.env['account.move'].create({
             'move_type': 'in_invoice',
-            'partner_id': self.partner_b.id, # Different partner
+            'partner_id': self.partner_b.id,  # Different partner
             'invoice_date': '2026-01-01',
         })
-        
+
         line = self.env['account.move.line'].create({
             'move_id': move.id,
             'product_id': self.product_generic.id,
             'quantity': 1,
             'price_unit': 100,
         })
-        
+
         # Assertion: Account should be Start Account (600000) - default from product
         self.assertEqual(line.account_id, self.account_start, "No rule should apply, expected default account")
 
     def test_no_rule_on_customer_invoice(self):
-        """ Test that rules are NOT applied on Customer Invoices (out_invoice) """
+        """Test that rules are NOT applied on Customer Invoices (out_invoice)."""
         move = self.env['account.move'].create({
-            'move_type': 'out_invoice', # Customer Invoice
-            'partner_id': self.partner_a.id, # Matches Rule 1 Partner
+            'move_type': 'out_invoice',  # Customer Invoice
+            'partner_id': self.partner_a.id,  # Matches Rule 1 Partner
             'invoice_date': '2026-01-01',
         })
-        
+
         # Create line with Generic Product
         line = self.env['account.move.line'].create({
             'move_id': move.id,
-            'product_id': self.product_generic.id, # Matches Rule 1 Product
+            'product_id': self.product_generic.id,  # Matches Rule 1 Product
             'quantity': 1,
             'price_unit': 100,
         })
-        
+
         # Assertion: Account should be Income Account (700000) - default for sales
         # If the rule applied erroneously, it would be Target Account (Expense 621000)
         self.assertEqual(line.account_id, self.account_income, "Rule should NOT apply to Customer Invoice; expected Income Account")
@@ -114,10 +114,10 @@ class TestAccountDynamicRules(TransactionCase):
     def test_rule_does_not_override_tax_line_account(self):
         """Tax lines (VAT) must keep their own configured tax account."""
         purchase_tax = self.env["account.tax"].search(
-            [("type_tax_use", "=", "purchase"), ("amount", "=", 21)],
+            [("type_tax_use", "=", "purchase")],
             limit=1,
         )
-        self.assertTrue(purchase_tax, "A 21% purchase tax is required for this test")
+        self.assertTrue(purchase_tax, "A purchase tax is required for this test")
 
         move = self.env["account.move"].create(
             {
@@ -148,61 +148,51 @@ class TestAccountDynamicRules(TransactionCase):
             "Dynamic rules must not override VAT/tax line accounts",
         )
 
-
     def test_api_defaults_on_move_creation(self):
-        """ Test that creating an invoice without terms/mode/bank defaults them from Partner """
+        """Test that creating an invoice without terms/mode/bank defaults them from Partner."""
         # Setup Partner with defaults
         payment_term = self.env['account.payment.term'].create({'name': 'Test Term 30 Days'})
-        # Use existing mode or create simple one if possible. 
-        # Relying on bank creation which is simpler for dependency check.
         bank = self.env['res.partner.bank'].create({
             'acc_number': '123456789',
             'partner_id': self.partner_a.id,
         })
         self.partner_a.write({
             'property_payment_term_id': payment_term.id,
-            # 'property_payment_mode_id': ... # Need to check if field exists, assuming yes via dependency
-            # 'bank_ids': ... # already linked
         })
-        
+
         # Create Invoice mimicking API (only bare minimum fields)
         move = self.env['account.move'].create({
-            'move_type': 'in_invoice', 
+            'move_type': 'in_invoice',
             'partner_id': self.partner_a.id,
             'invoice_date': '2026-01-01',
-            # explicitly NOT setting payment_term_id, etc.
         })
-        
+
         self.assertEqual(move.invoice_payment_term_id, payment_term, "Should auto-set Payment Term from Partner")
-        self.assertEqual(move.partner_bank_id, bank, "Should auto-set Bank from Partner") 
-        # Note: generic Odoo logic might not auto-set bank on create without onchange, that's what we are fixing/ensuring.
+        self.assertEqual(move.partner_bank_id, bank, "Should auto-set Bank from Partner")
+
     def test_conflict_resolution_priority(self):
-        """ 
+        """
         Test conflict resolution between a Specific Rule and a Wildcard Rule.
         Demonstrates that SEQUENCE is the only conflict resolver, not specificity.
-        
-        Scenario analogous to User Question: 
-        'Rule A has Payment Mode (Specific), Rule B has No Payment Mode (Wildcard)'
-        We use Product here to simulate the same logic pattern as Payment Mode.
         """
         # 1. Create Specific Rule (Seq 10) -> Account Target
         rule_specific = self.env['account.dynamic.rule'].create({
             'name': 'Specific Rule',
             'partner_id': self.partner_a.id,
-            'product_id': self.product_generic.id, # Specific
+            'product_id': self.product_generic.id,
             'account_id': self.account_target.id,
             'sequence': 10,
         })
-        
+
         # 2. Create Wildcard Rule (Seq 20) -> Account Income
         rule_wildcard = self.env['account.dynamic.rule'].create({
             'name': 'Wildcard Rule',
             'partner_id': self.partner_a.id,
-            'product_id': False, # Wildcard (matches any)
+            'product_id': False,
             'account_id': self.account_income.id,
             'sequence': 20,
         })
-        
+
         # Case A: Sequence 10 vs 20. Specific comes first.
         move = self.env['account.move'].create({
             'move_type': 'in_invoice',
@@ -211,149 +201,113 @@ class TestAccountDynamicRules(TransactionCase):
         })
         line = self.env['account.move.line'].create({
             'move_id': move.id,
-            'product_id': self.product_generic.id, # Matches BOTH rules
-            'quantity': 1, 
+            'product_id': self.product_generic.id,
+            'quantity': 1,
             'price_unit': 100,
         })
         self.assertEqual(line.account_id, self.account_target, "Lower sequence (Specific) should win")
-        
+
         # Case B: Swap Sequences. Wildcard (10) vs Specific (20).
         rule_wildcard.sequence = 5
         rule_specific.sequence = 20
-        
-        # Force re-evaluation (simulate new line or update)
-        line.account_id = self.account_start # Reset
+
+        # Force re-evaluation
+        line.account_id = self.account_start
         line._apply_dynamic_rules()
-        
-        self.assertEqual(line.account_id, self.account_income, "Lower sequence (Wildcard) should win now, ignoring specificity")
+
+        self.assertEqual(line.account_id, self.account_income, "Lower sequence (Wildcard) should win now")
 
     def test_rule_with_tax_ids_applied_to_line(self):
         """Test that a rule with tax_ids forces those taxes on the invoice line."""
-        # Create a purchase tax (generic, no hardcode)
         purchase_tax = self.env["account.tax"].search(
-            [("type_tax_use", "=", "purchase"), ("amount", "=", 21)],
+            [("type_tax_use", "=", "purchase")],
             limit=1,
         )
-        self.assertTrue(purchase_tax, "A 21% purchase tax is required for this test")
+        self.assertTrue(purchase_tax, "A purchase tax is required for this test")
 
-        # Create a rule with tax_ids
-        rule_with_tax = self.env["account.dynamic.rule"].create(
-            {
-                "name": "Rule with Taxes",
-                "partner_id": self.partner_a.id,
-                "product_id": self.product_generic.id,
-                "account_id": self.account_target.id,
-                "tax_ids": [(6, 0, purchase_tax.ids)],
-                "sequence": 5,
-            }
-        )
+        rule_with_tax = self.env["account.dynamic.rule"].create({
+            "name": "Rule with Taxes",
+            "partner_id": self.partner_a.id,
+            "product_id": self.product_generic.id,
+            "account_id": self.account_target.id,
+            "tax_ids": [(6, 0, purchase_tax.ids)],
+            "sequence": 5,
+        })
 
-        move = self.env["account.move"].create(
-            {
-                "move_type": "in_invoice",
-                "partner_id": self.partner_a.id,
-                "invoice_date": "2026-01-01",
-            }
-        )
-        line = self.env["account.move.line"].create(
-            {
-                "move_id": move.id,
-                "product_id": self.product_generic.id,
-                "quantity": 1,
-                "price_unit": 100,
-            }
-        )
+        move = self.env["account.move"].create({
+            "move_type": "in_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_date": "2026-01-01",
+        })
+        line = self.env["account.move.line"].create({
+            "move_id": move.id,
+            "product_id": self.product_generic.id,
+            "quantity": 1,
+            "price_unit": 100,
+        })
 
-        # The line should have the tax from the rule
-        self.assertIn(
-            purchase_tax,
-            line.tax_ids,
-            "Rule tax_ids should be applied to the invoice line",
-        )
+        self.assertIn(purchase_tax, line.tax_ids, "Rule tax_ids should be applied to the invoice line")
 
     def test_rule_with_fiscal_position_id_applied(self):
         """Test that a rule with fiscal_position_id applies it on the move."""
-        # Create a fiscal position (generic, no hardcode)
-        fp = self.env["account.fiscal.position"].create(
-            {
-                "name": "Test Fiscal Position",
-            }
-        )
+        fp = self.env["account.fiscal.position"].create({
+            "name": "Test Fiscal Position",
+        })
 
-        # Create a rule with fiscal_position_id
-        rule_with_fp = self.env["account.dynamic.rule"].create(
-            {
-                "name": "Rule with Fiscal Position",
-                "partner_id": self.partner_a.id,
-                "product_id": self.product_generic.id,
-                "account_id": self.account_target.id,
-                "fiscal_position_id": fp.id,
-                "sequence": 5,
-            }
-        )
+        rule_with_fp = self.env["account.dynamic.rule"].create({
+            "name": "Rule with Fiscal Position",
+            "partner_id": self.partner_a.id,
+            "product_id": self.product_generic.id,
+            "account_id": self.account_target.id,
+            "fiscal_position_id": fp.id,
+            "sequence": 5,
+        })
 
-        move = self.env["account.move"].create(
-            {
-                "move_type": "in_invoice",
-                "partner_id": self.partner_a.id,
-                "invoice_date": "2026-01-01",
-            }
-        )
-        line = self.env["account.move.line"].create(
-            {
-                "move_id": move.id,
-                "product_id": self.product_generic.id,
-                "quantity": 1,
-                "price_unit": 100,
-            }
-        )
+        move = self.env["account.move"].create({
+            "move_type": "in_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_date": "2026-01-01",
+        })
+        line = self.env["account.move.line"].create({
+            "move_id": move.id,
+            "product_id": self.product_generic.id,
+            "quantity": 1,
+            "price_unit": 100,
+        })
 
-        # The move should have the fiscal position from the rule
-        self.assertEqual(
-            move.fiscal_position_id,
-            fp,
-            "Rule fiscal_position_id should be applied on the invoice",
-        )
+        self.assertEqual(move.fiscal_position_id, fp, "Rule fiscal_position_id should be applied on the invoice")
 
     def test_rule_with_both_tax_and_fiscal_position(self):
         """Test a rule that sets both tax_ids and fiscal_position_id."""
         purchase_tax = self.env["account.tax"].search(
-            [("type_tax_use", "=", "purchase"), ("amount", "=", 21)],
+            [("type_tax_use", "=", "purchase")],
             limit=1,
         )
-        self.assertTrue(purchase_tax, "A 21% purchase tax is required for this test")
+        self.assertTrue(purchase_tax, "A purchase tax is required for this test")
 
-        fp = self.env["account.fiscal.position"].create(
-            {"name": "Test FP with Taxes"}
-        )
+        fp = self.env["account.fiscal.position"].create({"name": "Test FP with Taxes"})
 
-        rule = self.env["account.dynamic.rule"].create(
-            {
-                "name": "Rule with both",
-                "partner_id": self.partner_a.id,
-                "product_id": self.product_generic.id,
-                "account_id": self.account_target.id,
-                "tax_ids": [(6, 0, purchase_tax.ids)],
-                "fiscal_position_id": fp.id,
-                "sequence": 5,
-            }
-        )
+        rule = self.env["account.dynamic.rule"].create({
+            "name": "Rule with both",
+            "partner_id": self.partner_a.id,
+            "product_id": self.product_generic.id,
+            "account_id": self.account_target.id,
+            "tax_ids": [(6, 0, purchase_tax.ids)],
+            "fiscal_position_id": fp.id,
+            "sequence": 5,
+        })
 
-        move = self.env["account.move"].create(
-            {
-                "move_type": "in_invoice",
-                "partner_id": self.partner_a.id,
-                "invoice_date": "2026-01-01",
-            }
-        )
-        line = self.env["account.move.line"].create(
-            {
-                "move_id": move.id,
-                "product_id": self.product_generic.id,
-                "quantity": 1,
-                "price_unit": 100,
-            }
-        )
+        move = self.env["account.move"].create({
+            "move_type": "in_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_date": "2026-01-01",
+        })
+        line = self.env["account.move.line"].create({
+            "move_id": move.id,
+            "product_id": self.product_generic.id,
+            "quantity": 1,
+            "price_unit": 100,
+        })
 
         self.assertIn(purchase_tax, line.tax_ids)
         self.assertEqual(move.fiscal_position_id, fp)
@@ -361,46 +315,77 @@ class TestAccountDynamicRules(TransactionCase):
     def test_tax_line_not_re_regulated(self):
         """Ensure tax lines generated by Odoo are never re-processed by dynamic rules."""
         purchase_tax = self.env["account.tax"].search(
-            [("type_tax_use", "=", "purchase"), ("amount", "=", 21)],
+            [("type_tax_use", "=", "purchase")],
             limit=1,
         )
-        self.assertTrue(purchase_tax, "A 21% purchase tax is required for this test")
+        self.assertTrue(purchase_tax, "A purchase tax is required for this test")
 
-        rule = self.env["account.dynamic.rule"].create(
-            {
-                "name": "Rule that would match",
-                "partner_id": self.partner_a.id,
-                "account_id": self.account_target.id,
-                "sequence": 5,
-            }
-        )
+        rule = self.env["account.dynamic.rule"].create({
+            "name": "Rule that would match",
+            "partner_id": self.partner_a.id,
+            "account_id": self.account_target.id,
+            "sequence": 5,
+        })
 
-        move = self.env["account.move"].create(
-            {
-                "move_type": "in_invoice",
-                "partner_id": self.partner_a.id,
-                "invoice_date": "2026-01-01",
-                "invoice_line_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "product_id": self.product_generic.id,
-                            "name": "Test line",
-                            "quantity": 1,
-                            "price_unit": 100,
-                            "tax_ids": [(6, 0, purchase_tax.ids)],
-                        },
-                    )
-                ],
-            }
-        )
+        move = self.env["account.move"].create({
+            "move_type": "in_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_date": "2026-01-01",
+            "invoice_line_ids": [
+                (
+                    0,
+                    0,
+                    {
+                        "product_id": self.product_generic.id,
+                        "name": "Test line",
+                        "quantity": 1,
+                        "price_unit": 100,
+                        "tax_ids": [(6, 0, purchase_tax.ids)],
+                    },
+                )
+            ],
+        })
 
         tax_lines = move.line_ids.filtered("tax_line_id")
         self.assertTrue(tax_lines, "Invoice should generate tax lines")
-        # Tax lines must NOT have the rule's account (they keep their own)
         self.assertNotIn(
             self.account_target,
             tax_lines.mapped("account_id"),
             "Dynamic rules must not override VAT/tax line accounts",
+        )
+
+    def test_analytic_account_applied(self):
+        """Test that a rule with analytic_account_id sets the analytic account on the line."""
+        analytic_plan = self.env['account.analytic.plan'].create({'name': 'Test Analytic Plan'})
+        analytic_acct = self.env['account.analytic.account'].create({
+            'name': 'Test Analytic Account',
+            'plan_id': analytic_plan.id,
+        })
+
+        rule = self.env["account.dynamic.rule"].create({
+            "name": "Rule with Analytic",
+            "partner_id": self.partner_a.id,
+            "product_id": self.product_generic.id,
+            "account_id": self.account_target.id,
+            "analytic_account_id": analytic_acct.id,
+            "sequence": 5,
+        })
+
+        move = self.env["account.move"].create({
+            "move_type": "in_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_date": "2026-01-01",
+        })
+        line = self.env["account.move.line"].create({
+            "move_id": move.id,
+            "product_id": self.product_generic.id,
+            "quantity": 1,
+            "price_unit": 100,
+        })
+
+        # Odoo 17: the analytic account is applied via analytic_distribution
+        self.assertEqual(
+            line.analytic_distribution.get(str(analytic_acct.plan_id.id)),
+            100,
+            "Rule analytic account should be applied via analytic_distribution",
         )

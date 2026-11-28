@@ -11,16 +11,21 @@ class AccountDynamicRule(models.Model):
 
     name = fields.Char(required=True)
     sequence = fields.Integer(default=10)
-    
+
     # Match criteria
     partner_id = fields.Many2one("res.partner", string="Partner")
     product_id = fields.Many2one("product.product", string="Product")
-    payment_mode_id = fields.Many2one("account.payment.mode", string="Payment Mode")
-    description_match = fields.Char(string="Description Match (Contains)", help="If set, relevant only if line description contains this text (case insensitive).")
+    description_match = fields.Char(
+        string="Description Match (Contains)",
+        help="If set, relevant only if line description contains this text "
+             "(case insensitive).",
+    )
 
     # Actions
     account_id = fields.Many2one("account.account", string="Account")
-    analytic_account_id = fields.Many2one("account.analytic.account", string="Analytic Account")
+    analytic_account_id = fields.Many2one(
+        "account.analytic.account", string="Analytic Account"
+    )
     target_product_id = fields.Many2one("product.product", string="Force Product")
     payment_term_id = fields.Many2one("account.payment.term", string="Payment Term")
     tax_ids = fields.Many2many(

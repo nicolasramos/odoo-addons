@@ -4,12 +4,11 @@
         <field name="name">account.dynamic.rule.list</field>
         <field name="model">account.dynamic.rule</field>
         <field name="arch" type="xml">
-            <list editable="bottom">
+            <tree editable="bottom">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="product_id"/>
-                <field name="payment_mode_id"/>
                 <field name="description_match"/>
                 <field name="account_id"/>
                 <field name="analytic_account_id"/>
@@ -17,7 +16,7 @@
                 <field name="payment_term_id"/>
                 <field name="tax_ids" widget="many2many_tags"/>
                 <field name="fiscal_position_id"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -36,7 +35,6 @@
                         <group string="Conditions">
                             <field name="partner_id"/>
                             <field name="product_id"/>
-                            <field name="payment_mode_id"/>
                             <field name="description_match"/>
                         </group>
                         <group string="Actions">
@@ -52,18 +50,18 @@
                             <div class="alert alert-info" role="alert" style="margin-bottom:0px;">
                                 <h3>How to use Dynamic Rules</h3>
                                 <p>Rules are evaluated by <b>Sequence</b> (Low to High). The first matching rule is applied.</p>
-                                
+
                                 <hr/>
-                                
+
                                 <h4>🧩 Wildcards (Empty Fields)</h4>
                                 <ul>
                                     <li><b>Partner empty:</b> Matches ANY Partner.</li>
                                     <li><b>Product empty:</b> Matches ANY Product.</li>
                                 </ul>
-                                
+
                                 <h4>🔍 Description Match</h4>
                                 <p>If you set text in <i>Description Match</i>, the rule will only apply if the invoice line description <b>contains</b> that text (Case Insensitive).</p>
-                                
+
                                 <h4>📊 Example Scenarios</h4>
                                 <ul>
                                     <li><b>Global Service:</b> Partner=(Empty), Description="Hosting" ➡ Assign Analytic Account "IT".</li>

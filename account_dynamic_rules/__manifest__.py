@@ -4,7 +4,7 @@
 {
     "name": "Account Dynamic Rules",
     "summary": "Dynamic rules for account, product and payment terms mapping",
-    "version": "18.0.1.0.3",
+    "version": "17.0.1.0.3",
     "category": "Accounting",
     "author": "Nicolás Ramos",
     "maintainers": ["nicolasramos"],
@@ -13,7 +13,6 @@
     "installable": True,
     "depends": [
         "account",
-        "account_fiscal_position",
     ],
     "external_dependencies": {
         "python": [],

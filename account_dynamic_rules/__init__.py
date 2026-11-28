@@ -1,2 +1,1 @@
-from . import account_dynamic_rule
-from . import account_move
+from . import models
