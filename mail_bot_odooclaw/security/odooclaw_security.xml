@@ -4,4 +4,16 @@
         <field name="name">OdooClaw Delegated RPC</field>
         <field name="comment">Allows the OdooClaw technical user to execute ORM calls under the permissions of the requesting Odoo user.</field>
     </record>
+    <record id="rule_odooclaw_artifact_own" model="ir.rule">
+        <field name="name">OdooClaw artifacts: own only</field>
+        <field name="model_id" ref="model_odooclaw_artifact"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_odooclaw_artifact_all" model="ir.rule">
+        <field name="name">OdooClaw artifacts: all for administrators</field>
+        <field name="model_id" ref="model_odooclaw_artifact"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
 </odoo>

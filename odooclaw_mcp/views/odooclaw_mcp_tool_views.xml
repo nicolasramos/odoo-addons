@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_odooclaw_mcp_tool_list" model="ir.ui.view">
+        <field name="name">odooclaw.mcp.tool.list</field>
+        <field name="model">odooclaw.mcp.tool</field>
+        <field name="arch" type="xml">
+            <tree string="MCP tools">
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="model_name" />
+                <field name="is_write" />
+                <field name="active" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_odooclaw_mcp_tool_form" model="ir.ui.view">
+        <field name="name">odooclaw.mcp.tool.form</field>
+        <field name="model">odooclaw.mcp.tool</field>
+        <field name="arch" type="xml">
+            <form string="MCP tool">
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="model_name" />
+                        <field name="action_id" />
+                        <field name="is_write" />
+                        <field name="active" />
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" />
+                    </group>
+                    <group string="Input schema (JSON)">
+                        <field name="input_schema" nolabel="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_odooclaw_mcp_tool" model="ir.actions.act_window">
+        <field name="name">MCP tools</field>
+        <field name="res_model">odooclaw.mcp.tool</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

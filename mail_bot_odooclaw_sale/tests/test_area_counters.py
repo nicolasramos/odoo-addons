@@ -1,34 +1,24 @@
 # Copyright 2026 Nicolás Ramos
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from . import common
+from odoo.tests import tagged
+
+from .common import TestAreaCounters
 
 
-class TestAreaCounters(common.SaleCounterCommon):
-    """Test sales area counters."""
+@tagged("post_install", "-at_install")
+class TestSaleAreaCounters(TestAreaCounters):
+    AREA_XMLID = "mail_bot_odooclaw_sale.area_sales"
+    SIGNAL_KEY = "draft_quotations"
+    MODEL = "sale.order"
+    DOMAIN = [("state", "=", "draft")]
 
-    def test_draft_quotation_counter(self):
-        """A draft quotation should move the counter."""
-        order = self.SaleOrder.create(
-            {
-                "partner_id": self.env.ref("base.main_partner").id,
-                "order_line": [
-                    (
-                        0,
-                        0,
-                        {
-                            "product_id": self.env.ref("product.product_product_1").id,
-                            "product_uom_qty": 1,
-                            "price_unit": 100.0,
-                        },
-                    )
-                ],
-            }
+    def _create_matching(self):
+        partner = self.env["res.partner"].create({"name": "Counter Test Client"})
+        self.env["sale.order"].create({"partner_id": partner.id})
+
+    def _create_non_matching(self):
+        partner = self.env["res.partner"].create({"name": "Cancelled Client"})
+        self.env["sale.order"].create(
+            {"partner_id": partner.id, "state": "cancel"}
         )
-        try:
-            result = self.env["mail.odooclaw.area"].sudo().browse(10).counters_for("sale.order")
-            # Counter should fire for draft orders
-            self.assertIn("draft_quotations", result)
-            self.assertGreater(result["draft_quotations"]["count"], 0)
-        finally:
-            order.unlink()

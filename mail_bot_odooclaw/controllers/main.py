@@ -69,9 +69,9 @@ class OdooClawController(http.Controller):
         {
             "model": "discuss.channel",
             "res_id": 123,
-            "message": "Hello!",
-            "attachment_ids": [456, 457],
-            "voice_metadata_ids": [789]
+            "message": "Hello!",  // optional if attachment_ids provided
+            "attachment_ids": [456, 457],  // optional - voice attachment IDs
+            "voice_metadata_ids": [789]  // optional - voice metadata IDs
         }
         """
         try:
@@ -88,6 +88,7 @@ class OdooClawController(http.Controller):
             if not model_name or not res_id:
                 return security.error_response("Missing parameters")
 
+            # Must have either a message body or attachments
             if not message_body and not attachment_ids:
                 return security.error_response("Missing message or attachments")
 
@@ -118,36 +119,50 @@ class OdooClawController(http.Controller):
 
             message_html = markdown_to_safe_html(message_body)
 
+            # Prepare message_post values
             post_values = {
                 "body": Markup(message_html),
                 "author_id": bot_user.partner_id.id,
                 "message_type": "comment",
             }
 
+            # Add attachments if provided
             if attachment_ids:
                 post_values["attachment_ids"] = _normalize_x2many_ids(
                     attachment_ids, "attachment_ids"
                 )
 
+            # Add voice metadata if provided (links attachments to voice player)
             if voice_metadata_ids:
                 post_values["voice_ids"] = _normalize_x2many_ids(
                     voice_metadata_ids, "voice_metadata_ids"
                 )
 
+            # Perform action as the bot user to circumvent public access rights
             record = request.env[model_name].sudo().browse(res_id)
             if record.exists():
+                # Add @mention to notify the sender — chatter and group channels only
+                sender_partner = (
+                    token_valid.message_id.author_id
+                    if token_valid.message_id and token_valid.message_id.author_id
+                    else None
+                )
+                if model_name != "discuss.channel" and sender_partner and sender_partner != bot_user.partner_id:
+                    mention_html = Markup(
+                        '<a href="/odoo/res.partner/{}" '                        'class="o_mail_redirect" '                        'data-oe-id="{}" '                        'data-oe-model="res.partner" '                        'target="_blank">@{}</a> '
+                    ).format(sender_partner.id, sender_partner.id, sender_partner.name)
+                    post_values["body"] = mention_html + post_values["body"]
+                    post_values["partner_ids"] = [sender_partner.id]
+
                 record.with_user(bot_user).sudo().message_post(**post_values)
 
+                # Clear typing indicator after replying
                 if model_name == "discuss.channel":
-                    channel_partner = request.env["discuss.channel.member"].search(
-                        [
-                            ("channel_id", "=", record.id),
-                            ("partner_id", "=", bot_user.partner_id.id),
-                        ],
-                        limit=1,
+                    bot_member = record.channel_member_ids.filtered(
+                        lambda m: m.partner_id.id == bot_user.partner_id.id
                     )
-                    if channel_partner:
-                        channel_partner._notify_typing(is_typing=False)
+                    if bot_member:
+                        bot_member.sudo()._notify_typing(is_typing=False)
 
                 return request.make_json_response({"status": "ok"})
 
@@ -170,7 +185,7 @@ class OdooClawController(http.Controller):
         Payload:
         {
             "user_id": 5,
-            "model": "sale.order",
+            "model": "res.partner",
             "method": "create",
             "args": [[{...}]],
             "kwargs": {}
@@ -190,6 +205,7 @@ class OdooClawController(http.Controller):
             if not user_id or not model or not method:
                 return security.error_response("Missing user_id, model, or method")
 
+            # Security: Verify the caller is an internal OdooClaw/Admin session
             if not request.session.uid:
                 return security.error_response(
                     "Unauthorized. Must be logged in via session.",
@@ -219,6 +235,7 @@ class OdooClawController(http.Controller):
             if user_id == SUPERUSER_ID or not target_user.exists() or not target_user.active:
                 return security.error_response("Invalid delegated user")
 
+            # Merge explicit context from caller if provided
             if not isinstance(kwargs_dict, dict):
                 kwargs_dict = {}
             if not isinstance(context_dict, dict):
@@ -227,8 +244,10 @@ class OdooClawController(http.Controller):
             merged_context = dict(request.env.context)
             merged_context.update(context_dict)
 
+            # Switch environment to the requested user with provided context
             safe_env = request.env(user=user_id, context=merged_context)
 
+            # Execute the method safely
             try:
                 recs = safe_env[model]
                 if args and (

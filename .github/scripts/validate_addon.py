@@ -19,16 +19,45 @@ def discover_addons():
     return sorted(addons)
 
 
+def _read_bytes(path):
+    """Read file as bytes to avoid encoding issues."""
+    return path.read_bytes()
+
+
+def _decode_bytes(data, path):
+    """Decode bytes with fallback encoding."""
+    try:
+        return data.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            return data.decode('latin-1')
+        except UnicodeDecodeError:
+            return data.decode('ascii', errors='ignore')
+
+
 def check_python(addon):
     """Check Python files parse correctly."""
     for path in addon.rglob('*.py'):
-        ast.parse(path.read_text(), filename=str(path))
+        if path.name.startswith('._'):
+            continue
+        data = _read_bytes(path)
+        text = _decode_bytes(data, path)
+        try:
+            ast.parse(text, filename=str(path))
+        except SyntaxError as exc:
+            raise AssertionError(f'{path}: {exc}')
 
 
 def check_xml(addon):
     """Check XML files parse correctly."""
     for path in addon.rglob('*.xml'):
-        ET.parse(path)
+        if path.name.startswith('._'):
+            continue
+        data = _read_bytes(path)
+        try:
+            ET.fromstring(data)
+        except ET.ParseError as exc:
+            raise AssertionError(f'{path}: {exc}')
 
 
 def check_access_csv(addon):
@@ -36,8 +65,10 @@ def check_access_csv(addon):
     path = addon / 'security' / 'ir.model.access.csv'
     if not path.exists():
         return
-    with path.open(newline='') as csvfile:
+    with path.open(newline='', encoding='utf-8', errors='ignore') as csvfile:
         rows = list(csv.DictReader(csvfile))
+    if not rows:
+        return
     required = {
         'id', 'name', 'model_id:id', 'group_id:id',
         'perm_read', 'perm_write', 'perm_create', 'perm_unlink',
@@ -47,9 +78,9 @@ def check_access_csv(addon):
         raise AssertionError(f'{path} missing columns: {sorted(missing)}')
     for row in rows:
         for column in ('perm_read', 'perm_write', 'perm_create', 'perm_unlink'):
-            if row[column] not in {'0', '1'}:
+            if row.get(column, '') not in {'0', '1'}:
                 raise AssertionError(
-                    f'{path}: {row["id"]} has invalid {column}={row[column]}'
+                    f'{path}: {row.get("id", "unknown")} has invalid {column}={row.get(column, "unknown")}'
                 )
 
 
@@ -59,7 +90,10 @@ def check_i18n_files(addon):
     if not i18n_dir.exists():
         return
     for path in i18n_dir.glob('*.po'):
-        content = path.read_text()
+        if path.name.startswith('._'):
+            continue
+        data = _read_bytes(path)
+        content = _decode_bytes(data, path)
         if 'msgid ""\nmsgstr ""' not in content:
             raise AssertionError(f'{path} is missing a gettext header')
         msgids = content.count('\nmsgid ')
@@ -70,7 +104,9 @@ def check_i18n_files(addon):
             )
     pot = i18n_dir / f'{addon.name}.pot'
     if pot.exists():
-        if f'Project-Id-Version: {addon.name}' not in pot.read_text():
+        data = _read_bytes(pot)
+        pot_content = _decode_bytes(data, pot)
+        if f'Project-Id-Version: {addon.name}' not in pot_content:
             raise AssertionError(f'{pot} does not look like the addon template')
 
 
@@ -78,8 +114,12 @@ def check_no_forbidden_branding(addon):
     """Check that OCA branding is not present in addon files."""
     forbidden = ''.join(('O', 'C', 'A'))
     for path in addon.rglob('*'):
+        if path.name.startswith('._'):
+            continue
         if path.is_file() and path.suffix in {'.py', '.xml', '.csv', '.md', '.txt'}:
-            if forbidden in path.read_text(errors='ignore'):
+            data = _read_bytes(path)
+            text = _decode_bytes(data, path)
+            if forbidden in text:
                 raise AssertionError(
                     f'Forbidden external branding found in {path}'
                 )

@@ -1,36 +1,6 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-.pytest_cache/
-.ruff_cache/
-.mypy_cache/
-.coverage
-htmlcov/
-
-# Odoo/local runtime
-*.log
-.env
-.env.*
-!.env.example
-
-# OS/editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-# macOS extended attributes (NAS artifacts)
+# macOS resource forks
 ._*
-# Local agent/code intelligence caches
-.codebase-memory/
-.atl/
 
-# Private design specifications
-openspec/
-
-# Private design specifications
-openspec/
-
-# Virtual environments
-.venv*/
-venv/
+# Python bytecode
+__pycache__/
+*.pyc
